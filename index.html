@@ -13,7 +13,7 @@
             }
         }
     body {
-    background-color: white;
+    background-color: #1A2026;
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
@@ -21,11 +21,17 @@
     text-align: center;
 }
 header {
-    padding: 20px;
-    background-color: white;
-    margin: 5px;
-    border-bottom: 2px solid #F5F5F5;
-    color: black;
+    padding: 10px;
+    background-color: #212A33;
+    margin: 0px;
+    font-family: Arial, sans-serif;
+    border-bottom: 2px solid #black;
+    color: #FFFFFF;
+    text-align: left;
+    justify-content: flex-start;
+}
+footer{
+    color: #FFFFFF;
 }
 .container {
     max-width: 1200px;
@@ -36,6 +42,9 @@ h1 {
     margin: 0;
     font-size: 2.5rem;
 }
+.p{
+    color: #fff;
+}
 .prices {
     display: flex;
     flex-wrap: wrap; /* Allow wrapping */
@@ -44,10 +53,10 @@ h1 {
 }
 .price-box {
     width: 45%; /* Adjust width for desktop */
-    background-color: white;
+    background-color: #212A33;
     padding: 20px;
     border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    box-shadow: #FFFFFF;
     margin: 10px; /* Space between boxes */
     transition: transform 0.2s; /* Smooth hover effect */
 }
@@ -57,11 +66,11 @@ h1 {
 .price-box h2 {
     margin: 0;
     font-size: 1.8rem;
-    color: #333;
+    color: #FFFFFF;
 }
 .price-box p, label {
     font-size: 1.2rem;
-     color: #333;
+     color: #FFFFFF;
 }
 .btn-good {
     padding: 10px 20px;
@@ -94,7 +103,7 @@ h1 {
 
 .btn-buy {
     padding: 10px 20px;
-    background-color: #28a745;
+    background-color: #248BDA;
     color: white;
     text-decoration: none;
     border: none;
@@ -106,7 +115,7 @@ h1 {
 }
 .btn-sell {
     padding: 10px 20px;
-    background-color: #f44336;
+    background-color: #248BDA;
     color: white;
     text-decoration: none;
     border: none;
@@ -119,12 +128,13 @@ h1 {
 input {
     padding: 10px;
     margin-top: 10px;
-    background-color:#F5F5F5;
+    background-color: #242E38;
     border: none;
     width: 90%; /* Full-width input fields */
     font-size: 1rem;
     border: 5px;
     border-radius: 5px; /* Rounded corners */
+    color: #FFFFFF;
 }
 .transaction-history {
     margin-top: 40px;
@@ -157,7 +167,7 @@ input {
     border: 1px solid #ddd;
 }
 .transaction-table th {
-    background-color: #f3ba2f;
+    background-color: #212A33;
     color: white;
 }
 
@@ -201,7 +211,7 @@ input {
             z-index: 999;
         }
         .modal {
-            background-color: white;
+            background-color: #FFFFFF;
             padding: 20px;
             border-radius: 10px;
             width: 80%;
@@ -213,20 +223,21 @@ input {
             width: 90%;
             padding: 10px;
             margin-top: 10px;
+            background-color: #FFFFFF;
             border-radius: 5px;
             border: 1px solid #ddd;
         }
         .modal button {
             padding: 10px 20px;
             margin-top: 10px;
-            background-color: #28a745;
+            background-color: #248BDA;
             color: white;
             border: none;
             border-radius: 5px;
             cursor: pointer;
         }
         .alert-modal .modal button {
-            background-color: #f44336;
+            background-color: #248BDA;
         }
     </style>
 </head>
@@ -241,7 +252,7 @@ input {
 <div class="prices">
         <div class="price-box" id="buy-section">
             <h2>Buy TON</h2>
-            <p>Price: 133 BDT</p>
+            <p>Price: 130 BDT</p>
             <p>Payment Method: bKash</p>
             <label for="buy-amount"></label>
             <input type="text" id="buy-amount" placeholder="Tk.(Min 100, Max 2000)">
@@ -251,7 +262,7 @@ input {
 
         <div class="price-box" id="sell-section">
             <h2>Sell TON</h2>
-            <p>Price: 126 BDT</p>
+            <p>Price: 125 BDT</p>
             <p>Payment Method: bKash</p>
             <label for="sell-amount"></label>
             <input type="text" id="sell-amount" placeholder="Tk.(Min 100, Max 2000)">
@@ -381,7 +392,8 @@ function generateOrderNumber() {
 
         if (amount >= 100 && amount <= 2000 && adr) {
             const paymentnum = "01904211287";
-            const buyamount = (amount / 133).toFixed(3);
+            const buyamm = "130"
+            const buyamount = (amount / buyamm).toFixed(3);
             showPrompt(`Ton Amount: $${buyamount}\nFiat amount: ${amount}\nbKash Payment: ${paymentnum} \nEnter the Transaction ID after Payment:`, function(transactionId) {
                 if (transactionId) {
                     const orderNumber = generateOrderNumber();
@@ -410,7 +422,8 @@ function generateOrderNumber() {
 
         if (amount >= 100 && amount <= 2000 && phoneNumber) {
             const tonadr = "UQDs66tohdEEd7KiRwP7mGkodvlqquD7MkzP21KXBbd8Ae1q";
-            const sellamount = (amount / 126).toFixed(3);
+            const sellamm = "125"
+            const sellamount = (amount / sellamm).toFixed(3);
             showPrompt(`Ton Amount: $${sellamount}\nFiat amount: ${amount}\nTon Address is: \n${tonadr}\nEnter the Txid after sent Ton:`, function(txnadds) {
                 if (txnadds) {
                     const orderNumber = generateOrderNumber();
