@@ -226,6 +226,8 @@ input {
             background-color: #FFFFFF;
             border-radius: 5px;
             border: 1px solid #ddd;
+        }
+        .modinput{
             color: #212A33;
         }
         .modal button {
@@ -303,7 +305,7 @@ input {
 <div id="promptModal" class="modal-overlay">
     <div class="modal">
         <p id="promptMessage"></p>
-        <input type="text" id="promptInput">
+        <input type="text" id="promptInput" class="modinput">
         <button onclick="submitPrompt()">Submit</button>
     </div>
 </div>
