@@ -108,16 +108,33 @@
       const macdHist = MACD(closes);
 
       let signal = "NO STRONG SIGNAL", tp = "-", sl = "-";
+let signal = "NO STRONG SIGNAL", tp = "-", sl = "-";
 
-      if (ema7 > ema25 && ema25 > ema99 && rsi > 55 && macdHist > 0) {
-        signal = "LONG";
-        tp = (price * 1.015).toFixed(4);
-        sl = (price * 0.985).toFixed(4);
-      } else if (ema7 < ema25 && ema25 < ema99 && rsi < 45 && macdHist < 0) {
-        signal = "SHORT";
-        tp = (price * 0.985).toFixed(4);
-        sl = (price * 1.015).toFixed(4);
-      }
+// Long setup: price and EMAs trending up, MACD positive
+if (
+  price > ema7 &&
+  ema7 > ema25 &&
+  ema25 > ema99 &&
+  macdHist > 0 &&
+  rsi > 50
+) {
+  signal = "LONG";
+  tp = (price * 1.015).toFixed(4);
+  sl = (price * 0.985).toFixed(4);
+}
+// Short setup: price and EMAs trending down, MACD negative
+else if (
+  price < ema7 &&
+  ema7 < ema25 &&
+  ema25 < ema99 &&
+  macdHist < 0 &&
+  rsi < 70
+) {
+  signal = "SHORT";
+  tp = (price * 0.985).toFixed(4);
+  sl = (price * 1.015).toFixed(4);
+}
+
 
       document.getElementById("output").innerHTML = `
         <div>
