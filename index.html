@@ -48,7 +48,6 @@
       const usdtPairs = data.symbols
         .filter(s => s.quoteAsset === "USDT" && s.contractType === "PERPETUAL" && s.status === "TRADING")
         .map(s => s.symbol)
-        .sort();
 
       const select = document.getElementById("tokenList");
       usdtPairs.forEach(sym => {
