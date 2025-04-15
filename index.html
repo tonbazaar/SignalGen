@@ -114,7 +114,7 @@
     }
 
     async function generateSignal() {
-      const symbol = document.getElementById("symbol").value;
+      const symbol = document.getElementById("tokenList").value;
       const closes = await fetchKlines(symbol);
       const price = closes[closes.length - 2]; // last closed candle
       const ema7 = EMA(closes, 7).slice(-1)[0];
@@ -139,8 +139,8 @@
         <div>
           🚨 SIGNAL: <b>${signal}</b><br>
           💰 Entry: ${price.toFixed(2)}<br>
-          🎯 TP: ${tp}<br>
-          🛑 SL: ${sl}<br>
+          🌟 TP: ${tp}<br>
+          🚩 SL: ${sl}<br>
           ⚙️ Leverage: 10–20x<br>
           ⏱️ Timeframe: 15m<br><br>
           EMA7: ${ema7.toFixed(2)}<br>
