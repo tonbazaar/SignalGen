@@ -1,479 +1,144 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TonBazaar</title>
-    <style>
-                @media only screen and (max-width: 768px){
-            html,
-            body{
-                width: 100%;
-                overflow-x: hidden;
-            }
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Accurate Crypto Signal Generator</title>
+  <style>
     body {
-    background-color: #1A2026;
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    color: #333;
-    text-align: center;
-}
-header {
-    padding: 25px;
-    background-color: #212A33;
-    margin: 0px;
-    font-family: Arial, sans-serif;
-    border-bottom: 2px solid #black;
-    color: #FFFFFF;
-    text-align: left;
-    letter-spacing: 2px;
-    line-height: 12px;
-}
-footer{
-    color: #FFFFFF;
-}
-.container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
-}
-h1 {
-    margin: 0;
-    font-size: 2.5rem;
-}
-.p{
-    color: #fff;
-}
-.prices {
-    display: flex;
-    flex-wrap: wrap; /* Allow wrapping */
-    justify-content: space-around; /* Center boxes */
-    margin-top: 30px;
-}
-.price-box {
-    width: 45%; /* Adjust width for desktop */
-    background-color: #212A33;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: #FFFFFF;
-    margin: 10px; /* Space between boxes */
-    transition: transform 0.2s; /* Smooth hover effect */
-}
-.price-box:hover {
-    transform: scale(1.02); /* Slight zoom on hover */
-}
-.price-box h2 {
-    margin: 0;
-    font-size: 1.8rem;
-    color: #FFFFFF;
-}
-.price-box p, label {
-    font-size: 1.2rem;
-     color: #FFFFFF;
-}
-.btn-good {
-    padding: 10px 20px;
-    background-color: #28a745; /* Green Background */
-    color: white;
-    text-decoration: none;
-    border: none;
-    border-radius: 5px;
-    font-size: 1rem;
-    cursor: pointer;
-}
-
-.btn-good:hover {
-    background-color: #218838; /* Darker Green on Hover */
-}
-.btn-bad {
-    padding: 10px 20px;
-    background-color: #f44336; /* Green Background */
-    color: white;
-    text-decoration: none;
-    border: none;
-    border-radius: 5px;
-    font-size: 1rem;
-    cursor: pointer;
-}
-
-.btn-good:hover {
-    background-color: #218838; /* Darker Green on Hover */
-}
-
-.btn-buy {
-    padding: 10px 20px;
-    background-color: #248BDA;
-    color: white;
-    text-decoration: none;
-    border: none;
-    border-radius: 5px;
-    font-size: 1rem;
-    display: inline-block;
-    margin-top: 10px;
-    width: 100%; /* Full-width buttons */
-}
-.btn-sell {
-    padding: 10px 20px;
-    background-color: #248BDA;
-    color: white;
-    text-decoration: none;
-    border: none;
-    border-radius: 5px;
-    font-size: 1rem;
-    display: inline-block;
-    margin-top: 10px;
-    width: 100%; /* Full-width buttons */
-}
-input {
-    padding: 10px;
-    margin-top: 10px;
-    background-color: #242E38;
-    border: none;
-    width: 90%; /* Full-width input fields */
-    font-size: 1rem;
-    border: 5px;
-    border-radius: 5px; /* Rounded corners */
-    color: #FFFFFF;
-}
-.transaction-history {
-    margin-top: 40px;
-    background-color: #fff;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    position: relative; /* Positioning for the fixed title */
-}
-.transaction-history h2 {
-    position: sticky;
-    top: 0;
-    background-color: #fff;
-    padding: 10px;
-    z-index: 10;
-    border-bottom: 2px solid #f5c400;
-}
-.transaction-table-container {
-    overflow-x: auto; /* Allow horizontal scroll on small screens */
-    padding-bottom: 10px; /* Space for easier scroll */
-}
-.transaction-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
-    min-width: 600px; /* Ensure table isn't too small */
-}
-.transaction-table th, .transaction-table td {
-    padding: 10px;
-    border: 1px solid #ddd;
-}
-.transaction-table th {
-    background-color: #212A33;
-    color: white;
-}
-
-/* Media Queries for Responsiveness */
-@media (max-width: 600px) {
-    h1 {
-        font-size: 2rem; /* Reduce header size on small screens */
+      font-family: monospace;
+      background-color: #000;
+      color: #00ff00;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
     }
-
-    .btn {
-        font-size: 0.9rem; /* Smaller buttons on small screens */
+    .container {
+      width: 100%;
+      max-width: 400px;
+      border: 2px solid #00ff00;
+      border-radius: 20px;
+      padding: 20px;
+      background-color: #111;
+      box-shadow: 0 0 20px #00ff00;
     }
-
-    .price-box {
-        width: 90%; /* Full width on small screens */
+    button, select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      background-color: #000;
+      border: 1px solid #00ff00;
+      color: #00ff00;
+      border-radius: 5px;
+      font-family: monospace;
     }
-
-    .price-box h2 {
-        font-size: 1.2rem; /* Smaller titles on small screens */
+    #output {
+      margin-top: 20px;
+      background: #000;
+      border: 1px solid #00ff00;
+      border-radius: 10px;
+      padding: 15px;
     }
-
-    .price-box p, label {
-        font-size: 1rem; /* Smaller text on small screens */
-    }
-
-    .transaction-history {
-        padding: 10px;
-    }
-}
-        /* Custom modal styles */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 999;
-        }
-        .modal {
-            background-color: #FFFFFF;
-            padding: 20px;
-            border-radius: 10px;
-            width: 80%;
-            max-width: 400px;
-            overflow-wrap: break-word;
-            text-align: center;
-        }
-        .modal input[type="text"] {
-            width: 90%;
-            padding: 10px;
-            margin-top: 10px;
-            background-color: #FFFFFF;
-            border-radius: 5px;
-            border: 1px solid #ddd;
-        }
-        .modinput{
-            color: #212A33;
-        }
-        .modal button {
-            padding: 10px 20px;
-            margin-top: 10px;
-            background-color: #248BDA;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .alert-modal .modal button {
-            background-color: #248BDA;
-        }
-    </style>
+  </style>
 </head>
 <body>
+  <div class="container">
+    <h2>Crypto Signal Generator</h2>
+    <select id="symbol">
+      <option value="BTCUSDT">BTCUSDT</option>
+      <option value="ETHUSDT">ETHUSDT</option>
+      <option value="BNBUSDT">BNBUSDT</option>
+    </select>
+    <button onclick="generateSignal()">Generate 15m Signal</button>
+    <div id="output"></div>
+  </div>
 
-<header>
-    <h1>TonBazaar</h1>
-    <p>Your trusted choice!</p>
-</header>
+  <script>
+    async function fetchKlines(symbol) {
+      const url = `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=15m&limit=100`;
+      const res = await fetch(url);
+      const data = await res.json();
+      return data.map(k => parseFloat(k[4])); // close prices
+    }
 
-<div class="container">
-<div class="prices">
-        <div class="price-box" id="buy-section">
-            <h2>Buy TON</h2>
-            <p>Price: 130 BDT</p>
-            <p>Payment Method: bKash</p>
-            <label for="buy-amount"></label>
-            <input type="text" id="buy-amount" placeholder="Tk.(Min 100, Max 2000)">
-            <input type="text" id="buyeruid" placeholder="Enter Ton Address.">
-            <button class="btn-buy" onclick="buyUSDT()">Buy Now</button>
+    function EMA(prices, period) {
+      let k = 2 / (period + 1);
+      let emaArray = [prices.slice(0, period).reduce((a, b) => a + b) / period];
+      for (let i = period; i < prices.length; i++) {
+        emaArray.push(prices[i] * k + emaArray[emaArray.length - 1] * (1 - k));
+      }
+      return emaArray;
+    }
+
+    function RSI(prices, period = 14) {
+      let gains = [], losses = [];
+      for (let i = 1; i <= period; i++) {
+        let change = prices[i] - prices[i - 1];
+        gains.push(change > 0 ? change : 0);
+        losses.push(change < 0 ? -change : 0);
+      }
+      let avgGain = gains.reduce((a, b) => a + b) / period;
+      let avgLoss = losses.reduce((a, b) => a + b) / period;
+
+      for (let i = period + 1; i < prices.length; i++) {
+        let change = prices[i] - prices[i - 1];
+        let gain = change > 0 ? change : 0;
+        let loss = change < 0 ? -change : 0;
+        avgGain = (avgGain * (period - 1) + gain) / period;
+        avgLoss = (avgLoss * (period - 1) + loss) / period;
+      }
+
+      let rs = avgGain / avgLoss;
+      return 100 - 100 / (1 + rs);
+    }
+
+    function MACD(prices, short = 12, long = 26, signal = 9) {
+      const emaShort = EMA(prices, short);
+      const emaLong = EMA(prices, long);
+      const macd = emaShort.slice(-emaLong.length).map((val, i) => val - emaLong[i]);
+      const signalLine = EMA(macd, signal);
+      const hist = macd[macd.length - 1] - signalLine[signalLine.length - 1];
+      return hist;
+    }
+
+    async function generateSignal() {
+      const symbol = document.getElementById("symbol").value;
+      const closes = await fetchKlines(symbol);
+      const price = closes[closes.length - 2]; // last closed candle
+      const ema7 = EMA(closes, 7).slice(-1)[0];
+      const ema25 = EMA(closes, 25).slice(-1)[0];
+      const ema99 = EMA(closes, 99).slice(-1)[0];
+      const rsi = RSI(closes);
+      const macdHist = MACD(closes);
+
+      let signal = "NO STRONG SIGNAL", tp = "-", sl = "-";
+
+      if (ema7 > ema25 && ema25 > ema99 && rsi > 55 && macdHist > 0) {
+        signal = "LONG";
+        tp = (price * 1.01).toFixed(2);
+        sl = (price * 0.993).toFixed(2);
+      } else if (ema7 < ema25 && ema25 < ema99 && rsi < 45 && macdHist < 0) {
+        signal = "SHORT";
+        tp = (price * 0.99).toFixed(2);
+        sl = (price * 1.007).toFixed(2);
+      }
+
+      document.getElementById("output").innerHTML = `
+        <div>
+          🚨 SIGNAL: <b>${signal}</b><br>
+          💰 Entry: ${price.toFixed(2)}<br>
+          🎯 TP: ${tp}<br>
+          🛑 SL: ${sl}<br>
+          ⚙️ Leverage: 10–20x<br>
+          ⏱️ Timeframe: 15m<br><br>
+          EMA7: ${ema7.toFixed(2)}<br>
+          EMA25: ${ema25.toFixed(2)}<br>
+          EMA99: ${ema99.toFixed(2)}<br>
+          RSI: ${rsi.toFixed(2)}<br>
+          MACD Histogram: ${macdHist.toFixed(5)}
         </div>
-
-        <div class="price-box" id="sell-section">
-            <h2>Sell TON</h2>
-            <p>Price: 125 BDT</p>
-            <p>Payment Method: bKash</p>
-            <label for="sell-amount"></label>
-            <input type="text" id="sell-amount" placeholder="Tk.(Min 100, Max 2000)">
-            <label for="sell-number"></label>
-            <input type="text" id="sell-number" placeholder="Enter Bkash number.">
-            <button class="btn-sell" onclick="sellUSDT()">Sell Now</button>
-        </div>
-    </div>
-
-    <div class="transaction-history">
-    <h2>Latest Transactions</h2>
-    <div class="transaction-table-container">
-        <table class="transaction-table">
-            <thead>
-                <tr>
-                    <th>Order Number</th>
-                    <th>Type</th>
-                    <th>Amount</th>
-                    <th>Review Status</th>
-                    <th>Action</th>
-                </tr>
-            </thead>
-            <tbody id="transaction-list">
-                <!-- Transactions will be dynamically added here -->
-            </tbody>
-        </table>
-    </div>
-</div>
-
-<div id="alertModal" class="modal-overlay alert-modal">
-    <div class="modal">
-        <p id="alertMessage"></p>
-        <button onclick="closeAlert()">OK</button>
-    </div>
-</div>
-
-<div id="promptModal" class="modal-overlay">
-    <div class="modal">
-        <p id="promptMessage"></p>
-        <input type="text" id="promptInput" class="modinput">
-        <button onclick="submitPrompt()">Submit</button>
-    </div>
-</div>
-<footer>
-    <p>© 2024 TonBazaar | Powered by SUAIB</p>
-</footer>
-<script>
-    let isAdmin = true;
-
-// Fetch transactions from local storage or initialize empty array
-let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
-
-// Function to render transaction history (shows the latest 5 transactions)
-function renderTransactions() {
-    const transactionList = document.getElementById('transaction-list');
-    transactionList.innerHTML = ''; // Clear the list
-
-    transactions.slice(0, 3).forEach(transaction => { // Show only the latest 5 transactions
-        const row = document.createElement('tr');
-        let actionButtons = `
-            <button class="btn-good" onclick="changeStatus('${transaction.orderNumber}', 'Good Service')">Good</button>`;
-
-        if (isAdmin) {
-            actionButtons += `
-            <button class="btn-bad" onclick="changeStatus('${transaction.orderNumber}', 'Bad Service')">Bad</button>`;
-        }
-
-        row.innerHTML = `
-            <td>${transaction.orderNumber}</td>
-            <td>${transaction.type}</td>
-            <td>${transaction.amount}</td>
-            <td>${transaction.status}</td>
-            <td>${actionButtons}</td>
-        `;
-        transactionList.appendChild(row);
-    });
-}
-
-// Function to change transaction status
-function changeStatus(orderNumber, newStatus) {
-    const transaction = transactions.find(t => t.orderNumber === orderNumber);
-    if (transaction) {
-        transaction.status = newStatus; // Update the status to Good or Bad
-        localStorage.setItem('transactions', JSON.stringify(transactions)); // Save to local storage
-        sendToTelegram(`Transaction ${orderNumber} ${newStatus.toLowerCase()}.`); // Send update to Telegram
-        renderTransactions(); // Re-render transactions to reflect the update
-    } else {
-        alert("Transaction not found.");
+      `;
     }
-}
-
-// Function to generate a unique order number
-function generateOrderNumber() {
-    return 'ORD' + Math.floor(Math.random() * 1000000); // Example: ORD123456
-}
-
-
-    // Custom alert function
-    function showAlert(message) {
-        document.getElementById('alertMessage').innerText = message;
-        document.getElementById('alertModal').style.display = 'flex';
-    }
-
-    function closeAlert() {
-        document.getElementById('alertModal').style.display = 'none';
-    }
-
-    // Custom prompt function
-    function showPrompt(message, callback) {
-        document.getElementById('promptMessage').innerText = message;
-        document.getElementById('promptModal').style.display = 'flex';
-        window.promptCallback = callback;
-    }
-
-    function submitPrompt() {
-        const value = document.getElementById('promptInput').value;
-        document.getElementById('promptModal').style.display = 'none';
-        if (typeof window.promptCallback === 'function') {
-            window.promptCallback(value);
-        }
-    }
-
-    // Updating functions to use custom alert and prompt
-    function buyUSDT() {
-        const amount = document.getElementById('buy-amount').value;
-        const adr = document.getElementById('buyeruid').value;
-
-        if (amount >= 100 && amount <= 2000 && adr) {
-            const paymentnum = "01904211287";
-            const buyamm = "130"
-            const buyamount = (amount / buyamm).toFixed(3);
-            showPrompt(`Ton Amount: $${buyamount}\nFiat amount: ${amount}\nbKash Payment: ${paymentnum} \nEnter the Transaction ID after Payment:`, function(transactionId) {
-                if (transactionId) {
-                    const orderNumber = generateOrderNumber();
-                    showAlert(`Order Number: ${orderNumber}. Send ${amount} BDT to bKash number ${paymentnum}. Transaction ID: ${transactionId}. Ton Address: ${adr}. Ton Amount: $${buyamount}. Your transaction will be completed within 15 minutes.`);
-
-                    // Send data to admin via Telegram bot
-                    sendToTelegram(`Order Number: ${orderNumber}\n Fiat Amount: ${amount} BDT\n Ton Amount: $${buyamount}\n Transaction ID: ${transactionId}\n Ton Address: ${adr}\n Paid to bKash: ${paymentnum}`);
-
-                    // Add transaction to history, save in localStorage, and update the table
-                    const transaction = { orderNumber, type: 'Buy', amount: `${amount} BDT`, status: 'Pending' };
-                    transactions.unshift(transaction);
-                    localStorage.setItem('transactions', JSON.stringify(transactions));
-                    renderTransactions();
-                } else {
-                    showAlert("Please provide the Transaction ID.");
-                }
-            });
-        } else {
-            showAlert("Invalid Amount or Address");
-        }
-    }
-
-    function sellUSDT() {
-        const amount = document.getElementById('sell-amount').value;
-        const phoneNumber = document.getElementById('sell-number').value;
-
-        if (amount >= 100 && amount <= 2000 && phoneNumber) {
-            const tonadr = "UQDs66tohdEEd7KiRwP7mGkodvlqquD7MkzP21KXBbd8Ae1q";
-            const sellamm = "125"
-            const sellamount = (amount / sellamm).toFixed(3);
-            showPrompt(`Ton Amount: $${sellamount}\nFiat amount: ${amount}\nTon Address is: \n${tonadr}\nEnter the Txid after sent Ton:`, function(txnadds) {
-                if (txnadds) {
-                    const orderNumber = generateOrderNumber();
-                    showAlert(`Order Number: ${orderNumber}. Sell request for ${amount} BDT processed. Ton Amount: $${sellamount}. Your Bkash Number: ${phoneNumber}. Your transaction will be completed within 15 minutes.`);
-
-                    // Send data to admin via Telegram bot
-                    sendToTelegram(`Order Number: ${orderNumber}\n Fiat Amount: ${amount} BDT\n Ton Amount: $${sellamount}\n Txid: ${txnadds}\n Payment to: ${phoneNumber}`);
-
-                    // Add transaction to history, save in localStorage, and update the table
-                    const transaction = { orderNumber, type: 'Sell', amount: `${amount} BDT`, status: 'Pending' };
-                    transactions.unshift(transaction);
-                    localStorage.setItem('transactions', JSON.stringify(transactions));
-                    renderTransactions();
-                } else {
-                    showAlert("Please provide the Ton Txid");
-                }
-            });
-        } else {
-            showAlert("Invalid Amount or Bkash Number");
-        }
-    }
-// Function to send a message to a Telegram bot
-function sendToTelegram(message) {
-    const botToken = '7780343630:AAG0ojJsVUCetx5hq73wNid1VS14rJQrVWA';
-    const chatId = '7788499741';
-    const apiUrl = `https://api.telegram.org/bot${botToken}/sendMessage`;
-
-    fetch(apiUrl, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            chat_id: chatId,
-            text: message,
-        }),
-    }).then(response => response.json())
-      .then(data => {
-          console.log('Telegram message sent:', data);
-      }).catch((error) => {
-          console.error('Error sending message to Telegram:', error);
-      });
-}
-    // Render transactions on page load
-    window.onload = renderTransactions;
-</script>
-
+  </script>
 </body>
 </html>
