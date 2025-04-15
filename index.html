@@ -1,144 +1,26 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Accurate Crypto Signal Generator</title>
-  <style>
-    body {
-      font-family: monospace;
-      background-color: #000;
-      color: #00ff00;
-      padding: 20px;
-      display: flex;
-      justify-content: center;
-    }
-    .container {
-      width: 100%;
-      max-width: 400px;
-      border: 2px solid #00ff00;
-      border-radius: 20px;
-      padding: 20px;
-      background-color: #111;
-      box-shadow: 0 0 20px #00ff00;
-    }
-    button, select {
-      width: 100%;
-      padding: 10px;
-      margin-top: 10px;
-      background-color: #000;
-      border: 1px solid #00ff00;
-      color: #00ff00;
-      border-radius: 5px;
-      font-family: monospace;
-    }
-    #output {
-      margin-top: 20px;
-      background: #000;
-      border: 1px solid #00ff00;
-      border-radius: 10px;
-      padding: 15px;
-    }
-  </style>
+  <title>Binance Futures Tokens</title>
 </head>
 <body>
-  <div class="container">
-    <h2>Crypto Signal Generator</h2>
-    <select id="symbol">
-      <option value="BTCUSDT">BTCUSDT</option>
-      <option value="ETHUSDT">ETHUSDT</option>
-      <option value="BNBUSDT">BNBUSDT</option>
-    </select>
-    <button onclick="generateSignal()">Generate 15m Signal</button>
-    <div id="output"></div>
-  </div>
+  <h2>Binance USDT Perpetual Futures Tokens</h2>
+  <select id="tokenList"></select>
 
   <script>
-    async function fetchKlines(symbol) {
-      const url = `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=15m&limit=100`;
-      const res = await fetch(url);
-      const data = await res.json();
-      return data.map(k => parseFloat(k[4])); // close prices
-    }
-
-    function EMA(prices, period) {
-      let k = 2 / (period + 1);
-      let emaArray = [prices.slice(0, period).reduce((a, b) => a + b) / period];
-      for (let i = period; i < prices.length; i++) {
-        emaArray.push(prices[i] * k + emaArray[emaArray.length - 1] * (1 - k));
-      }
-      return emaArray;
-    }
-
-    function RSI(prices, period = 14) {
-      let gains = [], losses = [];
-      for (let i = 1; i <= period; i++) {
-        let change = prices[i] - prices[i - 1];
-        gains.push(change > 0 ? change : 0);
-        losses.push(change < 0 ? -change : 0);
-      }
-      let avgGain = gains.reduce((a, b) => a + b) / period;
-      let avgLoss = losses.reduce((a, b) => a + b) / period;
-
-      for (let i = period + 1; i < prices.length; i++) {
-        let change = prices[i] - prices[i - 1];
-        let gain = change > 0 ? change : 0;
-        let loss = change < 0 ? -change : 0;
-        avgGain = (avgGain * (period - 1) + gain) / period;
-        avgLoss = (avgLoss * (period - 1) + loss) / period;
-      }
-
-      let rs = avgGain / avgLoss;
-      return 100 - 100 / (1 + rs);
-    }
-
-    function MACD(prices, short = 12, long = 26, signal = 9) {
-      const emaShort = EMA(prices, short);
-      const emaLong = EMA(prices, long);
-      const macd = emaShort.slice(-emaLong.length).map((val, i) => val - emaLong[i]);
-      const signalLine = EMA(macd, signal);
-      const hist = macd[macd.length - 1] - signalLine[signalLine.length - 1];
-      return hist;
-    }
-
-    async function generateSignal() {
-      const symbol = document.getElementById("symbol").value;
-      const closes = await fetchKlines(symbol);
-      const price = closes[closes.length - 2]; // last closed candle
-      const ema7 = EMA(closes, 7).slice(-1)[0];
-      const ema25 = EMA(closes, 25).slice(-1)[0];
-      const ema99 = EMA(closes, 99).slice(-1)[0];
-      const rsi = RSI(closes);
-      const macdHist = MACD(closes);
-
-      let signal = "NO STRONG SIGNAL", tp = "-", sl = "-";
-
-      if (ema7 > ema25 && ema25 > ema99 && rsi > 55 && macdHist > 0) {
-        signal = "LONG";
-        tp = (price * 1.01).toFixed(2);
-        sl = (price * 0.993).toFixed(2);
-      } else if (ema7 < ema25 && ema25 < ema99 && rsi < 45 && macdHist < 0) {
-        signal = "SHORT";
-        tp = (price * 0.99).toFixed(2);
-        sl = (price * 1.007).toFixed(2);
-      }
-
-      document.getElementById("output").innerHTML = `
-        <div>
-          🚨 SIGNAL: <b>${signal}</b><br>
-          💰 Entry: ${price.toFixed(2)}<br>
-          🎯 TP: ${tp}<br>
-          🛑 SL: ${sl}<br>
-          ⚙️ Leverage: 10–20x<br>
-          ⏱️ Timeframe: 15m<br><br>
-          EMA7: ${ema7.toFixed(2)}<br>
-          EMA25: ${ema25.toFixed(2)}<br>
-          EMA99: ${ema99.toFixed(2)}<br>
-          RSI: ${rsi.toFixed(2)}<br>
-          MACD Histogram: ${macdHist.toFixed(5)}
-        </div>
-      `;
-    }
+    fetch('https://fapi.binance.com/fapi/v1/exchangeInfo')
+      .then(res => res.json())
+      .then(data => {
+        const list = document.getElementById('tokenList');
+        data.symbols
+          .filter(s => s.contractType === 'PERPETUAL' && s.quoteAsset === 'USDT')
+          .forEach(s => {
+            const option = document.createElement('option');
+            option.value = s.symbol;
+            option.textContent = s.symbol;
+            list.appendChild(option);
+          });
+      });
   </script>
 </body>
 </html>
