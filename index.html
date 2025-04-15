@@ -78,12 +78,34 @@
     }
 
     function RSI(prices, period = 6) {
-      let gains = 0, losses = 0;
-      for (let i = 1; i <= period; i++) {
-        let diff = prices[i] - prices[i - 1];
-        if (diff >= 0) gains += diff;
-        else losses -= diff;
-      }
+  if (prices.length < period + 1) return null;
+
+  let gains = 0, losses = 0;
+
+  for (let i = 1; i <= period; i++) {
+    let diff = prices[i] - prices[i - 1];
+    if (diff > 0) gains += diff;
+    else losses -= diff;
+  }
+
+  let avgGain = gains / period;
+  let avgLoss = losses / period;
+
+  for (let i = period + 1; i < prices.length; i++) {
+    let diff = prices[i] - prices[i - 1];
+    if (diff > 0) {
+      avgGain = (avgGain * (period - 1) + diff) / period;
+      avgLoss = (avgLoss * (period - 1)) / period;
+    } else {
+      avgGain = (avgGain * (period - 1)) / period;
+      avgLoss = (avgLoss * (period - 1) - diff) / period;
+    }
+  }
+
+  const rs = avgLoss === 0 ? 100 : avgGain / avgLoss;
+  return 100 - (100 / (1 + rs));
+}
+
       const rs = gains / (losses || 1);
       return 100 - (100 / (1 + rs));
     }
