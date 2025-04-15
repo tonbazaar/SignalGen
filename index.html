@@ -107,12 +107,16 @@
 }
       
     function MACD(prices) {
-      const ema12 = EMA(prices, 12);
-      const ema26 = EMA(prices, 26);
-      const macd = ema12.slice(-1)[0] - ema26.slice(-1)[0];
-      const signal = EMA(ema12.map((e, i) => e - (ema26[i] || 0)), 9).slice(-1)[0];
-      return macd - signal;
-    }
+  const ema12 = EMA(prices, 12);
+  const ema26 = EMA(prices, 26);
+
+  const macdLine = ema12.map((e, i) => e - (ema26[i] || 0)).slice(ema26.length - ema12.length);
+
+  const signalLine = EMA(macdLine, 9);
+  const histogram = macdLine.slice(signalLine.length * -1).map((m, i) => m - signalLine[i]);
+
+  return histogram.slice(-1)[0]; // latest histogram value
+}
 
     async function generateSignal() {
       const symbol = document.getElementById("tokenList").value;
