@@ -108,21 +108,10 @@
       const macdHist = MACD(closes);
 
       let signal = "NO STRONG SIGNAL", tp = "-", sl = "-";
+const tpMultiplier = 0.03;  // 3% target
+const slMultiplier = 0.015; // 1.5% stop
 
-// Long setup: price and EMAs trending up, MACD positive
 if (
-  price > ema7 &&
-  ema7 > ema25 &&
-  ema25 > ema99 &&
-  macdHist > 0 &&
-  rsi > 50
-) {
-  signal = "LONG";
-  tp = (price * 1.015).toFixed(4);
-  sl = (price * 0.985).toFixed(4);
-}
-// Short setup: price and EMAs trending down, MACD negative
-else if (
   price < ema7 &&
   ema7 < ema25 &&
   ema25 < ema99 &&
@@ -130,10 +119,19 @@ else if (
   rsi < 70
 ) {
   signal = "SHORT";
-  tp = (price * 0.985).toFixed(4);
-  sl = (price * 1.015).toFixed(4);
+  tp = (price * (1 - tpMultiplier)).toFixed(4);
+  sl = (price * (1 + slMultiplier)).toFixed(4);
+} else if (
+  price > ema7 &&
+  ema7 > ema25 &&
+  ema25 > ema99 &&
+  macdHist > 0 &&
+  rsi > 50
+) {
+  signal = "LONG";
+  tp = (price * (1 + tpMultiplier)).toFixed(4);
+  sl = (price * (1 - slMultiplier)).toFixed(4);
 }
-
 
       document.getElementById("output").innerHTML = `
         <div>
