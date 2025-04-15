@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Crypto Signal Generator</title>
+  <title>Futures Signal Generator</title>
   <style>
     body {
       background: black;
@@ -34,25 +34,36 @@
 </head>
 <body>
 
-  <h2>Crypto Signal Generator</h2>
+  <h2>Futures Signal Generator</h2>
 
-  <select id="tokenList">
-    <option value="BTCUSDT">BTCUSDT</option>
-    <option value="ETHUSDT">ETHUSDT</option>
-    <option value="SOLUSDT">SOLUSDT</option>
-    <option value="KERNELUSDT">KERNELUSDT</option>
-  </select>
-
+  <select id="tokenList"></select>
   <button onclick="generateSignal()">Generate 15m Signal</button>
 
   <div id="output"></div>
 
   <script>
+    async function loadSymbols() {
+      const res = await fetch("https://fapi.binance.com/fapi/v1/exchangeInfo");
+      const data = await res.json();
+      const usdtPairs = data.symbols
+        .filter(s => s.quoteAsset === "USDT" && s.contractType === "PERPETUAL" && s.status === "TRADING")
+        .map(s => s.symbol)
+        .sort();
+
+      const select = document.getElementById("tokenList");
+      usdtPairs.forEach(sym => {
+        const opt = document.createElement("option");
+        opt.value = sym;
+        opt.textContent = sym;
+        select.appendChild(opt);
+      });
+    }
+
     async function fetchKlines(symbol) {
-      const url = `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=15m&limit=100`;
-      const response = await fetch(url);
-      const data = await response.json();
-      return data.map(d => parseFloat(d[4])); // closing prices
+      const url = `https://fapi.binance.com/fapi/v1/klines?symbol=${symbol}&interval=15m&limit=100`;
+      const res = await fetch(url);
+      const data = await res.json();
+      return data.map(d => parseFloat(d[4])); // close prices
     }
 
     function EMA(prices, length) {
@@ -73,7 +84,7 @@
         if (diff >= 0) gains += diff;
         else losses -= diff;
       }
-      let rs = gains / (losses || 1);
+      const rs = gains / (losses || 1);
       return 100 - (100 / (1 + rs));
     }
 
@@ -110,7 +121,8 @@
 
       document.getElementById("output").innerHTML = `
         <div>
-          <b>🚨 SIGNAL:</b> <span style="color:${signal === "LONG" ? "#00ff00" : "#ff3333"}"><b>${signal}</b></span><br>
+          <b>📊 Symbol:</b> ${symbol}<br>
+          <b>🚨 SIGNAL:</b> <span style="color:${signal === "LONG" ? "#00ff00" : signal === "SHORT" ? "#ff3333" : "#ffffff"}"><b>${signal}</b></span><br>
           <b>💰 Entry:</b> ${price.toFixed(4)}<br>
           <b>⭐ TP:</b> ${tp}<br>
           <b>⛔ SL:</b> ${sl}<br>
@@ -124,6 +136,9 @@
         </div>
       `;
     }
+
+    loadSymbols(); // Load Futures symbols on page load
   </script>
+
 </body>
 </html>
