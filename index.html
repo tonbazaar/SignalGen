@@ -44,14 +44,22 @@
 <body>
   <div class="container">
     <h2>Crypto Signal Generator</h2>
-    <select id="symbol">
-      <option value="BTCUSDT">BTCUSDT</option>
-      <option value="ETHUSDT">ETHUSDT</option>
-      <option value="BNBUSDT">BNBUSDT</option>
-    </select>
-    <button onclick="generateSignal()">Generate 15m Signal</button>
-    <div id="output"></div>
-  </div>
+<select id="tokenList"></select>
+
+  <script>
+    fetch('https://fapi.binance.com/fapi/v1/exchangeInfo')
+      .then(res => res.json())
+      .then(data => {
+        const list = document.getElementById('tokenList');
+        data.symbols
+          .filter(s => s.contractType === 'PERPETUAL' && s.quoteAsset === 'USDT')
+          .forEach(s => {
+            const option = document.createElement('option');
+            option.value = s.symbol;
+            option.textContent = s.symbol;
+            list.appendChild(option);
+          });
+      });
 
   <script>
     async function fetchKlines(symbol) {
