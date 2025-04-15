@@ -110,12 +110,22 @@
   const ema12 = EMA(prices, 12);
   const ema26 = EMA(prices, 26);
 
-  const macdLine = ema12.map((e, i) => e - (ema26[i] || 0)).slice(ema26.length - ema12.length);
+  // Align EMA lengths
+  const minLength = Math.min(ema12.length, ema26.length);
+  const macdLine = [];
+  for (let i = 0; i < minLength; i++) {
+    macdLine.push(ema12[ema12.length - minLength + i] - ema26[ema26.length - minLength + i]);
+  }
 
   const signalLine = EMA(macdLine, 9);
-  const histogram = macdLine.slice(signalLine.length * -1).map((m, i) => m - signalLine[i]);
+  const histLength = Math.min(macdLine.length, signalLine.length);
+  const histogram = [];
 
-  return histogram.slice(-1)[0]; // latest histogram value
+  for (let i = 0; i < histLength; i++) {
+    histogram.push(macdLine[macdLine.length - histLength + i] - signalLine[signalLine.length - histLength + i]);
+  }
+
+  return histogram.slice(-1)[0]; // return latest histogram value
 }
 
     async function generateSignal() {
