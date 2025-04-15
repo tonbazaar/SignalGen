@@ -105,11 +105,7 @@
   const rs = avgLoss === 0 ? 100 : avgGain / avgLoss;
   return 100 - (100 / (1 + rs));
 }
-
-      const rs = gains / (losses || 1);
-      return 100 - (100 / (1 + rs));
-    }
-
+      
     function MACD(prices) {
       const ema12 = EMA(prices, 12);
       const ema26 = EMA(prices, 26);
