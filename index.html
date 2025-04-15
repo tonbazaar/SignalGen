@@ -125,8 +125,11 @@
     histogram.push(macdLine[macdLine.length - histLength + i] - signalLine[signalLine.length - histLength + i]);
   }
 
-  return histogram.slice(-1)[0]; // return latest histogram value
-}
+  return {
+  macdLine: macdLine.at(-1),   // DIF
+  signalLine: signalLine.at(-1), // DEA
+  histogram: histogram.at(-1)   // MACD Histogram
+};
 
     async function generateSignal() {
       const symbol = document.getElementById("tokenList").value;
