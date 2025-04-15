@@ -77,7 +77,7 @@
       return result;
     }
 
-    function RSI(prices, period = 14) {
+    function RSI(prices, period = 6) {
       let gains = 0, losses = 0;
       for (let i = 1; i <= period; i++) {
         let diff = prices[i] - prices[i - 1];
