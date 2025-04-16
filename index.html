@@ -2,135 +2,187 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Crypto Signal Scanner</title>
-  <script src="https://cdn.jsdelivr.net/npm/technicalindicators@3.1.1/dist/browser.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sniper Futures Signals</title>
   <style>
-    body { font-family: monospace; padding: 20px; background: #111; color: #eee; }
-    .signal { font-size: 18px; white-space: pre-wrap; background: #222; padding: 10px; border-radius: 8px; }
-    .long { color: #00ff99; }
-    .short { color: #ff6666; }
+    body {
+      background: black;
+      font-family: monospace;
+      color: #00ff00;
+      text-align: center;
+      padding: 20px;
+    }
+    button {
+      background: black;
+      color: #00ff00;
+      border: 2px solid #00ff00;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 5px;
+      font-size: 1em;
+      width: 80%;
+    }
+    #output {
+      border: 2px solid #00ff00;
+      border-radius: 15px;
+      padding: 20px;
+      margin-top: 20px;
+      background: #111;
+      box-shadow: 0 0 15px #00ff00;
+    }
   </style>
 </head>
 <body>
-  <h2>Crypto Futures Signal Scanner (15m)</h2>
-  <input id="symbolInput" placeholder="e.g. DFUSDT" value="DFUSDT" />
-  <button onclick="scan()">Scan</button>
-  <div id="output" class="signal"></div>
+  <h2>Sniper Futures Signal Generator</h2>
+  <button onclick="generateSignal()">Scan 15m Signals</button>
+  <div id="output">Waiting for action...</div>
 
   <script>
-    const { EMA, RSI, MACD } = technicalindicators;
+    let allSymbols = [];
 
-    async function fetchData(symbol) {
-      const res = await fetch(`https://fapi.binance.com/fapi/v1/klines?symbol=${symbol}&interval=15m&limit=150`);
+    async function loadSymbols() {
+      const res = await fetch("https://fapi.binance.com/fapi/v1/exchangeInfo");
       const data = await res.json();
-      return data;
+      allSymbols = data.symbols
+        .filter(s => s.quoteAsset === "USDT" && s.contractType === "PERPETUAL" && s.status === "TRADING")
+        .map(s => s.symbol);
     }
 
-    function generateSignal(data) {
-      const closes = data.map(c => parseFloat(c[4]));
-      const highs = data.map(c => parseFloat(c[2]));
-      const lows = data.map(c => parseFloat(c[3]));
-      const volumes = data.map(c => parseFloat(c[5]));
-
-      const ema7 = EMA.calculate({ period: 7, values: closes });
-      const ema25 = EMA.calculate({ period: 25, values: closes });
-      const ema99 = EMA.calculate({ period: 99, values: closes });
-      const rsi = RSI.calculate({ period: 6, values: closes });
-      const macd = MACD.calculate({
-        values: closes,
-        fastPeriod: 12,
-        slowPeriod: 26,
-        signalPeriod: 9,
-        SimpleMAOscillator: false,
-        SimpleMASignal: false
-      });
-
-      const lastIndex = macd.length - 1;
-      if (lastIndex < 1 || closes.length < 99) return null;
-
-      const lastClose = closes[closes.length - 1];
-      const lastRSI = rsi[rsi.length - 1];
-      const prevHist = macd[lastIndex - 1].histogram;
-      const lastHist = macd[lastIndex].histogram;
-
-      const macdRising = lastHist > prevHist;
-      const macdCrossUp = prevHist < 0 && lastHist > 0 && macdRising;
-      const macdCrossDown = prevHist > 0 && lastHist < 0 && lastHist < prevHist;
-
-      const avgVolume = volumes.slice(-10).reduce((a, b) => a + b, 0) / 10;
-      const lastVolume = volumes[volumes.length - 1];
-      const volumeCondition = lastVolume > avgVolume;
-
-      const candleRanges = highs.map((h, i) => h - lows[i]);
-      const avgRange = candleRanges.slice(-10).reduce((a, b) => a + b, 0) / 10;
-      const lastRange = candleRanges[candleRanges.length - 1];
-      const volatilityCondition = lastRange < avgRange * 2.5;
-
-      const open = parseFloat(data[data.length - 1][1]);
-      const isDoji = Math.abs(open - lastClose) / (highs[highs.length - 1] - lows[lows.length - 1]) < 0.1;
-
-      const nearEMA25 = Math.abs(lastClose - ema25[ema25.length - 1]) / lastClose < 0.005;
-      const nearEMA99 = Math.abs(lastClose - ema99[ema99.length - 1]) / lastClose < 0.01;
-
-      const buy =
-        macdCrossUp &&
-        lastRSI > 55 && lastRSI < 70 &&
-        (nearEMA25 || nearEMA99) &&
-        volumeCondition &&
-        volatilityCondition &&
-        !isDoji;
-
-      const sell =
-        macdCrossDown &&
-        lastRSI < 45 &&
-        (nearEMA25 || nearEMA99) &&
-        volumeCondition &&
-        volatilityCondition &&
-        !isDoji;
-
-      if (buy || sell) {
-        const signal = buy ? "LONG" : "SHORT";
-        const entry = lastClose;
-        const tp = buy ? entry * 1.03 : entry * 0.97;
-        const sl = buy ? entry * 0.98 : entry * 1.02;
-
-        return {
-          signal,
-          entry: entry.toFixed(6),
-          takeProfit: tp.toFixed(6),
-          stopLoss: sl.toFixed(6),
-          confidence: "HIGH"
-        };
+    function EMA(prices, length) {
+      const k = 2 / (length + 1);
+      let ema = prices.slice(0, length).reduce((a, b) => a + b) / length;
+      const result = [ema];
+      for (let i = length; i < prices.length; i++) {
+        ema = prices[i] * k + ema * (1 - k);
+        result.push(ema);
       }
-
-      return null;
+      return result;
     }
 
-    async function scan() {
-      const symbol = document.getElementById("symbolInput").value.toUpperCase();
-      const output = document.getElementById("output");
-      output.innerText = "Analyzing...";
-
-      try {
-        const data = await fetchData(symbol);
-        const signal = generateSignal(data);
-
-        if (signal) {
-          output.innerHTML = `🪙 Symbol: ${symbol}\n` +
-            `📈 Signal: <span class="${signal.signal === 'LONG' ? 'long' : 'short'}">${signal.signal}</span>\n` +
-            `🎯 Entry: ${signal.entry}\n` +
-            `✅ Take Profit: ${signal.takeProfit}\n` +
-            `❌ Stop Loss: ${signal.stopLoss}\n` +
-            `⚡ Confidence: ${signal.confidence}`;
+    function RSI(prices, period = 14) {
+      let gains = 0, losses = 0;
+      for (let i = 1; i <= period; i++) {
+        const diff = prices[i] - prices[i - 1];
+        diff > 0 ? gains += diff : losses -= diff;
+      }
+      let avgGain = gains / period, avgLoss = losses / period;
+      for (let i = period + 1; i < prices.length; i++) {
+        const diff = prices[i] - prices[i - 1];
+        if (diff > 0) {
+          avgGain = (avgGain * (period - 1) + diff) / period;
+          avgLoss = (avgLoss * (period - 1)) / period;
         } else {
-          output.innerHTML = `No strong signal found for ${symbol}.`;
+          avgGain = (avgGain * (period - 1)) / period;
+          avgLoss = (avgLoss * (period - 1) - diff) / period;
         }
-      } catch (err) {
-        output.innerText = "Error fetching data or generating signal.";
-        console.error(err);
+      }
+      const rs = avgLoss === 0 ? 100 : avgGain / avgLoss;
+      return 100 - (100 / (1 + rs));
+    }
+
+    function MACD(prices) {
+      const ema12 = EMA(prices, 12);
+      const ema26 = EMA(prices, 26);
+      const macdLine = ema12.slice(-ema26.length).map((v, i) => v - ema26[i]);
+      const signalLine = EMA(macdLine, 9);
+      const histogram = macdLine.slice(-signalLine.length).map((v, i) => v - signalLine[i]);
+      return {
+        macdLine: macdLine.at(-1),
+        signalLine: signalLine.at(-1),
+        histogram: histogram.at(-1),
+        previousHistogram: histogram.at(-2)
+      };
+    }
+
+    async function fetchKlines(symbol) {
+      try {
+        const url = `https://fapi.binance.com/fapi/v1/klines?symbol=${symbol}&interval=15m&limit=100`;
+        const res = await fetch(url);
+        const data = await res.json();
+        return data.map(d => ({
+          open: parseFloat(d[1]),
+          close: parseFloat(d[4]),
+          high: parseFloat(d[2]),
+          low: parseFloat(d[3]),
+          volume: parseFloat(d[5])
+        }));
+      } catch {
+        return null;
       }
     }
+
+    async function generateSignal() {
+      const output = document.getElementById("output");
+      output.innerHTML = "Scanning...";
+      let finalSignals = "";
+
+      for (const symbol of allSymbols) {
+        const klines = await fetchKlines(symbol);
+        if (!klines || klines.length < 99) continue;
+
+        const closes = klines.map(k => k.close);
+        const price = closes.at(-1);
+        const ema7 = EMA(closes, 7).at(-1);
+        const ema25 = EMA(closes, 25).at(-1);
+        const ema99 = EMA(closes, 99).at(-1);
+        const rsi = RSI(closes);
+        const macd = MACD(closes);
+
+        const volumes = klines.map(k => k.volume);
+        const currentVolume = volumes.at(-1);
+        const avgVolume = volumes.slice(-20).reduce((a, b) => a + b) / 20;
+
+        const lastCandle = klines.at(-1);
+        const candleSize = lastCandle.high - lastCandle.low;
+        const candleBody = Math.abs(lastCandle.close - lastCandle.open);
+        const bodyRatio = candleBody / candleSize;
+
+        const strongCandle = bodyRatio > 0.5;
+        const strongVolume = currentVolume > avgVolume * 1.2;
+        const macdCrossUp = macd.previousHistogram < 0 && macd.histogram > 0;
+        const macdCrossDown = macd.previousHistogram > 0 && macd.histogram < 0;
+
+        let signal = "NO SIGNAL", confidence = "LOW";
+
+        if (
+          ema7 > ema25 && ema25 > ema99 &&
+          rsi > 50 && rsi < 70 &&
+          macdCrossUp &&
+          strongVolume && strongCandle
+        ) {
+          signal = "LONG"; confidence = "HIGH";
+        } else if (
+          ema7 < ema25 && ema25 < ema99 &&
+          rsi < 50 && rsi > 30 &&
+          macdCrossDown &&
+          strongVolume && strongCandle
+        ) {
+          signal = "SHORT"; confidence = "HIGH";
+        }
+
+        if (signal !== "NO SIGNAL") {
+          const tp = (signal === "LONG" ? price * 1.03 : price * 0.97).toFixed(4);
+          const sl = (signal === "LONG" ? price * 0.98 : price * 1.02).toFixed(4);
+
+          finalSignals += `
+            <div style="margin-bottom:20px;">
+              <b>📊 Symbol:</b> ${symbol}<br>
+              <b>🚨 SIGNAL:</b> <span style="color:${signal === "LONG" ? "#00ff00" : "#ff3333"}">${signal}</span><br>
+              <b>💰 Entry:</b> ${price.toFixed(4)}<br>
+              <b>⭐ TP:</b> ${tp}<br>
+              <b>⛔ SL:</b> ${sl}<br>
+              <b>⚙️ Leverage:</b> 10–20x<br>
+              <b>⏱️ Timeframe:</b> 15m<br>
+              <b>✅ Confidence:</b> ${confidence}<br>
+            </div>
+          `;
+        }
+      }
+
+      output.innerHTML = finalSignals || "No sniper-grade signals right now.";
+    }
+
+    loadSymbols();
   </script>
 </body>
 </html>
