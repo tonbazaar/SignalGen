@@ -42,8 +42,6 @@
   <div id="output"></div>
 
   <script>
-    let tradeHistory = [];
-
     async function loadSymbols() {
       const res = await fetch("https://fapi.binance.com/fapi/v1/exchangeInfo");
       const data = await res.json();
@@ -84,17 +82,14 @@
     }
 
     function RSI(prices, period = 14) {
-      if (prices.length < period + 1) return null;
       let gains = 0, losses = 0;
       for (let i = 1; i <= period; i++) {
         let diff = prices[i] - prices[i - 1];
         if (diff > 0) gains += diff;
         else losses -= diff;
       }
-
       let avgGain = gains / period;
       let avgLoss = losses / period;
-
       for (let i = period + 1; i < prices.length; i++) {
         let diff = prices[i] - prices[i - 1];
         if (diff > 0) {
@@ -105,7 +100,6 @@
           avgLoss = (avgLoss * (period - 1) - diff) / period;
         }
       }
-
       const rs = avgLoss === 0 ? 100 : avgGain / avgLoss;
       return 100 - (100 / (1 + rs));
     }
@@ -115,19 +109,15 @@
       const ema26 = EMA(prices, 26);
       const minLength = Math.min(ema12.length, ema26.length);
       const macdLine = [];
-
       for (let i = 0; i < minLength; i++) {
         macdLine.push(ema12[ema12.length - minLength + i] - ema26[ema26.length - minLength + i]);
       }
-
       const signalLine = EMA(macdLine, 9);
       const histLength = Math.min(macdLine.length, signalLine.length);
       const histogram = [];
-
       for (let i = 0; i < histLength; i++) {
         histogram.push(macdLine[macdLine.length - histLength + i] - signalLine[signalLine.length - histLength + i]);
       }
-
       return {
         macdLine: macdLine.at(-1),
         signalLine: signalLine.at(-1),
@@ -141,53 +131,43 @@
       const closes = klines.map(k => k.close);
       const price = closes.at(-1);
 
-      const volumes = klines.map(k => k.volume);
-      const avgVolume = volumes.slice(-20).reduce((a, b) => a + b) / 20;
-      const currentVolume = volumes.at(-1);
-      const isHighVolume = currentVolume > avgVolume * 1.2;
-
-      const highs = klines.map(k => k.high);
-      const lows = klines.map(k => k.low);
-      const recentVolatility = highs.slice(-20).map((h, i) => h - lows.slice(-20)[i]);
-      const avgVolatility = recentVolatility.reduce((a, b) => a + b) / 20;
-      const isVolatile = avgVolatility > price * 0.01;
-
       const ema7 = EMA(closes, 7).at(-1);
       const ema25 = EMA(closes, 25).at(-1);
       const ema99 = EMA(closes, 99).at(-1);
       const rsi = RSI(closes);
       const macd = MACD(closes);
 
-      let signal = "NO STRONG SIGNAL", tp = "-", sl = "-", confidence = "LOW";
-      const tpMultiplier = 0.03;
-      const slMultiplier = 0.02;
+      const volumes = klines.map(k => k.volume);
+      const avgVolume = volumes.slice(-20).reduce((a, b) => a + b) / 20;
+      const currentVolume = volumes.at(-1);
+      const isHighVolume = currentVolume > avgVolume * 1.05;
+
+      const highs = klines.map(k => k.high);
+      const lows = klines.map(k => k.low);
+      const recentVolatility = highs.slice(-20).map((h, i) => h - lows.slice(-20)[i]);
+      const avgVolatility = recentVolatility.reduce((a, b) => a + b) / 20;
+      const isVolatile = avgVolatility > price * 0.005;
+
+      let signal = "NO SIGNAL";
+      let tp = "-", sl = "-", confidence = "LOW";
 
       if (
-        price < ema7 && ema7 < ema25 && ema25 < ema99 &&
-        macd.histogram < 0 && rsi < 60 && isHighVolume && isVolatile
-      ) {
-        signal = "SHORT";
-        tp = (price * (1 - tpMultiplier)).toFixed(4);
-        sl = (price * (1 + slMultiplier)).toFixed(4);
-        confidence = "HIGH";
-      } else if (
         price > ema7 && ema7 > ema25 && ema25 > ema99 &&
         macd.histogram > 0 && rsi > 50 && isHighVolume && isVolatile
       ) {
         signal = "LONG";
-        tp = (price * (1 + tpMultiplier)).toFixed(4);
-        sl = (price * (1 - slMultiplier)).toFixed(4);
+        tp = (price * 1.03).toFixed(4);
+        sl = (price * 0.98).toFixed(4);
+        confidence = "HIGH";
+      } else if (
+        price < ema7 && ema7 < ema25 && ema25 < ema99 &&
+        macd.histogram < 0 && rsi < 50 && isHighVolume && isVolatile
+      ) {
+        signal = "SHORT";
+        tp = (price * 0.97).toFixed(4);
+        sl = (price * 1.02).toFixed(4);
         confidence = "HIGH";
       }
-
-      // Save to trade history
-      tradeHistory.unshift({
-        time: new Date().toLocaleString(),
-        symbol, signal, entry: price.toFixed(4), tp, sl
-      });
-      if (tradeHistory.length > 5) tradeHistory.pop();
-
-      const tradeLog = tradeHistory.map(t => `• ${t.time} | ${t.symbol} | ${t.signal} @ ${t.entry} | TP: ${t.tp} | SL: ${t.sl}`).join("<br>");
 
       document.getElementById("output").innerHTML = `
         <div>
@@ -202,17 +182,13 @@
           EMA7: ${ema7.toFixed(4)}<br>
           EMA25: ${ema25.toFixed(4)}<br>
           EMA99: ${ema99.toFixed(4)}<br>
-          RSI (14): ${rsi.toFixed(2)}<br>
-          MACD Histogram: ${macd.histogram.toFixed(5)}<br><br>
-          <b>📈 Volume Check:</b> ${isHighVolume ? "HIGH" : "LOW"}<br>
-          <b>⚡ Volatility Check:</b> ${isVolatile ? "HIGH" : "LOW"}<br><br>
-          <b>📜 Last Signals:</b><br>${tradeLog}
+          RSI: ${rsi.toFixed(2)}<br>
+          MACD Histogram: ${macd.histogram.toFixed(5)}<br>
         </div>
       `;
     }
 
     loadSymbols();
   </script>
-
 </body>
 </html>
