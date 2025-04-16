@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Futures Signal Generator</title>
+  <title>Sniper Futures Signals</title>
   <style>
     body {
       background: black;
@@ -33,15 +33,11 @@
   </style>
 </head>
 <body>
+  <h2>Sniper Futures Signal Generator</h2>
+  <button onclick="generateSignal()">Scan 15m Signals</button>
+  <div id="output">Waiting for action...</div>
 
-  <h2>Futures Signal Generator</h2>
-
-  <select id="tokenList"></select>
-  <button onclick="generateSignal()">Generate 15m Signal</button>
-
-  <div id="output"></div>
-  
-<script>
+          <script>
   let allSymbols = [];
 
   async function loadSymbols() {
@@ -62,7 +58,7 @@
 
   async function fetchKlines(symbol) {
     try {
-      const url = `https://fapi.binance.com/fapi/v1/klines?symbol=${symbol}&interval=15m&limit=100`;
+      const url = https://fapi.binance.com/fapi/v1/klines?symbol=${symbol}&interval=15m&limit=100;
       const res = await fetch(url);
       const data = await res.json();
       return data.map(d => ({
@@ -136,7 +132,6 @@
     output.innerHTML = "Scanning tokens for signals...";
 
     let signals = "";
-
     for (const symbol of allSymbols) {
       const klines = await fetchKlines(symbol);
       if (!klines || klines.length < 99) continue;
@@ -161,7 +156,6 @@
       const isVolatile = avgVolatility > price * 0.005;
 
       let signal = "NO SIGNAL";
-
       if (
         price > ema7 && ema7 > ema25 && ema25 > ema99 &&
         macd.histogram > 0 && rsi > 50 && isHighVolume && isVolatile
@@ -177,7 +171,7 @@
       if (signal !== "NO SIGNAL") {
         const tp = (signal === "LONG" ? price * 1.03 : price * 0.97).toFixed(4);
         const sl = (signal === "LONG" ? price * 0.98 : price * 1.02).toFixed(4);
-        signals += `
+        signals += 
           <div style="margin-bottom:20px;">
             <b>📊 Symbol:</b> ${symbol}<br>
             <b>🚨 SIGNAL:</b> <span style="color:${signal === "LONG" ? "#00ff00" : "#ff3333"}">${signal}</span><br>
@@ -188,7 +182,7 @@
             <b>⏱️ Timeframe:</b> 15m<br>
             <b>✅ Confidence:</b> HIGH<br>
           </div>
-        `;
+        ;
       }
     }
 
