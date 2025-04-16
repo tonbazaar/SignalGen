@@ -167,30 +167,36 @@
         let confidence = "LOW";
 
         if (longScore === 5) {
-          signal = "LONG";
-          confidence = "HIGH";
-        } else if (shortScore === 5) {
-          signal = "SHORT";
-          confidence = "HIGH";
-        }
+  signal = "LONG";
+  confidence = "HIGH";
+} else if (shortScore === 5) {
+  signal = "SHORT";
+  confidence = "HIGH";
+} else if (emaBullish && price > ema7 && (rsi < 55 || macd.histogram < 0)) {
+  signal = "LONG (Late)";
+  confidence = "MEDIUM";
+} else if (emaBearish && price < ema7 && (rsi > 45 || macd.histogram > 0)) {
+  signal = "SHORT (Late)";
+  confidence = "MEDIUM";
+}
 
-        if (signal !== "NO SIGNAL") {
-          const tp = (signal === "LONG" ? price * 1.03 : price * 0.97).toFixed(4);
-          const sl = (signal === "LONG" ? price * 0.985 : price * 1.015).toFixed(4);
+       if (signal !== "NO SIGNAL") {
+  const tp = (signal.includes("LONG") ? price * 1.03 : price * 0.97).toFixed(4);
+  const sl = (signal.includes("LONG") ? price * 0.985 : price * 1.015).toFixed(4);
 
-          finalSignals += `
-            <div style="margin-bottom:20px;">
-              <b>📊 Symbol:</b> ${symbol}<br>
-              <b>🚨 SIGNAL:</b> <span style="color:${signal === "LONG" ? "#00ff00" : "#ff3333"}">${signal}</span><br>
-              <b>💰 Entry:</b> ${price.toFixed(4)}<br>
-              <b>⭐ TP:</b> ${tp}<br>
-              <b>⛔ SL:</b> ${sl}<br>
-              <b>⚙️ Leverage:</b> 10–20x<br>
-              <b>⏱️ Timeframe:</b> 15m<br>
-              <b>✅ Confidence:</b> ${confidence}<br>
-            </div>
-          `;
-        }
+  finalSignals += 
+    <div style="margin-bottom:20px;">
+      <b>📊 Symbol:</b> ${symbol}<br>
+      <b>🚨 SIGNAL:</b> <span style="color:${signal.includes("LONG") ? "#00ff00" : "#ff3333"}">${signal}</span><br>
+      <b>💰 Entry:</b> ${price.toFixed(4)}<br>
+      <b>⭐ TP:</b> ${tp}<br>
+      <b>⛔ SL:</b> ${sl}<br>
+      <b>⚙️ Leverage:</b> 10–20x<br>
+      <b>⏱️ Timeframe:</b> 15m<br>
+      <b>✅ Confidence:</b> ${confidence}<br>
+    </div>
+  ;
+} 
       }
 
       output.innerHTML = finalSignals || "No sniper-grade signals right now.";
