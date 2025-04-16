@@ -48,6 +48,7 @@ async function loadSymbols() {
   allSymbols = data.symbols
     .filter(s => s.quoteAsset === "USDT" && s.contractType === "PERPETUAL" && s.status === "TRADING")
     .map(s => s.symbol);
+setInterval(generateSignal, 180000);
 }
 
 function EMA(prices, length) {
@@ -116,6 +117,7 @@ async function fetchKlines(symbol) {
 async function generateSignal() {
   const output = document.getElementById("output");
   output.innerHTML = "Scanning sniper signals...";
+  let hasAlerted = false;
   let finalSignals = "";
 
   const results = await Promise.all(allSymbols.map(async (symbol) => {
@@ -160,26 +162,10 @@ async function generateSignal() {
     const decentVolatility = avgRange / price > 0.006;
 
     let signal = "NO SIGNAL", confidence = "LOW";
-
-const bullishConditions =
-  macdCrossUp &&
-  // rsi > 45 && rsi < 70 &&
-  // nearEMAs &&
-  // strongVolume &&
-  // decentVolatility &&
-  // strongBody &&
-  rangeChange < 0.03;
-
-const bearishConditions =
-  macdCrossDown &&
-  // rsi < 55 && rsi > 30 &&
-  // nearEMAs &&
-  // strongVolume &&
-  // decentVolatility &&
-  // strongBody &&
-  rangeChange > -0.03;
-
     
+    const bullishConditions = macdCrossUp && macdIsStrong && rsi > 52 && rsi < 65 && nearEMAs && strongVolume && decentVolatility && strongBody && prevStrongBody && prevCandleBullish && rangeChange < 0.025;
+    const bearishConditions = macdCrossDown && macdIsStrong && rsi < 48 && rsi > 35 && nearEMAs && strongVolume && decentVolatility && strongBody && prevStrongBody && prevCandleBearish && rangeChange > -0.025;
+
     if (bullishConditions) {
       signal = "LONG";
       confidence = "HIGH";
@@ -191,7 +177,13 @@ const bearishConditions =
     if (signal !== "NO SIGNAL") {
       const tp = (signal === "LONG" ? price * 1.03 : price * 0.97).toFixed(4);
       const sl = (signal === "LONG" ? price * 0.98 : price * 1.02).toFixed(4);
-
+      
+    if (!hasAlerted) {
+       hasAlerted = true;
+    if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+     const alertSound = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
+     alertSound.play();
+      }
       return `
         <div style="margin-bottom:20px;">
           <b>📊 Symbol:</b> ${symbol}<br>
