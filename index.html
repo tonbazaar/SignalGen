@@ -168,19 +168,19 @@ async function generateSignal() {
     const prevCandleBullish = prevCandle.close > prevCandle.open;
     const prevCandleBearish = prevCandle.close < prevCandle.open;
     
+    const macdCrossUp = macd.previousHistogram < 0 && macd.histogram >= 0;
+    const macdCrossDown = macd.previousHistogram > 0 && macd.histogram <= 0;
+    const macdIsStrong = Math.abs(macd.macdLine) > 0.03;
+
+    const nearEMAs = Math.abs(price - ema7) < price * 0.005 && Math.abs(ema7 - ema25) < price * 0.006;
+    const strongVolume = currentVolume > avgVolume * 1.2;
+    const decentVolatility = avgRange / price > 0.004;
+
+    const bullish = macdCrossUp && macdIsStrong && rsi > 48 && rsi < 70 && nearEMAs && strongVolume && decentVolatility && body / wick > 0.25 && prevBody / prevWick > 0.25 && prevCandleBullish && rangeChange < 0.035;
+    const bearish = macdCrossDown && macdIsStrong && rsi < 52 && rsi > 30 && nearEMAs && strongVolume && decentVolatility && body / wick > 0.25 && prevBody / prevWick > 0.25 && prevCandleBearish && rangeChange > -0.035;
+    
     if (bullish || bearish) {
-      
-const macdCrossUp = macd.previousHistogram < 0 && macd.histogram >= 0;
-const macdCrossDown = macd.previousHistogram > 0 && macd.histogram <= 0;
-const macdIsStrong = Math.abs(macd.macdLine) > 0.03;
-
-const nearEMAs = Math.abs(price - ema7) < price * 0.005 && Math.abs(ema7 - ema25) < price * 0.006;
-const strongVolume = currentVolume > avgVolume * 1.2;
-const decentVolatility = avgRange / price > 0.004;
-
-const bullish = macdCrossUp && macdIsStrong && rsi > 48 && rsi < 70 && nearEMAs && strongVolume && decentVolatility && body / wick > 0.25 && prevBody / prevWick > 0.25 && prevCandleBullish && rangeChange < 0.035;
-const bearish = macdCrossDown && macdIsStrong && rsi < 52 && rsi > 30 && nearEMAs && strongVolume && decentVolatility && body / wick > 0.25 && prevBody / prevWick > 0.25 && prevCandleBearish && rangeChange > -0.035;
-      
+        
       const signal = bullish ? "LONG" : "SHORT";
       const tp = (price * (bullish ? 1.03 : 0.97)).toFixed(4);
       const sl = (price * (bullish ? 0.98 : 1.02)).toFixed(4);
