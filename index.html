@@ -116,8 +116,9 @@ async function fetchKlines(symbol) {
 
 async function generateSignal() {
   const output = document.getElementById("output");
-  output.innerHTML = "Scanning sniper signals...";
+  output.innerHTML = (finalSignals || "No sniper-grade signals right now.") + <br><hr><small>Last scanned: ${new Date().toLocaleTimeString()}</small>;
   let hasAlerted = false;
+  let foundSignals = 0;
   let finalSignals = "";
 
   const results = await Promise.all(allSymbols.map(async (symbol) => {
@@ -175,14 +176,12 @@ async function generateSignal() {
     }
 
     if (signal !== "NO SIGNAL") {
-      const tp = (signal === "LONG" ? price * 1.03 : price * 0.97).toFixed(4);
-      const sl = (signal === "LONG" ? price * 0.98 : price * 1.02).toFixed(4);
-      
-    if (!hasAlerted) {
-       hasAlerted = true;
-    if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
-     const alertSound = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
-     alertSound.play();
+  foundSignals++;
+  if (!hasAlerted && foundSignals === 1) {
+    hasAlerted = true;
+    if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+    const alertSound = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
+    alertSound.play();
       }
       return `
         <div style="margin-bottom:20px;">
@@ -194,6 +193,7 @@ async function generateSignal() {
           <b>⚙️ Leverage:</b> 10–20x<br>
           <b>⏱️ Timeframe:</b> 15m<br>
           <b>✅ Confidence:</b> ${confidence}<br>
+          <b>🕒 Signal Time:</b> ${new Date().toLocaleTimeString()}<br>
         </div>
       `;
     }
