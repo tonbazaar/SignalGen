@@ -176,8 +176,10 @@ async function generateSignal() {
     const strongVolume = currentVolume > avgVolume * 1.2;
     const decentVolatility = avgRange / price > 0.004;
 
-    const bullish = macdCrossUp && macdIsStrong && rsi > 48 && rsi < 70 && nearEMAs && strongVolume && decentVolatility && body / wick > 0.25 && prevBody / prevWick > 0.25 && prevCandleBullish && rangeChange < 0.035;
-    const bearish = macdCrossDown && macdIsStrong && rsi < 52 && rsi > 30 && nearEMAs && strongVolume && decentVolatility && body / wick > 0.25 && prevBody / prevWick > 0.25 && prevCandleBearish && rangeChange > -0.035;
+    const bullish = macdCrossUp && //macdIsStrong && rsi > 48 && rsi < 70 && nearEMAs && strongVolume && decentVolatility && body / wick > 0.25 && prevBody / prevWick > 0.25 && prevCandleBullish && 
+      rangeChange < 0.035;
+    const bearish = macdCrossDown && //macdIsStrong && rsi < 52 && rsi > 30 && nearEMAs && strongVolume && decentVolatility && body / wick > 0.25 && prevBody / prevWick > 0.25 && prevCandleBearish && 
+      rangeChange > -0.035;
     
     if (bullish || bearish) {
         
