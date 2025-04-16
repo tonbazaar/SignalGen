@@ -2,166 +2,184 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Futures Signal Generator</title>
   <style>
     body {
-      background-color: black;
+      background: black;
       font-family: monospace;
-      color: lime;
+      color: #00ff00;
       text-align: center;
       padding: 20px;
     }
     select, button {
       background: black;
-      color: lime;
-      border: 2px solid lime;
+      color: #00ff00;
+      border: 2px solid #00ff00;
       padding: 10px;
-      font-size: 18px;
-      margin: 10px;
-      border-radius: 8px;
+      margin: 10px 0;
+      border-radius: 5px;
+      font-size: 1em;
+      width: 80%;
     }
-    .result {
-      background-color: #111;
-      border: 2px solid lime;
-      border-radius: 16px;
-      display: inline-block;
+    #output {
+      border: 2px solid #00ff00;
+      border-radius: 15px;
       padding: 20px;
       margin-top: 20px;
-      box-shadow: 0 0 20px lime;
+      background: #111;
+      box-shadow: 0 0 15px #00ff00;
     }
   </style>
 </head>
 <body>
-  <h1>Futures Signal Generator</h1>
-  <select id="symbol">
-    <option value="BTCUSDT">BTCUSDT</option>
-    <option value="ETHUSDT">ETHUSDT</option>
-    <option value="WCTUSDT">WCTUSDT</option>
-  </select>
-  <br />
+
+  <h2>Futures Signal Generator</h2>
+
+  <select id="tokenList"></select>
   <button onclick="generateSignal()">Generate 15m Signal</button>
 
-  <div id="output" class="result"></div>
+  <div id="output"></div>
 
   <script>
-    async function fetchData(symbol) {
-      const url = `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=15m&limit=100`;
-      const response = await fetch(url);
-      const data = await response.json();
-      return data.map(candle => ({
-        time: candle[0],
-        open: parseFloat(candle[1]),
-        high: parseFloat(candle[2]),
-        low: parseFloat(candle[3]),
-        close: parseFloat(candle[4]),
-        volume: parseFloat(candle[5])
-      }));
+    async function loadSymbols() {
+      const res = await fetch("https://fapi.binance.com/fapi/v1/exchangeInfo");
+      const data = await res.json();
+      const usdtPairs = data.symbols
+        .filter(s => s.quoteAsset === "USDT" && s.contractType === "PERPETUAL" && s.status === "TRADING")
+        .map(s => s.symbol);
+
+      const select = document.getElementById("tokenList");
+      usdtPairs.forEach(sym => {
+        const opt = document.createElement("option");
+        opt.value = sym;
+        opt.textContent = sym;
+        select.appendChild(opt);
+      });
     }
 
-    function ema(data, period) {
-      const k = 2 / (period + 1);
-      let emaArray = [];
-      let emaPrev = data.slice(0, period).reduce((acc, d) => acc + d, 0) / period;
-      emaArray[period - 1] = emaPrev;
-      for (let i = period; i < data.length; i++) {
-        emaPrev = data[i] * k + emaPrev * (1 - k);
-        emaArray[i] = emaPrev;
+    async function fetchKlines(symbol) {
+      const url = `https://fapi.binance.com/fapi/v1/klines?symbol=${symbol}&interval=15m&limit=100`;
+      const res = await fetch(url);
+      const data = await res.json();
+      return data.map(d => parseFloat(d[4])); // close prices
+    }
+
+    function EMA(prices, length) {
+      const k = 2 / (length + 1);
+      let ema = prices.slice(0, length).reduce((a, b) => a + b) / length;
+      const result = [ema];
+      for (let i = length; i < prices.length; i++) {
+        ema = prices[i] * k + ema * (1 - k);
+        result.push(ema);
       }
-      return emaArray;
+      return result;
     }
 
-    function rsi(data, period = 14) {
+    function RSI(prices, period = 14) {
+      if (prices.length < period + 1) return null;
       let gains = 0, losses = 0;
+
       for (let i = 1; i <= period; i++) {
-        const diff = data[i] - data[i - 1];
-        if (diff >= 0) gains += diff;
+        let diff = prices[i] - prices[i - 1];
+        if (diff > 0) gains += diff;
         else losses -= diff;
       }
-      gains /= period;
-      losses /= period;
-      let rs = gains / (losses || 1);
-      let rsi = 100 - 100 / (1 + rs);
-      return rsi;
-    }
 
-    function macdHistogram(data) {
-      const ema12 = ema(data, 12);
-      const ema26 = ema(data, 26);
-      let histogram = [];
-      for (let i = 0; i < data.length; i++) {
-        if (ema12[i] && ema26[i]) {
-          const macd = ema12[i] - ema26[i];
-          const signal = ema(macd ? [macd] : [0], 9);
-          histogram[i] = macd - (signal[signal.length - 1] || 0);
+      let avgGain = gains / period;
+      let avgLoss = losses / period;
+
+      for (let i = period + 1; i < prices.length; i++) {
+        let diff = prices[i] - prices[i - 1];
+        if (diff > 0) {
+          avgGain = (avgGain * (period - 1) + diff) / period;
+          avgLoss = (avgLoss * (period - 1)) / period;
+        } else {
+          avgGain = (avgGain * (period - 1)) / period;
+          avgLoss = (avgLoss * (period - 1) - diff) / period;
         }
       }
-      return histogram;
+
+      const rs = avgLoss === 0 ? 100 : avgGain / avgLoss;
+      return 100 - (100 / (1 + rs));
     }
 
-    function atr(data, period = 14) {
-      let trs = [];
-      for (let i = 1; i < data.length; i++) {
-        const high = data[i].high;
-        const low = data[i].low;
-        const closePrev = data[i - 1].close;
-        trs.push(Math.max(high - low, Math.abs(high - closePrev), Math.abs(low - closePrev)));
+    function MACD(prices) {
+      const ema12 = EMA(prices, 12);
+      const ema26 = EMA(prices, 26);
+      const minLength = Math.min(ema12.length, ema26.length);
+      const macdLine = [];
+
+      for (let i = 0; i < minLength; i++) {
+        macdLine.push(ema12[ema12.length - minLength + i] - ema26[ema26.length - minLength + i]);
       }
-      const atr = trs.slice(-period).reduce((a, b) => a + b, 0) / period;
-      return atr;
+
+      const signalLine = EMA(macdLine, 9);
+      const histLength = Math.min(macdLine.length, signalLine.length);
+      const histogram = [];
+
+      for (let i = 0; i < histLength; i++) {
+        histogram.push(macdLine[macdLine.length - histLength + i] - signalLine[signalLine.length - histLength + i]);
+      }
+
+      return {
+        macdLine: macdLine.at(-1),
+        signalLine: signalLine.at(-1),
+        histogram: histogram.at(-1)
+      };
     }
 
     async function generateSignal() {
-      const symbol = document.getElementById("symbol").value;
-      const data = await fetchData(symbol);
-      const closes = data.map(d => d.close);
-      const ema7 = ema(closes, 7).pop();
-      const ema25 = ema(closes, 25).pop();
-      const ema99 = ema(closes, 99).pop();
-      const rsiVal = rsi(closes);
-      const macdHist = macdHistogram(closes).pop();
-      const atrVal = atr(data);
-      const lastClose = closes[closes.length - 1];
+      const symbol = document.getElementById("tokenList").value;
+      const closes = await fetchKlines(symbol);
+      const price = closes[closes.length - 1];
 
-      let signal = "";
-      if (ema7 > ema25 && ema25 > ema99 && rsiVal > 55 && macdHist > 0) {
-        signal = "LONG";
-      } else if (ema7 < ema25 && ema25 < ema99 && rsiVal < 45 && macdHist < 0) {
+      const ema7 = EMA(closes, 7).slice(-1)[0];
+      const ema25 = EMA(closes, 25).slice(-1)[0];
+      const ema99 = EMA(closes, 99).slice(-1)[0];
+      const rsi = RSI(closes);
+      const macd = MACD(closes);
+
+      let signal = "NO STRONG SIGNAL", tp = "-", sl = "-";
+      const tpMultiplier = 0.03;
+      const slMultiplier = 0.02;
+
+      if (
+        price < ema7 && ema7 < ema25 && ema25 < ema99 &&
+        macd.histogram < 0 && rsi < 60
+      ) {
         signal = "SHORT";
-      } else {
-        signal = "NEUTRAL";
-      }
-
-      const entry = parseFloat(lastClose.toFixed(4));
-      const tp = parseFloat((signal === "LONG" ? entry * 1.03 : signal === "SHORT" ? entry * 0.97 : entry).toFixed(4));
-      let sl;
-      if (signal === "LONG") {
-        sl = parseFloat((entry - Math.max(atrVal, entry - ema7)).toFixed(4));
-      } else if (signal === "SHORT") {
-        sl = parseFloat((entry + Math.max(atrVal, ema7 - entry)).toFixed(4));
-      } else {
-        sl = "-";
+        tp = (price * (1 - tpMultiplier)).toFixed(4);
+        sl = (price * (1 + slMultiplier)).toFixed(4);
+      } else if (
+        price > ema7 && ema7 > ema25 && ema25 > ema99 &&
+        macd.histogram > 0 && rsi > 50
+      ) {
+        signal = "LONG";
+        tp = (price * (1 + tpMultiplier)).toFixed(4);
+        sl = (price * (1 - slMultiplier)).toFixed(4);
       }
 
       document.getElementById("output").innerHTML = `
         <div>
-          <div>📊 <b>Symbol:</b> ${symbol}</div>
-          <div>🚨 <b>SIGNAL:</b> ${signal}</div>
-          <div>💰 <b>Entry:</b> ${entry}</div>
-          <div>⭐ <b>TP:</b> ${tp}</div>
-          <div>⛔ <b>SL (Dynamic):</b> ${sl}</div>
-          <div>⚙️ <b>Leverage:</b> 10–20x</div>
-          <div>⏱️ <b>Timeframe:</b> 15m</div>
-          <br/>
-          <div>EMA7: ${ema7.toFixed(4)}</div>
-          <div>EMA25: ${ema25.toFixed(4)}</div>
-          <div>EMA99: ${ema99.toFixed(4)}</div>
-          <div>RSI (14): ${rsiVal.toFixed(2)}</div>
-          <div>MACD Histogram: ${macdHist.toFixed(5)}</div>
-          <div>ATR(14): ${atrVal.toFixed(4)}</div>
+          <b>📊 Symbol:</b> ${symbol}<br>
+          <b>🚨 SIGNAL:</b> <span style="color:${signal === "LONG" ? "#00ff00" : signal === "SHORT" ? "#ff3333" : "#ffffff"}"><b>${signal}</b></span><br>
+          <b>💰 Entry:</b> ${price.toFixed(4)}<br>
+          <b>⭐ TP:</b> ${tp}<br>
+          <b>⛔ SL:</b> ${sl}<br>
+          <b>⚙️ Leverage:</b> 10–20x<br>
+          <b>⏱️ Timeframe:</b> 15m<br><br>
+          EMA7: ${ema7.toFixed(4)}<br>
+          EMA25: ${ema25.toFixed(4)}<br>
+          EMA99: ${ema99.toFixed(4)}<br>
+          RSI (14): ${rsi.toFixed(2)}<br>
+          MACD Histogram: ${macd.histogram.toFixed(5)}
         </div>
       `;
     }
+
+    loadSymbols();
   </script>
+
 </body>
 </html>
