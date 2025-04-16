@@ -29,6 +29,7 @@
       margin-top: 20px;
       background: #111;
       box-shadow: 0 0 15px #00ff00;
+      white-space: pre-wrap;
     }
   </style>
 </head>
@@ -38,6 +39,7 @@
 
   <select id="tokenList"></select>
   <button onclick="generateSignal()">Generate 15m Signal</button>
+  <button onclick="downloadSignal()">Download Signal</button>
 
   <div id="output"></div>
 
@@ -160,22 +162,34 @@
         sl = (price * (1 - slMultiplier)).toFixed(4);
       }
 
-      document.getElementById("output").innerHTML = `
-        <div>
-          <b>📊 Symbol:</b> ${symbol}<br>
-          <b>🚨 SIGNAL:</b> <span style="color:${signal === "LONG" ? "#00ff00" : signal === "SHORT" ? "#ff3333" : "#ffffff"}"><b>${signal}</b></span><br>
-          <b>💰 Entry:</b> ${price.toFixed(4)}<br>
-          <b>⭐ TP:</b> ${tp}<br>
-          <b>⛔ SL:</b> ${sl}<br>
-          <b>⚙️ Leverage:</b> 10–20x<br>
-          <b>⏱️ Timeframe:</b> 15m<br><br>
-          EMA7: ${ema7.toFixed(4)}<br>
-          EMA25: ${ema25.toFixed(4)}<br>
-          EMA99: ${ema99.toFixed(4)}<br>
-          RSI (14): ${rsi.toFixed(2)}<br>
-          MACD Histogram: ${macd.histogram.toFixed(5)}
-        </div>
+      const emojiSignal = signal === "LONG" ? "🟢 LONG" : signal === "SHORT" ? "🔴 SHORT" : "⚪ NO SIGNAL";
+
+      const result = `
+📊 Symbol: ${symbol}
+🚨 SIGNAL: ${emojiSignal}
+💰 Entry: ${price.toFixed(4)}
+⭐ TP: ${tp}
+⛔ SL: ${sl}
+⚙️ Leverage: 10–20x
+⏱️ Timeframe: 15m
+
+EMA7: ${ema7.toFixed(4)}
+EMA25: ${ema25.toFixed(4)}
+EMA99: ${ema99.toFixed(4)}
+RSI (14): ${rsi.toFixed(2)}
+MACD Histogram: ${macd.histogram.toFixed(5)}
       `;
+
+      document.getElementById("output").innerText = result;
+    }
+
+    function downloadSignal() {
+      const content = document.getElementById("output").innerText;
+      const blob = new Blob([content], { type: "text/plain" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "signal.txt";
+      a.click();
     }
 
     loadSymbols();
