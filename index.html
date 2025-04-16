@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Sniper Futures Signals</title>
   <style>
     body {
@@ -12,7 +12,7 @@
       text-align: center;
       padding: 20px;
     }
-    select, button {
+    button {
       background: black;
       color: #00ff00;
       border: 2px solid #00ff00;
@@ -37,157 +37,145 @@
   <button onclick="generateSignal()">Scan 15m Signals</button>
   <div id="output">Waiting for action...</div>
 
-          <script>
-  let allSymbols = [];
+  <script>
+    let allSymbols = [];
 
-  async function loadSymbols() {
-    const res = await fetch("https://fapi.binance.com/fapi/v1/exchangeInfo");
-    const data = await res.json();
-    allSymbols = data.symbols
-      .filter(s => s.quoteAsset === "USDT" && s.contractType === "PERPETUAL" && s.status === "TRADING")
-      .map(s => s.symbol);
-
-    const select = document.getElementById("tokenList");
-    allSymbols.forEach(sym => {
-      const opt = document.createElement("option");
-      opt.value = sym;
-      opt.textContent = sym;
-      select.appendChild(opt);
-    });
-  }
-
-  async function fetchKlines(symbol) {
-    try {
-      const url = https://fapi.binance.com/fapi/v1/klines?symbol=${symbol}&interval=15m&limit=100;
-      const res = await fetch(url);
+    async function loadSymbols() {
+      const res = await fetch("https://fapi.binance.com/fapi/v1/exchangeInfo");
       const data = await res.json();
-      return data.map(d => ({
-        close: parseFloat(d[4]),
-        high: parseFloat(d[2]),
-        low: parseFloat(d[3]),
-        volume: parseFloat(d[5])
-      }));
-    } catch (e) {
-      return null;
+      allSymbols = data.symbols
+        .filter(s => s.quoteAsset === "USDT" && s.contractType === "PERPETUAL" && s.status === "TRADING")
+        .map(s => s.symbol);
     }
-  }
 
-  function EMA(prices, length) {
-    const k = 2 / (length + 1);
-    let ema = prices.slice(0, length).reduce((a, b) => a + b) / length;
-    const result = [ema];
-    for (let i = length; i < prices.length; i++) {
-      ema = prices[i] * k + ema * (1 - k);
-      result.push(ema);
-    }
-    return result;
-  }
-
-  function RSI(prices, period = 14) {
-    let gains = 0, losses = 0;
-    for (let i = 1; i <= period; i++) {
-      let diff = prices[i] - prices[i - 1];
-      if (diff > 0) gains += diff;
-      else losses -= diff;
-    }
-    let avgGain = gains / period;
-    let avgLoss = losses / period;
-    for (let i = period + 1; i < prices.length; i++) {
-      let diff = prices[i] - prices[i - 1];
-      if (diff > 0) {
-        avgGain = (avgGain * (period - 1) + diff) / period;
-        avgLoss = (avgLoss * (period - 1)) / period;
-      } else {
-        avgGain = (avgGain * (period - 1)) / period;
-        avgLoss = (avgLoss * (period - 1) - diff) / period;
+    function EMA(prices, length) {
+      const k = 2 / (length + 1);
+      let ema = prices.slice(0, length).reduce((a, b) => a + b) / length;
+      const result = [ema];
+      for (let i = length; i < prices.length; i++) {
+        ema = prices[i] * k + ema * (1 - k);
+        result.push(ema);
       }
+      return result;
     }
-    const rs = avgLoss === 0 ? 100 : avgGain / avgLoss;
-    return 100 - (100 / (1 + rs));
-  }
 
-  function MACD(prices) {
-    const ema12 = EMA(prices, 12);
-    const ema26 = EMA(prices, 26);
-    const minLength = Math.min(ema12.length, ema26.length);
-    const macdLine = [];
-    for (let i = 0; i < minLength; i++) {
-      macdLine.push(ema12[ema12.length - minLength + i] - ema26[ema26.length - minLength + i]);
-    }
-    const signalLine = EMA(macdLine, 9);
-    const histLength = Math.min(macdLine.length, signalLine.length);
-    const histogram = [];
-    for (let i = 0; i < histLength; i++) {
-      histogram.push(macdLine[macdLine.length - histLength + i] - signalLine[signalLine.length - histLength + i]);
-    }
-    return {
-      macdLine: macdLine.at(-1),
-      signalLine: signalLine.at(-1),
-      histogram: histogram.at(-1)
-    };
-  }
-
-  async function generateSignal() {
-    const output = document.getElementById("output");
-    output.innerHTML = "Scanning tokens for signals...";
-
-    let signals = "";
-    for (const symbol of allSymbols) {
-      const klines = await fetchKlines(symbol);
-      if (!klines || klines.length < 99) continue;
-
-      const closes = klines.map(k => k.close);
-      const price = closes.at(-1);
-      const ema7 = EMA(closes, 7).at(-1);
-      const ema25 = EMA(closes, 25).at(-1);
-      const ema99 = EMA(closes, 99).at(-1);
-      const rsi = RSI(closes);
-      const macd = MACD(closes);
-
-      const volumes = klines.map(k => k.volume);
-      const avgVolume = volumes.slice(-20).reduce((a, b) => a + b) / 20;
-      const currentVolume = volumes.at(-1);
-      const isHighVolume = currentVolume > avgVolume * 1.05;
-
-      const highs = klines.map(k => k.high);
-      const lows = klines.map(k => k.low);
-      const recentVolatility = highs.slice(-20).map((h, i) => h - lows.slice(-20)[i]);
-      const avgVolatility = recentVolatility.reduce((a, b) => a + b) / 20;
-      const isVolatile = avgVolatility > price * 0.005;
-
-      let signal = "NO SIGNAL";
-      if (
-        price > ema7 && ema7 > ema25 && ema25 > ema99 &&
-        macd.histogram > 0 && rsi > 50 && isHighVolume && isVolatile
-      ) {
-        signal = "LONG";
-      } else if (
-        price < ema7 && ema7 < ema25 && ema25 < ema99 &&
-        macd.histogram < 0 && rsi < 50 && isHighVolume && isVolatile
-      ) {
-        signal = "SHORT";
+    function RSI(prices, period = 14) {
+      let gains = 0, losses = 0;
+      for (let i = 1; i <= period; i++) {
+        const diff = prices[i] - prices[i - 1];
+        diff > 0 ? gains += diff : losses -= diff;
       }
+      let avgGain = gains / period, avgLoss = losses / period;
+      for (let i = period + 1; i < prices.length; i++) {
+        const diff = prices[i] - prices[i - 1];
+        if (diff > 0) {
+          avgGain = (avgGain * (period - 1) + diff) / period;
+          avgLoss = (avgLoss * (period - 1)) / period;
+        } else {
+          avgGain = (avgGain * (period - 1)) / period;
+          avgLoss = (avgLoss * (period - 1) - diff) / period;
+        }
+      }
+      const rs = avgLoss === 0 ? 100 : avgGain / avgLoss;
+      return 100 - (100 / (1 + rs));
+    }
 
-      if (signal !== "NO SIGNAL") {
-        const tp = (signal === "LONG" ? price * 1.03 : price * 0.97).toFixed(4);
-        const sl = (signal === "LONG" ? price * 0.98 : price * 1.02).toFixed(4);
-        signals += 
-          <div style="margin-bottom:20px;">
-            <b>📊 Symbol:</b> ${symbol}<br>
-            <b>🚨 SIGNAL:</b> <span style="color:${signal === "LONG" ? "#00ff00" : "#ff3333"}">${signal}</span><br>
-            <b>💰 Entry:</b> ${price.toFixed(4)}<br>
-            <b>⭐ TP:</b> ${tp}<br>
-            <b>⛔ SL:</b> ${sl}<br>
-            <b>⚙️ Leverage:</b> 10–20x<br>
-            <b>⏱️ Timeframe:</b> 15m<br>
-            <b>✅ Confidence:</b> HIGH<br>
-          </div>
-        ;
+    function MACD(prices) {
+      const ema12 = EMA(prices, 12);
+      const ema26 = EMA(prices, 26);
+      const macdLine = ema12.slice(-ema26.length).map((v, i) => v - ema26[i]);
+      const signalLine = EMA(macdLine, 9);
+      const histogram = macdLine.slice(-signalLine.length).map((v, i) => v - signalLine[i]);
+      return {
+        macdLine: macdLine.at(-1),
+        signalLine: signalLine.at(-1),
+        histogram: histogram.at(-1),
+        previousHistogram: histogram.at(-2)
+      };
+    }
+
+    async function fetchKlines(symbol) {
+      try {
+        const url = `https://fapi.binance.com/fapi/v1/klines?symbol=${symbol}&interval=15m&limit=100`;
+        const res = await fetch(url);
+        const data = await res.json();
+        return data.map(d => ({
+          close: parseFloat(d[4]),
+          high: parseFloat(d[2]),
+          low: parseFloat(d[3]),
+          volume: parseFloat(d[5])
+        }));
+      } catch {
+        return null;
       }
     }
 
-    output.innerHTML = signals || "No high-confidence signals at the moment.";
-  }
+    async function generateSignal() {
+      const output = document.getElementById("output");
+      output.innerHTML = "Scanning...";
+      let finalSignals = "";
 
-  loadSymbols();
-</script>
+      for (const symbol of allSymbols) {
+        const klines = await fetchKlines(symbol);
+        if (!klines || klines.length < 99) continue;
+
+        const closes = klines.map(k => k.close);
+        const price = closes.at(-1);
+        const ema7 = EMA(closes, 7).at(-1);
+        const ema25 = EMA(closes, 25).at(-1);
+        const rsi = RSI(closes);
+        const macd = MACD(closes);
+
+        const volumes = klines.map(k => k.volume);
+        const currentVolume = volumes.at(-1);
+        const avgVolume = volumes.slice(-20).reduce((a, b) => a + b) / 20;
+
+        const highs = klines.map(k => k.high);
+        const lows = klines.map(k => k.low);
+        const avgRange = highs.slice(-5).map((h, i) => h - lows[i]).reduce((a, b) => a + b) / 5;
+        const rangeChange = (closes.at(-1) - closes.at(-6)) / closes.at(-6);
+
+        const dojiCandle = Math.abs(closes.at(-1) - closes.at(-2)) < avgRange * 0.3;
+
+        const macdCrossUp = macd.previousHistogram < 0 && macd.histogram > 0;
+        const macdCrossDown = macd.previousHistogram > 0 && macd.histogram < 0;
+
+        const nearEMAs = Math.abs(price - ema7) < price * 0.0025 && Math.abs(ema7 - ema25) < price * 0.005;
+
+        const strongVolume = currentVolume > avgVolume * 1.3;
+        const decentVolatility = avgRange / price > 0.005;
+
+        let signal = "NO SIGNAL", confidence = "LOW";
+
+        if (macdCrossUp && rsi > 50 && rsi < 65 && nearEMAs && dojiCandle && rangeChange < 0.03 && strongVolume && decentVolatility) {
+          signal = "LONG"; confidence = "HIGH";
+        } else if (macdCrossDown && rsi < 50 && rsi > 35 && nearEMAs && dojiCandle && rangeChange > -0.03 && strongVolume && decentVolatility) {
+          signal = "SHORT"; confidence = "HIGH";
+        }
+
+        if (signal !== "NO SIGNAL") {
+          const tp = (signal === "LONG" ? price * 1.03 : price * 0.97).toFixed(4);
+          const sl = (signal === "LONG" ? price * 0.98 : price * 1.02).toFixed(4);
+
+          finalSignals += `
+            <div style="margin-bottom:20px;">
+              <b>📊 Symbol:</b> ${symbol}<br>
+              <b>🚨 SIGNAL:</b> <span style="color:${signal === "LONG" ? "#00ff00" : "#ff3333"}">${signal}</span><br>
+              <b>💰 Entry:</b> ${price.toFixed(4)}<br>
+              <b>⭐ TP:</b> ${tp}<br>
+              <b>⛔ SL:</b> ${sl}<br>
+              <b>⚙️ Leverage:</b> 10–20x<br>
+              <b>⏱️ Timeframe:</b> 15m<br>
+              <b>✅ Confidence:</b> ${confidence}<br>
+            </div>
+          `;
+        }
+      }
+
+      output.innerHTML = finalSignals || "No sniper-grade signals right now.";
+    }
+
+    loadSymbols();
+  </script>
+</body>
+</html>
