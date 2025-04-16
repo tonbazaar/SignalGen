@@ -29,7 +29,6 @@
       margin-top: 20px;
       background: #111;
       box-shadow: 0 0 15px #00ff00;
-      white-space: pre-wrap;
     }
   </style>
 </head>
@@ -39,7 +38,6 @@
 
   <select id="tokenList"></select>
   <button onclick="generateSignal()">Generate 15m Signal</button>
-  <button onclick="downloadSignal()">Download Signal</button>
 
   <div id="output"></div>
 
@@ -79,7 +77,6 @@
     }
 
     function RSI(prices, period = 14) {
-      if (prices.length < period + 1) return null;
       let gains = 0, losses = 0;
 
       for (let i = 1; i <= period; i++) {
@@ -109,20 +106,9 @@
     function MACD(prices) {
       const ema12 = EMA(prices, 12);
       const ema26 = EMA(prices, 26);
-      const minLength = Math.min(ema12.length, ema26.length);
-      const macdLine = [];
-
-      for (let i = 0; i < minLength; i++) {
-        macdLine.push(ema12[ema12.length - minLength + i] - ema26[ema26.length - minLength + i]);
-      }
-
+      const macdLine = ema12.slice(-ema26.length).map((v, i) => v - ema26[i]);
       const signalLine = EMA(macdLine, 9);
-      const histLength = Math.min(macdLine.length, signalLine.length);
-      const histogram = [];
-
-      for (let i = 0; i < histLength; i++) {
-        histogram.push(macdLine[macdLine.length - histLength + i] - signalLine[signalLine.length - histLength + i]);
-      }
+      const histogram = macdLine.slice(-signalLine.length).map((v, i) => v - signalLine[i]);
 
       return {
         macdLine: macdLine.at(-1),
@@ -134,62 +120,50 @@
     async function generateSignal() {
       const symbol = document.getElementById("tokenList").value;
       const closes = await fetchKlines(symbol);
-      const price = closes[closes.length - 1];
+      const price = closes.at(-1);
 
-      const ema7 = EMA(closes, 7).slice(-1)[0];
-      const ema25 = EMA(closes, 25).slice(-1)[0];
-      const ema99 = EMA(closes, 99).slice(-1)[0];
+      const ema7 = EMA(closes, 7).at(-1);
+      const ema25 = EMA(closes, 25).at(-1);
+      const ema99 = EMA(closes, 99).at(-1);
       const rsi = RSI(closes);
       const macd = MACD(closes);
 
       let signal = "NO STRONG SIGNAL", tp = "-", sl = "-";
-      const tpMultiplier = 0.03;
-      const slMultiplier = 0.015;
 
       if (
-        price < ema7 && ema7 < ema25 && ema25 < ema99 &&
-        macd.histogram < 0 && rsi < 60
-      ) {
-        signal = "SHORT";
-        tp = (price * (1 - tpMultiplier)).toFixed(4);
-        sl = (price * (1 + slMultiplier)).toFixed(4);
-      } else if (
         price > ema7 && ema7 > ema25 && ema25 > ema99 &&
-        macd.histogram > 0 && rsi > 50
+        macd.histogram > 0 && macd.macdLine > macd.signalLine &&
+        rsi > 55
       ) {
         signal = "LONG";
-        tp = (price * (1 + tpMultiplier)).toFixed(4);
-        sl = (price * (1 - slMultiplier)).toFixed(4);
+        tp = (price * 1.03).toFixed(4);
+        sl = (price * 0.985).toFixed(4);
+      } else if (
+        price < ema7 && ema7 < ema25 && ema25 < ema99 &&
+        macd.histogram < 0 && macd.macdLine < macd.signalLine &&
+        rsi < 45
+      ) {
+        signal = "SHORT";
+        tp = (price * 0.97).toFixed(4);
+        sl = (price * 1.015).toFixed(4);
       }
 
-      const emojiSignal = signal === "LONG" ? "🟢 LONG" : signal === "SHORT" ? "🔴 SHORT" : "⚪ NO SIGNAL";
-
-      const result = `
-📊 Symbol: ${symbol}
-🚨 SIGNAL: ${emojiSignal}
-💰 Entry: ${price.toFixed(4)}
-⭐ TP: ${tp}
-⛔ SL: ${sl}
-⚙️ Leverage: 10–20x
-⏱️ Timeframe: 15m
-
-EMA7: ${ema7.toFixed(4)}
-EMA25: ${ema25.toFixed(4)}
-EMA99: ${ema99.toFixed(4)}
-RSI (14): ${rsi.toFixed(2)}
-MACD Histogram: ${macd.histogram.toFixed(5)}
+      document.getElementById("output").innerHTML = `
+        <div>
+          <b>📊 Symbol:</b> ${symbol}<br>
+          <b>🚨 SIGNAL:</b> <span style="color:${signal === "LONG" ? "#00ff00" : signal === "SHORT" ? "#ff3333" : "#ffffff"}"><b>${signal}</b></span><br>
+          <b>💰 Entry:</b> ${price.toFixed(4)}<br>
+          <b>⭐ TP:</b> ${tp}<br>
+          <b>⛔ SL:</b> ${sl}<br>
+          <b>⚙️ Leverage:</b> 10–20x<br>
+          <b>⏱️ Timeframe:</b> 15m<br><br>
+          EMA7: ${ema7.toFixed(4)}<br>
+          EMA25: ${ema25.toFixed(4)}<br>
+          EMA99: ${ema99.toFixed(4)}<br>
+          RSI (14): ${rsi.toFixed(2)}<br>
+          MACD Histogram: ${macd.histogram.toFixed(5)}
+        </div>
       `;
-
-      document.getElementById("output").innerText = result;
-    }
-
-    function downloadSignal() {
-      const content = document.getElementById("output").innerText;
-      const blob = new Blob([content], { type: "text/plain" });
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = "signal.txt";
-      a.click();
     }
 
     loadSymbols();
