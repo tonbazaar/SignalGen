@@ -132,68 +132,92 @@
   }
 
   async function generateSignal() {
-    const output = document.getElementById("output");
-    output.innerHTML = "Scanning tokens for signals...";
+  const output = document.getElementById("output");
+  output.innerHTML = "Scanning tokens for signals...";
 
-    let signals = "";
+  let signals = "";
 
-    for (const symbol of allSymbols) {
-      const klines = await fetchKlines(symbol);
-      if (!klines || klines.length < 99) continue;
+  for (const symbol of allSymbols) {
+    const klines = await fetchKlines(symbol);
+    if (!klines || klines.length < 99) continue;
 
-      const closes = klines.map(k => k.close);
-      const price = closes.at(-1);
-      const ema7 = EMA(closes, 7).at(-1);
-      const ema25 = EMA(closes, 25).at(-1);
-      const ema99 = EMA(closes, 99).at(-1);
-      const rsi = RSI(closes);
-      const macd = MACD(closes);
+    const closes = klines.map(k => k.close);
+    const price = closes.at(-1);
+    const ema7 = EMA(closes, 7).at(-1);
+    const ema25 = EMA(closes, 25).at(-1);
+    const ema99 = EMA(closes, 99).at(-1);
+    const rsi = RSI(closes);
+    const macd = MACD(closes);
 
-      const volumes = klines.map(k => k.volume);
-      const avgVolume = volumes.slice(-20).reduce((a, b) => a + b) / 20;
-      const currentVolume = volumes.at(-1);
-      const isHighVolume = currentVolume > avgVolume * 1.05;
+    const volumes = klines.map(k => k.volume);
+    const avgVolume = volumes.slice(-20).reduce((a, b) => a + b) / 20;
+    const currentVolume = volumes.at(-1);
+    const isHighVolume = currentVolume > avgVolume * 1.05;
 
-      const highs = klines.map(k => k.high);
-      const lows = klines.map(k => k.low);
-      const recentVolatility = highs.slice(-20).map((h, i) => h - lows.slice(-20)[i]);
-      const avgVolatility = recentVolatility.reduce((a, b) => a + b) / 20;
-      const isVolatile = avgVolatility > price * 0.005;
+    const highs = klines.map(k => k.high);
+    const lows = klines.map(k => k.low);
+    const recentVolatility = highs.slice(-20).map((h, i) => h - lows.slice(-20)[i]);
+    const avgVolatility = recentVolatility.reduce((a, b) => a + b) / 20;
+    const isVolatile = avgVolatility > price * 0.005;
 
-      let signal = "NO SIGNAL";
+    // Indicator checks
+    const emaBullish = price > ema7 && ema7 > ema25 && ema25 > ema99;
+    const emaBearish = price < ema7 && ema7 < ema25 && ema25 < ema99;
+    const rsiBullish = rsi > 55;
+    const rsiBearish = rsi < 45;
+    const macdBullish = macd.histogram > 0;
+    const macdBearish = macd.histogram < 0;
 
-      if (
-        price > ema7 && ema7 > ema25 && ema25 > ema99 &&
-        macd.histogram > 0 && rsi > 50 && isHighVolume && isVolatile
-      ) {
-        signal = "LONG";
-      } else if (
-        price < ema7 && ema7 < ema25 && ema25 < ema99 &&
-        macd.histogram < 0 && rsi < 50 && isHighVolume && isVolatile
-      ) {
-        signal = "SHORT";
-      }
+    let passedConditions = 0;
+    let signal = "NO SIGNAL";
 
-      if (signal !== "NO SIGNAL") {
-        const tp = (signal === "LONG" ? price * 1.03 : price * 0.97).toFixed(4);
-        const sl = (signal === "LONG" ? price * 0.98 : price * 1.02).toFixed(4);
-        signals += `
-          <div style="margin-bottom:20px;">
-            <b>📊 Symbol:</b> ${symbol}<br>
-            <b>🚨 SIGNAL:</b> <span style="color:${signal === "LONG" ? "#00ff00" : "#ff3333"}">${signal}</span><br>
-            <b>💰 Entry:</b> ${price.toFixed(4)}<br>
-            <b>⭐ TP:</b> ${tp}<br>
-            <b>⛔ SL:</b> ${sl}<br>
-            <b>⚙️ Leverage:</b> 10–20x<br>
-            <b>⏱️ Timeframe:</b> 15m<br>
-            <b>✅ Confidence:</b> HIGH<br>
-          </div>
-        `;
-      }
-    }
+    // Count matched conditions
+    if (emaBullish) passedConditions++;
+    if (rsiBullish) passedConditions++;
+    if (macdBullish) passedConditions++;
+    if (isHighVolume) passedConditions++;
+    if (isVolatile) passedConditions++;
 
-    output.innerHTML = signals || "No high-confidence signals at the moment.";
-  }
+    if (passedConditions >= 4) {
+      signal = "LONG";
+    }
+
+    passedConditions = 0;
+    if (emaBearish) passedConditions++;
+    if (rsiBearish) passedConditions++;
+    if (macdBearish) passedConditions++;
+    if (isHighVolume) passedConditions++;
+    if (isVolatile) passedConditions++;
+
+    if (signal === "NO SIGNAL" && passedConditions >= 4) {
+      signal = "SHORT";
+    }
+
+    // Confidence Level
+    let confidence = "LOW";
+    if (passedConditions === 5) confidence = "HIGH";
+    else if (passedConditions === 4) confidence = "MEDIUM";
+
+    if (signal !== "NO SIGNAL" && confidence === "HIGH") {
+      const tp = (signal === "LONG" ? price * 1.03 : price * 0.97).toFixed(4);
+      const sl = (signal === "LONG" ? price * 0.985 : price * 1.015).toFixed(4); // 1.5% SL
+      signals += `
+        <div style="margin-bottom:20px;">
+          <b>📊 Symbol:</b> ${symbol}<br>
+          <b>🚨 SIGNAL:</b> <span style="color:${signal === "LONG" ? "#00ff00" : "#ff3333"}">${signal}</span><br>
+          <b>💰 Entry:</b> ${price.toFixed(4)}<br>
+          <b>⭐ TP:</b> ${tp}<br>
+          <b>⛔ SL:</b> ${sl}<br>
+          <b>⚙️ Leverage:</b> 10–20x<br>
+          <b>⏱️ Timeframe:</b> 15m<br>
+          <b>✅ Confidence:</b> ${confidence}<br>
+        </div>
+      `;
+    }
+  }
+
+  output.innerHTML = signals || "No high-confidence signals at the moment.";
+}
 
   loadSymbols();
 </script>
