@@ -141,29 +141,32 @@
         const macdCrossDown = macd.previousHistogram > 0 && macd.histogram < 0;
 
         const nearEMAs = Math.abs(price - ema7) < price * 0.0025 && Math.abs(ema7 - ema25) < price * 0.005;
+        const emaSpacing = Math.abs(ema7 - ema25) > price * 0.003;
+        const macdSlope = macd.histogram > macd.previousHistogram;
+        const macdStrong = macd.histogram > price * 0.003;
 
-        const volumeSpike = currentVolume > avgVolume * 1.5;
-        const isVolatile = avgRange / price > 0.005;
+        const strongVolume = currentVolume > avgVolume * 1.3;
+        const decentVolatility = avgRange / price > 0.005;
 
         let signal = "NO SIGNAL", confidence = "LOW";
 
-        if (macdCrossUp && rsi > 50 && rsi < 65 && nearEMAs && dojiCandle && rangeChange < 0.03 && volumeSpike && isVolatile) {
+        if (macdCrossUp && rsi > 62 && nearEMAs && emaSpacing && macdSlope && macdStrong && dojiCandle && rangeChange < 0.03 && strongVolume && decentVolatility) {
           signal = "LONG"; confidence = "HIGH";
-        } else if (macdCrossDown && rsi < 50 && rsi > 35 && nearEMAs && dojiCandle && rangeChange > -0.03 && volumeSpike && isVolatile) {
+        } else if (macdCrossDown && rsi < 38 && nearEMAs && emaSpacing && macdSlope && macdStrong && dojiCandle && rangeChange > -0.03 && strongVolume && decentVolatility) {
           signal = "SHORT"; confidence = "HIGH";
         }
 
         if (signal !== "NO SIGNAL") {
           const tp = (signal === "LONG" ? price * 1.03 : price * 0.97).toFixed(4);
-          const sl = (signal === "LONG" ? price * 0.985 : price * 1.015).toFixed(4);
+          const sl = (signal === "LONG" ? price * 0.98 : price * 1.02).toFixed(4);
 
           finalSignals += `
             <div style="margin-bottom:20px;">
               <b>📊 Symbol:</b> ${symbol}<br>
               <b>🚨 SIGNAL:</b> <span style="color:${signal === "LONG" ? "#00ff00" : "#ff3333"}">${signal}</span><br>
               <b>💰 Entry:</b> ${price.toFixed(4)}<br>
-              <b>🎯 TP (3%):</b> ${tp}<br>
-              <b>🛑 SL (1.5%):</b> ${sl}<br>
+              <b>⭐ TP:</b> ${tp}<br>
+              <b>⛔ SL:</b> ${sl}<br>
               <b>⚙️ Leverage:</b> 10–20x<br>
               <b>⏱️ Timeframe:</b> 15m<br>
               <b>✅ Confidence:</b> ${confidence}<br>
