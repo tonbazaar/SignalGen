@@ -139,12 +139,21 @@ async function generateSignal() {
     const rangeChange = (closes.at(-1) - closes.at(-6)) / closes.at(-6);
 
     const lastCandle = klines.at(-1);
+    const prevCandle = klines.at(-2);
+
     const body = Math.abs(lastCandle.close - lastCandle.open);
     const wick = lastCandle.high - lastCandle.low;
     const strongBody = body / wick > 0.4;
 
+    const prevBody = Math.abs(prevCandle.close - prevCandle.open);
+    const prevWick = prevCandle.high - prevCandle.low;
+    const prevStrongBody = prevBody / prevWick > 0.4;
+    const prevCandleBullish = prevCandle.close > prevCandle.open;
+    const prevCandleBearish = prevCandle.close < prevCandle.open;
+
     const macdCrossUp = macd.previousHistogram < 0 && macd.histogram > 0 && macd.histogram > macd.previousHistogram;
     const macdCrossDown = macd.previousHistogram > 0 && macd.histogram < 0 && macd.histogram < macd.previousHistogram;
+    const macdIsStrong = Math.abs(macd.macdLine) > 0.05;
 
     const nearEMAs = Math.abs(price - ema7) < price * 0.003 && Math.abs(ema7 - ema25) < price * 0.004;
     const strongVolume = currentVolume > avgVolume * 1.4;
@@ -152,8 +161,8 @@ async function generateSignal() {
 
     let signal = "NO SIGNAL", confidence = "LOW";
 
-    const bullishConditions = macdCrossUp && rsi > 52 && rsi < 65 && nearEMAs && strongVolume && decentVolatility && strongBody && rangeChange < 0.025;
-    const bearishConditions = macdCrossDown && rsi < 48 && rsi > 35 && nearEMAs && strongVolume && decentVolatility && strongBody && rangeChange > -0.025;
+    const bullishConditions = macdCrossUp && macdIsStrong && rsi > 52 && rsi < 65 && nearEMAs && strongVolume && decentVolatility && strongBody && prevStrongBody && prevCandleBullish && rangeChange < 0.025;
+    const bearishConditions = macdCrossDown && macdIsStrong && rsi < 48 && rsi > 35 && nearEMAs && strongVolume && decentVolatility && strongBody && prevStrongBody && prevCandleBearish && rangeChange > -0.025;
 
     if (bullishConditions) {
       signal = "LONG";
