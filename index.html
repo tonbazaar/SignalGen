@@ -42,6 +42,8 @@
   <div id="output"></div>
 
   <script>
+    let tradeHistory = [];
+
     async function loadSymbols() {
       const res = await fetch("https://fapi.binance.com/fapi/v1/exchangeInfo");
       const data = await res.json();
@@ -62,7 +64,12 @@
       const url = `https://fapi.binance.com/fapi/v1/klines?symbol=${symbol}&interval=15m&limit=100`;
       const res = await fetch(url);
       const data = await res.json();
-      return data.map(d => parseFloat(d[4])); // close prices
+      return data.map(d => ({
+        close: parseFloat(d[4]),
+        high: parseFloat(d[2]),
+        low: parseFloat(d[3]),
+        volume: parseFloat(d[5])
+      }));
     }
 
     function EMA(prices, length) {
@@ -79,7 +86,6 @@
     function RSI(prices, period = 14) {
       if (prices.length < period + 1) return null;
       let gains = 0, losses = 0;
-
       for (let i = 1; i <= period; i++) {
         let diff = prices[i] - prices[i - 1];
         if (diff > 0) gains += diff;
@@ -131,49 +137,76 @@
 
     async function generateSignal() {
       const symbol = document.getElementById("tokenList").value;
-      const closes = await fetchKlines(symbol);
-      const price = closes[closes.length - 1];
+      const klines = await fetchKlines(symbol);
+      const closes = klines.map(k => k.close);
+      const price = closes.at(-1);
 
-      const ema7 = EMA(closes, 7).slice(-1)[0];
-      const ema25 = EMA(closes, 25).slice(-1)[0];
-      const ema99 = EMA(closes, 99).slice(-1)[0];
+      const volumes = klines.map(k => k.volume);
+      const avgVolume = volumes.slice(-20).reduce((a, b) => a + b) / 20;
+      const currentVolume = volumes.at(-1);
+      const isHighVolume = currentVolume > avgVolume * 1.2;
+
+      const highs = klines.map(k => k.high);
+      const lows = klines.map(k => k.low);
+      const recentVolatility = highs.slice(-20).map((h, i) => h - lows.slice(-20)[i]);
+      const avgVolatility = recentVolatility.reduce((a, b) => a + b) / 20;
+      const isVolatile = avgVolatility > price * 0.01;
+
+      const ema7 = EMA(closes, 7).at(-1);
+      const ema25 = EMA(closes, 25).at(-1);
+      const ema99 = EMA(closes, 99).at(-1);
       const rsi = RSI(closes);
       const macd = MACD(closes);
 
-      let signal = "NO STRONG SIGNAL", tp = "-", sl = "-";
+      let signal = "NO STRONG SIGNAL", tp = "-", sl = "-", confidence = "LOW";
       const tpMultiplier = 0.03;
       const slMultiplier = 0.02;
 
       if (
         price < ema7 && ema7 < ema25 && ema25 < ema99 &&
-        macd.histogram < 0 && rsi < 60
+        macd.histogram < 0 && rsi < 60 && isHighVolume && isVolatile
       ) {
         signal = "SHORT";
         tp = (price * (1 - tpMultiplier)).toFixed(4);
         sl = (price * (1 + slMultiplier)).toFixed(4);
+        confidence = "HIGH";
       } else if (
         price > ema7 && ema7 > ema25 && ema25 > ema99 &&
-        macd.histogram > 0 && rsi > 50
+        macd.histogram > 0 && rsi > 50 && isHighVolume && isVolatile
       ) {
         signal = "LONG";
         tp = (price * (1 + tpMultiplier)).toFixed(4);
         sl = (price * (1 - slMultiplier)).toFixed(4);
+        confidence = "HIGH";
       }
+
+      // Save to trade history
+      tradeHistory.unshift({
+        time: new Date().toLocaleString(),
+        symbol, signal, entry: price.toFixed(4), tp, sl
+      });
+      if (tradeHistory.length > 5) tradeHistory.pop();
+
+      const tradeLog = tradeHistory.map(t => `• ${t.time} | ${t.symbol} | ${t.signal} @ ${t.entry} | TP: ${t.tp} | SL: ${t.sl}`).join("<br>");
 
       document.getElementById("output").innerHTML = `
         <div>
           <b>📊 Symbol:</b> ${symbol}<br>
-          <b>🚨 SIGNAL:</b> <span style="color:${signal === "LONG" ? "#00ff00" : signal === "SHORT" ? "#ff3333" : "#ffffff"}"><b>${signal}</b></span><br>
+          <b>🚨 SIGNAL:</b> <span style="color:${signal === "LONG" ? "#00ff00" : signal === "SHORT" ? "#ff3333" : "#ffffff"}">${signal}</span><br>
           <b>💰 Entry:</b> ${price.toFixed(4)}<br>
           <b>⭐ TP:</b> ${tp}<br>
           <b>⛔ SL:</b> ${sl}<br>
           <b>⚙️ Leverage:</b> 10–20x<br>
-          <b>⏱️ Timeframe:</b> 15m<br><br>
+          <b>⏱️ Timeframe:</b> 15m<br>
+          <b>✅ Confidence:</b> ${confidence}<br><br>
           EMA7: ${ema7.toFixed(4)}<br>
           EMA25: ${ema25.toFixed(4)}<br>
           EMA99: ${ema99.toFixed(4)}<br>
           RSI (14): ${rsi.toFixed(2)}<br>
-          MACD Histogram: ${macd.histogram.toFixed(5)}
+          MACD Histogram: ${macd.histogram.toFixed(5)}<br><br>
+          <b>📈 Volume Check:</b> ${isHighVolume ? "HIGH" : "LOW"}<br>
+          <b>⚡ Volatility Check:</b> ${isVolatile ? "HIGH" : "LOW"}<br><br>
+          <b>📜 Last Signals:</b><br>${tradeLog}
         </div>
       `;
     }
