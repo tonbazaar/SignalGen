@@ -47,7 +47,7 @@
       const data = await res.json();
       const usdtPairs = data.symbols
         .filter(s => s.quoteAsset === "USDT" && s.contractType === "PERPETUAL" && s.status === "TRADING")
-        .map(s => s.symbol)
+        .map(s => s.symbol);
 
       const select = document.getElementById("tokenList");
       usdtPairs.forEach(sym => {
@@ -76,7 +76,7 @@
       return result;
     }
 
-    function RSI(prices, period = 6) {
+    function RSI(prices, period = 14) {
       if (prices.length < period + 1) return null;
       let gains = 0, losses = 0;
 
@@ -107,9 +107,9 @@
     function MACD(prices) {
       const ema12 = EMA(prices, 12);
       const ema26 = EMA(prices, 26);
-
       const minLength = Math.min(ema12.length, ema26.length);
       const macdLine = [];
+
       for (let i = 0; i < minLength; i++) {
         macdLine.push(ema12[ema12.length - minLength + i] - ema26[ema26.length - minLength + i]);
       }
@@ -123,16 +123,16 @@
       }
 
       return {
-        macdLine: macdLine.at(-1),   // DIF
-        signalLine: signalLine.at(-1), // DEA
-        histogram: histogram.at(-1)   // MACD Histogram
+        macdLine: macdLine.at(-1),
+        signalLine: signalLine.at(-1),
+        histogram: histogram.at(-1)
       };
     }
 
     async function generateSignal() {
       const symbol = document.getElementById("tokenList").value;
       const closes = await fetchKlines(symbol);
-      const price = closes[closes.length - 2];
+      const price = closes[closes.length - 1];
 
       const ema7 = EMA(closes, 7).slice(-1)[0];
       const ema25 = EMA(closes, 25).slice(-1)[0];
@@ -141,25 +141,19 @@
       const macd = MACD(closes);
 
       let signal = "NO STRONG SIGNAL", tp = "-", sl = "-";
-      const tpMultiplier = 0.03;  // 3% target
-      const slMultiplier = 0.015; // 1.5% stop
+      const tpMultiplier = 0.03;
+      const slMultiplier = 0.015;
 
       if (
-        price < ema7 &&
-        ema7 < ema25 &&
-        ema25 < ema99 &&
-        macd.histogram < 0 &&
-        rsi < 70
+        price < ema7 && ema7 < ema25 && ema25 < ema99 &&
+        macd.histogram < 0 && rsi < 60
       ) {
         signal = "SHORT";
         tp = (price * (1 - tpMultiplier)).toFixed(4);
         sl = (price * (1 + slMultiplier)).toFixed(4);
       } else if (
-        price > ema7 &&
-        ema7 > ema25 &&
-        ema25 > ema99 &&
-        macd.histogram > 0 &&
-        rsi > 50
+        price > ema7 && ema7 > ema25 && ema25 > ema99 &&
+        macd.histogram > 0 && rsi > 50
       ) {
         signal = "LONG";
         tp = (price * (1 + tpMultiplier)).toFixed(4);
@@ -178,7 +172,7 @@
           EMA7: ${ema7.toFixed(4)}<br>
           EMA25: ${ema25.toFixed(4)}<br>
           EMA99: ${ema99.toFixed(4)}<br>
-          RSI: ${rsi.toFixed(2)}<br>
+          RSI (14): ${rsi.toFixed(2)}<br>
           MACD Histogram: ${macd.histogram.toFixed(5)}
         </div>
       `;
