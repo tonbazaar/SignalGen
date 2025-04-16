@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Sniper Futures Signals</title>
   <style>
     body {
@@ -12,7 +12,7 @@
       text-align: center;
       padding: 20px;
     }
-    select, button {
+    button {
       background: black;
       color: #00ff00;
       border: 2px solid #00ff00;
@@ -89,7 +89,8 @@
       return {
         macdLine: macdLine.at(-1),
         signalLine: signalLine.at(-1),
-        histogram: histogram.at(-1)
+        histogram: histogram.at(-1),
+        previousHistogram: histogram.at(-2)
       };
     }
 
@@ -112,7 +113,6 @@
     async function generateSignal() {
       const output = document.getElementById("output");
       output.innerHTML = "Scanning...";
-
       let finalSignals = "";
 
       for (const symbol of allSymbols) {
@@ -123,7 +123,6 @@
         const price = closes.at(-1);
         const ema7 = EMA(closes, 7).at(-1);
         const ema25 = EMA(closes, 25).at(-1);
-        const ema99 = EMA(closes, 99).at(-1);
         const rsi = RSI(closes);
         const macd = MACD(closes);
 
@@ -133,50 +132,27 @@
 
         const highs = klines.map(k => k.high);
         const lows = klines.map(k => k.low);
-        const avgRange = highs.slice(-20).map((h, i) => h - lows[i]).reduce((a, b) => a + b) / 20;
+        const avgRange = highs.slice(-5).map((h, i) => h - lows[i]).reduce((a, b) => a + b) / 5;
+        const rangeChange = (closes.at(-1) - closes.at(-6)) / closes.at(-6);
 
-        const isHighVolume = currentVolume > avgVolume * 1.5 && currentVolume > 1500;
-        const isVolatile = avgRange > price * 0.0075;
+        const dojiCandle = Math.abs(closes.at(-1) - closes.at(-2)) < avgRange * 0.3;
 
-        const emaBullish = price > ema7 && ema7 > ema25 && ema25 > ema99 &&
-                           (ema7 - ema25) > price * 0.002 && (ema25 - ema99) > price * 0.003;
+        const macdCrossUp = macd.previousHistogram < 0 && macd.histogram > 0;
+        const macdCrossDown = macd.previousHistogram > 0 && macd.histogram < 0;
 
-        const emaBearish = price < ema7 && ema7 < ema25 && ema25 < ema99 &&
-                           (ema25 - ema7) > price * 0.002 && (ema99 - ema25) > price * 0.003;
+        const nearEMAs = Math.abs(price - ema7) < price * 0.0025 && Math.abs(ema7 - ema25) < price * 0.005;
 
-        const rsiBull = rsi > 60;
-        const rsiBear = rsi < 40;
-        const macdBull = macd.histogram > price * 0.005;
-        const macdBear = macd.histogram < -price * 0.005;
+        let signal = "NO SIGNAL", confidence = "LOW";
 
-        // Score system
-        let longScore = 0, shortScore = 0;
-        if (emaBullish) longScore++;
-        if (rsiBull) longScore++;
-        if (macdBull) longScore++;
-        if (isHighVolume) longScore++;
-        if (isVolatile) longScore++;
-
-        if (emaBearish) shortScore++;
-        if (rsiBear) shortScore++;
-        if (macdBear) shortScore++;
-        if (isHighVolume) shortScore++;
-        if (isVolatile) shortScore++;
-
-        let signal = "NO SIGNAL";
-        let confidence = "LOW";
-
-        if (longScore === 5) {
-          signal = "LONG";
-          confidence = "HIGH";
-        } else if (shortScore === 5) {
-          signal = "SHORT";
-          confidence = "HIGH";
+        if (macdCrossUp && rsi > 50 && rsi < 65 && nearEMAs && dojiCandle && rangeChange < 0.03) {
+          signal = "LONG"; confidence = "HIGH";
+        } else if (macdCrossDown && rsi < 50 && rsi > 35 && nearEMAs && dojiCandle && rangeChange > -0.03) {
+          signal = "SHORT"; confidence = "HIGH";
         }
 
         if (signal !== "NO SIGNAL") {
-          const tp = (signal === "LONG" ? price * 1.03 : price * 0.97).toFixed(4);
-          const sl = (signal === "LONG" ? price * 0.985 : price * 1.015).toFixed(4);
+          const tp = (signal === "LONG" ? price * 1.025 : price * 0.975).toFixed(4);
+          const sl = (signal === "LONG" ? price * 0.9875 : price * 1.0125).toFixed(4);
 
           finalSignals += `
             <div style="margin-bottom:20px;">
