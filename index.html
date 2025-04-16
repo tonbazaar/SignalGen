@@ -161,9 +161,25 @@ async function generateSignal() {
 
     let signal = "NO SIGNAL", confidence = "LOW";
 
-    const bullishConditions = macdCrossUp && macdIsStrong && rsi > 45 && rsi < 70 && nearEMAs && strongVolume && decentVolatility && strongBody && prevStrongBody && prevCandleBullish && rangeChange < 0.025;
-    const bearishConditions = macdCrossDown && macdIsStrong && rsi < 55 && rsi > 30 && nearEMAs && strongVolume && decentVolatility && strongBody && prevStrongBody && prevCandleBearish && rangeChange > -0.025;
+const bullishConditions =
+  macdCrossUp &&
+  // rsi > 45 && rsi < 70 &&
+  // nearEMAs &&
+  // strongVolume &&
+  // decentVolatility &&
+  // strongBody &&
+  rangeChange < 0.03;
 
+const bearishConditions =
+  macdCrossDown &&
+  // rsi < 55 && rsi > 30 &&
+  // nearEMAs &&
+  // strongVolume &&
+  // decentVolatility &&
+  // strongBody &&
+  rangeChange > -0.03;
+
+    
     if (bullishConditions) {
       signal = "LONG";
       confidence = "HIGH";
