@@ -6,41 +6,51 @@
   <title>Sniper Futures Signals</title>
   <style>
     body {
-      background: black;
+      background: #000;
       font-family: monospace;
-      color: #00ff00;
+      color: #0f0;
       text-align: center;
       padding: 20px;
     }
     button {
-      background: black;
-      color: #00ff00;
-      border: 2px solid #00ff00;
-      padding: 10px;
+      background: #000;
+      color: #0f0;
+      border: 2px solid #0f0;
+      padding: 12px;
       margin: 10px 0;
-      border-radius: 5px;
-      font-size: 1em;
-      width: 80%;
+      border-radius: 10px;
+      font-size: 1.2em;
+      width: 90%;
+      max-width: 400px;
+    }
+    button:hover {
+      box-shadow: 0 0 10px #0f0;
     }
     #output {
-      border: 2px solid #00ff00;
+      border: 2px solid #0f0;
       border-radius: 15px;
       padding: 20px;
       margin-top: 20px;
       background: #111;
       box-shadow: 0 0 15px #00ff00;
     }
-    button:hover {
-      box-shadow: 0 0 10px #00ff00;
+    .signal-block {
+      border-bottom: 1px dashed #0f0;
+      margin-bottom: 20px;
+      padding-bottom: 20px;
+    }
+    .last-signal {
+      margin-top: 10px;
+      font-size: 0.9em;
+      color: #aaa;
     }
   </style>
 </head>
 <body>
   <h2>Sniper Futures Signal Generator</h2>
   <button onclick="generateSignal()">Scan 15m Signals</button>
+  <div class="last-signal" id="last-time">Waiting for first scan...</div>
   <div id="output">Waiting for action...</div>
-
-  <!-- Same <head> and <style> as your original -->
 
 <script>
 let allSymbols = [];
@@ -51,7 +61,8 @@ async function loadSymbols() {
   allSymbols = data.symbols
     .filter(s => s.quoteAsset === "USDT" && s.contractType === "PERPETUAL" && s.status === "TRADING")
     .map(s => s.symbol);
-setInterval(generateSignal, 180000);
+  generateSignal();
+  setInterval(generateSignal, 180000); // Every 3 minutes
 }
 
 function EMA(prices, length) {
@@ -119,11 +130,11 @@ async function fetchKlines(symbol) {
 
 async function generateSignal() {
   const output = document.getElementById("output");
-  output.innerHTML = "Scanning... <br><hr><small>Last scanned: " + new Date().toLocaleTimeString() + "</small>";
+  const lastTime = document.getElementById("last-time");
+  output.innerHTML = "Scanning...";
 
-  let hasAlerted = false;
-  let foundSignals = 0;
   let finalSignals = "";
+  let found = 0;
 
   const results = await Promise.all(allSymbols.map(async (symbol) => {
     const klines = await fetchKlines(symbol);
@@ -147,7 +158,6 @@ async function generateSignal() {
 
     const lastCandle = klines.at(-1);
     const prevCandle = klines.at(-2);
-
     const body = Math.abs(lastCandle.close - lastCandle.open);
     const wick = lastCandle.high - lastCandle.low;
     const strongBody = body / wick > 0.4;
@@ -157,60 +167,47 @@ async function generateSignal() {
     const prevStrongBody = prevBody / prevWick > 0.4;
     const prevCandleBullish = prevCandle.close > prevCandle.open;
     const prevCandleBearish = prevCandle.close < prevCandle.open;
+    
+    if (bullish || bearish) {
+      
+const macdCrossUp = macd.previousHistogram < 0 && macd.histogram >= 0;
+const macdCrossDown = macd.previousHistogram > 0 && macd.histogram <= 0;
+const macdIsStrong = Math.abs(macd.macdLine) > 0.03;
 
-    const macdCrossUp = macd.previousHistogram < 0 && macd.histogram > 0 && macd.histogram > macd.previousHistogram;
-    const macdCrossDown = macd.previousHistogram > 0 && macd.histogram < 0 && macd.histogram < macd.previousHistogram;
-    const macdIsStrong = Math.abs(macd.macdLine) > 0.05;
+const nearEMAs = Math.abs(price - ema7) < price * 0.005 && Math.abs(ema7 - ema25) < price * 0.006;
+const strongVolume = currentVolume > avgVolume * 1.2;
+const decentVolatility = avgRange / price > 0.004;
 
-    const nearEMAs = Math.abs(price - ema7) < price * 0.003 && Math.abs(ema7 - ema25) < price * 0.004;
-    const strongVolume = currentVolume > avgVolume * 1.4;
-    const decentVolatility = avgRange / price > 0.006;
+const bullish = macdCrossUp && macdIsStrong && rsi > 48 && rsi < 70 && nearEMAs && strongVolume && decentVolatility && body / wick > 0.25 && prevBody / prevWick > 0.25 && prevCandleBullish && rangeChange < 0.035;
+const bearish = macdCrossDown && macdIsStrong && rsi < 52 && rsi > 30 && nearEMAs && strongVolume && decentVolatility && body / wick > 0.25 && prevBody / prevWick > 0.25 && prevCandleBearish && rangeChange > -0.035;
+      
+      const signal = bullish ? "LONG" : "SHORT";
+      const tp = (price * (bullish ? 1.03 : 0.97)).toFixed(4);
+      const sl = (price * (bullish ? 0.98 : 1.02)).toFixed(4);
 
-    let signal = "NO SIGNAL", confidence = "LOW";
-
-    const bullishConditions = macdCrossUp && macdIsStrong && rsi > 52 && rsi < 65 && nearEMAs && strongVolume && decentVolatility && strongBody && prevStrongBody && prevCandleBullish && rangeChange < 0.025;
-    const bearishConditions = macdCrossDown && macdIsStrong && rsi < 48 && rsi > 35 && nearEMAs && strongVolume && decentVolatility && strongBody && prevStrongBody && prevCandleBearish && rangeChange > -0.025;
-
-    if (bullishConditions) {
-      signal = "LONG";
-      confidence = "HIGH";
-    } else if (bearishConditions) {
-      signal = "SHORT";
-      confidence = "HIGH";
-    }
-
-    if (signal !== "NO SIGNAL") {
-      foundSignals++;
-      if (!hasAlerted && foundSignals === 1) {
-        hasAlerted = true;
-        if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
-        const alertSound = new Audio("https://actions.google.com/sounds/v1/alarms/beep_short.ogg");
-        alertSound.play();
-      }
-
-      const tp = (price * (signal === "LONG" ? 1.03 : 0.97)).toFixed(4);
-      const sl = (price * (signal === "LONG" ? 0.98 : 1.02)).toFixed(4);
-
+      found++;
       return `
-        <div style="margin-bottom:20px;">
+        <div class="signal-block">
           <b>📊 Symbol:</b> ${symbol}<br>
-          <b>🚨 SIGNAL:</b> <span style="color:${signal === "LONG" ? "#00ff00" : "#ff3333"}">${signal}</span><br>
+          <b>🚨 SIGNAL:</b> <span style="color:${bullish ? "#00ff00" : "#ff3333"}">${signal}</span><br>
           <b>💰 Entry:</b> ${price.toFixed(4)}<br>
           <b>⭐ TP:</b> ${tp}<br>
           <b>⛔ SL:</b> ${sl}<br>
           <b>⚙️ Leverage:</b> 10–20x<br>
           <b>⏱️ Timeframe:</b> 15m<br>
-          <b>✅ Confidence:</b> ${confidence}<br>
-          <b>🕒 Signal Time:</b> ${new Date().toLocaleTimeString()}<br>
-        </div>
-      `;
+          <b>✅ Confidence:</b> HIGH<br>
+          <b>🕒 Time:</b> ${new Date().toLocaleTimeString()}<br>
+        </div>`;
     }
     return null;
   }));
 
   results.forEach(r => { if (r) finalSignals += r; });
   output.innerHTML = finalSignals || "No sniper-grade signals right now.";
+  lastTime.innerText = `Last scan: ${new Date().toLocaleTimeString()}`;
 }
 
 loadSymbols();
 </script>
+</body>
+</html>
