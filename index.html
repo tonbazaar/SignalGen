@@ -62,7 +62,7 @@
       const url = `https://fapi.binance.com/fapi/v1/klines?symbol=${symbol}&interval=15m&limit=100`;
       const res = await fetch(url);
       const data = await res.json();
-      return data.map(d => parseFloat(d[4])); // close prices
+      return data.map(d => ({ high: parseFloat(d[2]), low: parseFloat(d[3]), close: parseFloat(d[4]) }));
     }
 
     function EMA(prices, length) {
@@ -77,6 +77,7 @@
     }
 
     function RSI(prices, period = 14) {
+      if (prices.length < period + 1) return null;
       let gains = 0, losses = 0;
 
       for (let i = 1; i <= period; i++) {
@@ -106,9 +107,20 @@
     function MACD(prices) {
       const ema12 = EMA(prices, 12);
       const ema26 = EMA(prices, 26);
-      const macdLine = ema12.slice(-ema26.length).map((v, i) => v - ema26[i]);
+      const minLength = Math.min(ema12.length, ema26.length);
+      const macdLine = [];
+
+      for (let i = 0; i < minLength; i++) {
+        macdLine.push(ema12[ema12.length - minLength + i] - ema26[ema26.length - minLength + i]);
+      }
+
       const signalLine = EMA(macdLine, 9);
-      const histogram = macdLine.slice(-signalLine.length).map((v, i) => v - signalLine[i]);
+      const histLength = Math.min(macdLine.length, signalLine.length);
+      const histogram = [];
+
+      for (let i = 0; i < histLength; i++) {
+        histogram.push(macdLine[macdLine.length - histLength + i] - signalLine[signalLine.length - histLength + i]);
+      }
 
       return {
         macdLine: macdLine.at(-1),
@@ -117,9 +129,27 @@
       };
     }
 
+    function ATR(data, period = 14) {
+      const trs = [];
+      for (let i = 1; i < data.length; i++) {
+        const high = data[i].high;
+        const low = data[i].low;
+        const prevClose = data[i - 1].close;
+        const tr = Math.max(
+          high - low,
+          Math.abs(high - prevClose),
+          Math.abs(low - prevClose)
+        );
+        trs.push(tr);
+      }
+      const atr = trs.slice(-period).reduce((a, b) => a + b) / period;
+      return atr;
+    }
+
     async function generateSignal() {
       const symbol = document.getElementById("tokenList").value;
-      const closes = await fetchKlines(symbol);
+      const candles = await fetchKlines(symbol);
+      const closes = candles.map(c => c.close);
       const price = closes.at(-1);
 
       const ema7 = EMA(closes, 7).at(-1);
@@ -127,25 +157,30 @@
       const ema99 = EMA(closes, 99).at(-1);
       const rsi = RSI(closes);
       const macd = MACD(closes);
+      const atr = ATR(candles);
 
-      let signal = "NO STRONG SIGNAL", tp = "-", sl = "-";
+      let signal = "NO STRONG SIGNAL";
+      const tpMultiplier = 0.03;
+      const fixedSL = price * 0.985;
+      const atrSL = price - atr;
+      const emaSL = ema25 - (ema25 - ema7) * 1.2;
+
+      let tp = "-", sl = "-";
 
       if (
         price > ema7 && ema7 > ema25 && ema25 > ema99 &&
-        macd.histogram > 0 && macd.macdLine > macd.signalLine &&
-        rsi > 55
+        macd.histogram > 0 && rsi > 50
       ) {
         signal = "LONG";
-        tp = (price * 1.03).toFixed(4);
-        sl = (price * 0.985).toFixed(4);
+        tp = (price * (1 + tpMultiplier)).toFixed(4);
+        sl = atrSL.toFixed(4);
       } else if (
         price < ema7 && ema7 < ema25 && ema25 < ema99 &&
-        macd.histogram < 0 && macd.macdLine < macd.signalLine &&
-        rsi < 45
+        macd.histogram < 0 && rsi < 60
       ) {
         signal = "SHORT";
-        tp = (price * 0.97).toFixed(4);
-        sl = (price * 1.015).toFixed(4);
+        tp = (price * (1 - tpMultiplier)).toFixed(4);
+        sl = (price + atr).toFixed(4);
       }
 
       document.getElementById("output").innerHTML = `
@@ -154,14 +189,17 @@
           <b>🚨 SIGNAL:</b> <span style="color:${signal === "LONG" ? "#00ff00" : signal === "SHORT" ? "#ff3333" : "#ffffff"}"><b>${signal}</b></span><br>
           <b>💰 Entry:</b> ${price.toFixed(4)}<br>
           <b>⭐ TP:</b> ${tp}<br>
-          <b>⛔ SL:</b> ${sl}<br>
+          <b>⛔ SL (ATR):</b> ${sl}<br>
+          <b>⛔ SL (EMA-Based):</b> ${emaSL.toFixed(4)}<br>
+          <b>⛔ SL (Fixed 1.5%):</b> ${fixedSL.toFixed(4)}<br>
           <b>⚙️ Leverage:</b> 10–20x<br>
           <b>⏱️ Timeframe:</b> 15m<br><br>
           EMA7: ${ema7.toFixed(4)}<br>
           EMA25: ${ema25.toFixed(4)}<br>
           EMA99: ${ema99.toFixed(4)}<br>
           RSI (14): ${rsi.toFixed(2)}<br>
-          MACD Histogram: ${macd.histogram.toFixed(5)}
+          MACD Histogram: ${macd.histogram.toFixed(5)}<br>
+          ATR(14): ${atr.toFixed(4)}
         </div>
       `;
     }
