@@ -56,18 +56,13 @@
 let allSymbols = [];
 
 async function loadSymbols() {
-  try {
-    const res = await fetch("https://fapi.binance.com/fapi/v1/exchangeInfo");
-    const data = await res.json();
-    allSymbols = data.symbols
-      .filter(s => s.quoteAsset === "USDT" && s.contractType === "PERPETUAL" && s.status === "TRADING")
-      .map(s => s.symbol);
-    console.log("Loaded symbols:", allSymbols.length);
-    generateSignal();
-    setInterval(generateSignal, 180000);
-  } catch (err) {
-    console.error("Failed to load symbols:", err);
-  }
+  const res = await fetch("https://fapi.binance.com/fapi/v1/exchangeInfo");
+  const data = await res.json();
+  allSymbols = data.symbols
+    .filter(s => s.quoteAsset === "USDT" && s.contractType === "PERPETUAL" && s.status === "TRADING")
+    .map(s => s.symbol);
+  generateSignal();
+  setInterval(generateSignal, 180000); // Every 3 minutes
 }
 
 function EMA(prices, length) {
@@ -85,8 +80,7 @@ function RSI(prices, period = 14) {
   let gains = 0, losses = 0;
   for (let i = 1; i <= period; i++) {
     const diff = prices[i] - prices[i - 1];
-    if (diff > 0) gains += diff;
-    else losses -= diff;
+    diff > 0 ? gains += diff : losses -= diff;
   }
   let avgGain = gains / period, avgLoss = losses / period;
   for (let i = period + 1; i < prices.length; i++) {
@@ -129,8 +123,7 @@ async function fetchKlines(symbol) {
       open: parseFloat(d[1]),
       volume: parseFloat(d[5])
     }));
-  } catch (err) {
-    console.error("Error fetching klines for", symbol, err);
+  } catch {
     return null;
   }
 }
@@ -139,10 +132,11 @@ async function generateSignal() {
   const output = document.getElementById("output");
   const lastTime = document.getElementById("last-time");
   output.innerHTML = "Scanning...";
-  let found = 0;
-  let logs = "";
 
-  const results = await Promise.all(allSymbols.slice(0, 30).map(async (symbol) => {
+  let finalSignals = "";
+  let found = 0;
+
+  const results = await Promise.all(allSymbols.map(async (symbol) => {
     const klines = await fetchKlines(symbol);
     if (!klines || klines.length < 99) return null;
 
@@ -162,53 +156,90 @@ async function generateSignal() {
     const avgRange = highs.map((h, i) => h - lows[i]).slice(-10).reduce((a, b) => a + b) / 10;
     const rangeChange = (closes.at(-1) - closes.at(-6)) / closes.at(-6);
 
-    const last = klines.at(-1);
-    const prev = klines.at(-2);
-    const body = Math.abs(last.close - last.open);
-    const wick = last.high - last.low;
-    const strongBody = body / wick > 0.35;
+    const lastCandle = klines.at(-1);
+    const prevCandle = klines.at(-2);
+    const body = Math.abs(lastCandle.close - lastCandle.open);
+    const wick = lastCandle.high - lastCandle.low;
+    const strongBody = body / wick > 0.4;
 
-    const prevBody = Math.abs(prev.close - prev.open);
-    const prevWick = prev.high - prev.low;
-    const prevStrongBody = prevBody / prevWick > 0.35;
-    const prevBullish = prev.close > prev.open;
-    const prevBearish = prev.close < prev.open;
+    const prevBody = Math.abs(prevCandle.close - prevCandle.open);
+    const prevWick = prevCandle.high - prevCandle.low;
+    const prevStrongBody = prevBody / prevWick > 0.4;
+    const prevCandleBullish = prevCandle.close > prevCandle.open;
+    const prevCandleBearish = prevCandle.close < prevCandle.open;
+    
+    const macdCrossUp = macd.previousHistogram < 0 && macd.histogram >= 0;
+    const macdCrossDown = macd.previousHistogram > 0 && macd.histogram <= 0;
+    const macdIsStrong = Math.abs(macd.macdLine) > 0.03;
 
-    const macdUp = macd.previousHistogram < 0 && macd.histogram >= 0;
-    const macdDown = macd.previousHistogram > 0 && macd.histogram <= 0;
-    const macdStrong = Math.abs(macd.macdLine) > 0.04;
-
-    const nearEMA = Math.abs(price - ema7) < price * 0.005 && Math.abs(ema7 - ema25) < price * 0.006;
+    const nearEMAs = Math.abs(price - ema7) < price * 0.005 && Math.abs(ema7 - ema25) < price * 0.006;
     const strongVolume = currentVolume > avgVolume * 1.2;
-    const decentVol = avgRange / price > 0.004;
+    const decentVolatility = avgRange / price > 0.004;
 
-    const bullish = macdUp && macdStrong && rsi > 48 && rsi < 70 && nearEMA && strongVolume && decentVol && strongBody && prevStrongBody && prevBullish && rangeChange < 0.035;
-    const bearish = macdDown && macdStrong && rsi < 52 && rsi > 30 && nearEMA && strongVolume && decentVol && strongBody && prevStrongBody && prevBearish && rangeChange > -0.035;
+    let bullScore = 0;
+    let bearScore = 0;
 
-    console.log(`${symbol} ➤ MACD: ${macd.histogram.toFixed(3)} | RSI: ${rsi.toFixed(2)} | Price: ${price.toFixed(2)} | Vol: ${currentVolume.toFixed(2)} | Signal: ${bullish ? 'LONG' : bearish ? 'SHORT' : '-'}`);
+    if (macdCrossUp) bullScore++;
+    if (macdIsStrong) bullScore++;
+    if (rsi > 48 && rsi < 70) bullScore++;
+    if (nearEMAs) bullScore++;
+    if (strongVolume) bullScore++;
+    if (decentVolatility) bullScore++;
+    if (body / wick > 0.25) bullScore++;
+    if (prevBody / prevWick > 0.25) bullScore++;
+    if (prevCandleBullish) bullScore++;
+    if (rangeChange < 0.035) bullScore++;
 
-    if (bullish || bearish) {
-      const signal = bullish ? "LONG" : "SHORT";
-      const tp = (price * (bullish ? 1.03 : 0.97)).toFixed(4);
-      const sl = (price * (bullish ? 0.98 : 1.02)).toFixed(4);
-      found++;
-      return `
-        <div class="signal-block">
-          <b>📊 Symbol:</b> ${symbol}<br>
-          <b>🚨 SIGNAL:</b> <span style="color:${bullish ? "#0f0" : "#f33"}">${signal}</span><br>
-          <b>💰 Entry:</b> ${price.toFixed(4)}<br>
-          <b>⭐ TP:</b> ${tp}<br>
-          <b>⛔ SL:</b> ${sl}<br>
-        </div>`;
-    }
+    if (macdCrossDown) bearScore++;
+    if (macdIsStrong) bearScore++;
+    if (rsi < 52 && rsi > 30) bearScore++;
+    if (nearEMAs) bearScore++;
+    if (strongVolume) bearScore++;
+    if (decentVolatility) bearScore++;
+    if (body / wick > 0.25) bearScore++;
+    if (prevBody / prevWick > 0.25) bearScore++;
+    if (prevCandleBearish) bearScore++;
+    if (rangeChange > -0.035) bearScore++;
+
+    let signal = null;
+    let confidence = "LOW";
+
+    if (bullScore >= 8) confidence = "HIGH";
+    else if (bullScore >= 6) confidence = "MEDIUM";
+    if (bullScore >= 6) signal = "LONG";
+
+    if (bearScore >= 8) confidence = "HIGH";
+    else if (bearScore >= 6) confidence = "MEDIUM";
+    if (bearScore >= 6 && bearScore >= bullScore) signal = "SHORT";
+
+    if (signal) {
+  const tp = (price * (signal === "LONG" ? 1.03 : 0.97)).toFixed(4);
+  const sl = (price * (signal === "LONG" ? 0.98 : 1.02)).toFixed(4);
+
+  found++;
+  return 
+    <div class="signal-block">
+      <b>📊 Symbol:</b> ${symbol}<br>
+      <b>🚨 SIGNAL:</b> <span style="color:${signal === "LONG" ? "#00ff00" : "#ff3333"}">${signal}</span><br>
+      <b>💰 Entry:</b> ${price.toFixed(4)}<br>
+      <b>⭐ TP:</b> ${tp}<br>
+      <b>⛔ SL:</b> ${sl}<br>
+      <b>⚙️ Leverage:</b> 10–20x<br>
+      <b>⏱️ Timeframe:</b> 15m<br>
+      <b>✅ Confidence:</b> ${confidence}<br>
+      <b>🕒 Time:</b> ${new Date().toLocaleTimeString()}<br>
+    </div>;
+}
+
     return null;
   }));
 
-  const display = results.filter(r => r).join("");
-  output.innerHTML = display || "No sniper-grade signals found.";
-  lastTime.textContent = `Last checked: ${new Date().toLocaleTimeString()}`;
-  console.log(`Total signals found: ${found}`);
+  results.forEach(r => { if (r) finalSignals += r; });
+  output.innerHTML = finalSignals || "No sniper-grade signals right now.";
+  lastTime.innerText = `Last scan: ${new Date().toLocaleTimeString()}`;
 }
 
 loadSymbols();
 </script>
+</body>
+</html>
