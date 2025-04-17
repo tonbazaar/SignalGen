@@ -1,183 +1,186 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Crypto Futures Signal Scanner</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style>
-    body {
-      background: black;
-      color: white;
-      font-family: monospace;
-      padding: 10px;
-    }
-    h2 {
-      color: #00ff99;
-    }
-    button {
-      background: #00ff99;
-      border: none;
-      padding: 10px 15px;
-      font-size: 16px;
-      border-radius: 10px;
-      margin-bottom: 10px;
-    }
-    .signal-block {
-      background: #111;
-      border: 1px solid #00ff99;
-      padding: 10px;
-      margin: 10px 0;
-      border-radius: 10px;
-    }
-    .short {
-      color: #ff3333;
-    }
-    .long {
-      color: #00ff00;
-    }
-  </style>
+  <title>Crypto Futures Signal Scanner</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body {
+      background: black;
+      color: white;
+      font-family: monospace;
+      padding: 10px;
+    }
+    h2 {
+      color: #00ff99;
+    }
+    button {
+      background: #00ff99;
+      border: none;
+      padding: 10px 15px;
+      font-size: 16px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+    }
+    .signal-block {
+      background: #111;
+      border: 1px solid #00ff99;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 10px;
+    }
+    .short {
+      color: #ff3333;
+    }
+    .long {
+      color: #00ff00;
+    }
+  </style>
 </head>
 <body>
-  <h2>Crypto Futures Signal Scanner</h2>
-  <button onclick="scan()">Scan Now</button>
-  <div id="lastTime" style="margin-bottom:10px;"></div>
-  <div id="output">Loading...</div>
+  <h2>Crypto Futures Signal Scanner</h2>
+  <button onclick="scan()">Scan Now</button>
+  <div id="lastTime" style="margin-bottom:10px;"></div>
+  <div id="output">Loading...</div>
 
-  <script>
-    const output = document.getElementById("output");
-    const lastTime = document.getElementById("lastTime");
+  <script>
+    const output = document.getElementById("output");
+    const lastTime = document.getElementById("lastTime");
 
-    async function scan() {
-      output.innerHTML = "Scanning...";
-      const res = await fetch("https://fapi.binance.com/fapi/v1/ticker/price");
-      const coins = await res.json();
-      const usdtPairs = coins.filter(c => c.symbol.endsWith("USDT") && !c.symbol.includes("_"));
-      const results = await Promise.all(usdtPairs.map(c => analyzeSymbol(c.symbol)));
-      const filtered = results.filter(r => r);
-      output.innerHTML = filtered.length > 0 ? filtered.join("") : "No strong signals found.";
-      lastTime.innerText = "Last scanned: " + new Date().toLocaleTimeString();
-    }
+    const apiKey = 'YOUR_BINANCE_API_KEY';
+    const apiSecret = 'YOUR_BINANCE_API_SECRET';
 
-    async function analyzeSymbol(symbol) {
-      try {
-        const url = `https://fapi.binance.com/fapi/v1/klines?symbol=${symbol}&interval=15m&limit=100`;
-        const res = await fetch(url);
-        const data = await res.json();
+    async function scan() {
+      output.innerHTML = "Scanning...";
+      const res = await fetch("https://fapi.binance.com/fapi/v1/ticker/price");
+      const coins = await res.json();
+      const usdtPairs = coins.filter(c => c.symbol.endsWith("USDT") && !c.symbol.includes("_"));
+      const results = await Promise.all(usdtPairs.map(c => analyzeSymbol(c.symbol)));
+      const filtered = results.filter(r => r);
+      output.innerHTML = filtered.length > 0 ? filtered.join("") : "No strong signals found.";
+      lastTime.innerText = "Last scanned: " + new Date().toLocaleTimeString();
+    }
 
-        const closes = data.map(c => parseFloat(c[4]));
-        const volumes = data.map(c => parseFloat(c[5]));
+    async function analyzeSymbol(symbol) {
+      try {
+        const url = `https://fapi.binance.com/fapi/v1/klines?symbol=${symbol}&interval=15m&limit=100`;
+        const res = await fetch(url);
+        const data = await res.json();
 
-        const ema9 = calculateEMA(closes, 9);
-        const ema21 = calculateEMA(closes, 21);
-        const rsi = calculateRSI(closes, 14);
-        const { macd, signal } = calculateMACD(closes);
-        const lastClose = closes[closes.length - 1];
-        const lastVol = volumes[volumes.length - 1];
-        const avgVol = volumes.slice(-20).reduce((a, b) => a + b, 0) / 20;
+        const closes = data.map(c => parseFloat(c[4]));
+        const volumes = data.map(c => parseFloat(c[5]));
 
-        const latestEma9 = ema9[ema9.length - 1];
-        const latestEma21 = ema21[ema21.length - 1];
-        const latestRsi = rsi[rsi.length - 1];
-        const latestMacd = macd[macd.length - 1];
-        const latestSignal = signal[signal.length - 1];
+        const ema9 = calculateEMA(closes, 9);
+        const ema21 = calculateEMA(closes, 21);
+        const rsi = calculateRSI(closes, 14);
+        const { macd, signal } = calculateMACD(closes);
+        const lastClose = closes[closes.length - 1];
+        const lastVol = volumes[volumes.length - 1];
+        const avgVol = volumes.slice(-20).reduce((a, b) => a + b, 0) / 20;
 
-        const candleStrength = (lastClose - data[data.length - 1][1]) / lastClose;
+        const latestEma9 = ema9[ema9.length - 1];
+        const latestEma21 = ema21[ema21.length - 1];
+        const latestRsi = rsi[rsi.length - 1];
+        const latestMacd = macd[macd.length - 1];
+        const latestSignal = signal[signal.length - 1];
 
-        let signalType = null;
-        let confidence = "Normal";
+        const candleStrength = (lastClose - data[data.length - 1][1]) / lastClose;
 
-        if (
-          latestEma9 > latestEma21 &&
-          latestRsi > 50 &&
-          latestMacd > latestSignal &&
-          lastVol > avgVol * 1.2 &&
-          candleStrength > 0.002
-        ) {
-          signalType = "LONG";
-          confidence = latestRsi > 60 ? "High" : "Medium";
-        } else if (
-          latestEma9 < latestEma21 &&
-          latestRsi < 50 &&
-          latestMacd < latestSignal &&
-          lastVol > avgVol * 1.2 &&
-          candleStrength < -0.002
-        ) {
-          signalType = "SHORT";
-          confidence = latestRsi < 40 ? "High" : "Medium";
-        }
+        let signalType = null;
+        let confidence = "Normal";
 
-        if (signalType) {
-  const price = lastClose;
+        if (
+          latestEma9 > latestEma21 &&
+          latestRsi > 50 &&
+          latestMacd > latestSignal &&
+          lastVol > avgVol * 1.2 &&
+          candleStrength > 0.002
+        ) {
+          signalType = "LONG";
+          confidence = latestRsi > 60 ? "High" : "Medium";
+        } else if (
+          latestEma9 < latestEma21 &&
+          latestRsi < 50 &&
+          latestMacd < latestSignal &&
+          lastVol > avgVol * 1.2 &&
+          candleStrength < -0.002
+        ) {
+          signalType = "SHORT";
+          confidence = latestRsi < 40 ? "High" : "Medium";
+        }
 
-  // Adjust TP and SL based on LONG or SHORT
-  const tp = signalType === "LONG"
-    ? (price * 1.03).toFixed(5)   // LONG: TP = +3%
-    : (price * 0.97).toFixed(5);  // SHORT: TP = -3%
+        if (signalType) {
+          const price = lastClose;
+          const tp = signalType === "LONG" ? (price * 1.03).toFixed(5) : (price * 0.97).toFixed(5);
+          const sl = signalType === "LONG" ? (price * 0.98).toFixed(5) : (price * 1.02).toFixed(5);
+          const tradeSide = signalType === "LONG" ? "BUY" : "SELL";
 
-  const sl = signalType === "LONG"
-    ? (price * 0.98).toFixed(5)   // LONG: SL = -2%
-    : (price * 1.02).toFixed(5);  // SHORT: SL = +2%
+          return `
+            <div class="signal-block">
+              <b>📊 Symbol:</b> ${symbol}<br>
+              <b>🚨 SIGNAL:</b> <span class="${signalType === "LONG" ? "long" : "short"}">${signalType}</span><br>
+              <b>💰 Entry:</b> ${price.toFixed(4)}<br>
+              <b>⭐ TP:</b> ${tp}<br>
+              <b>⛔ SL:</b> ${sl}<br>
+              <b>⚙️ Leverage:</b> 10–20x<br>
+              <b>✅ Confidence:</b> ${confidence}<br>
+              <button onclick="placeOrder('${symbol}', '${tradeSide}', ${price.toFixed(4)}, ${tp}, ${sl})">Trade</button>
+            </div>
+          `;
+        }
+      } catch (err) {
+        console.error("Error analyzing", symbol, err);
+        return null;
+      }
+    }
 
-          return `
-            <div class="signal-block">
-              <b>📊 Symbol:</b> ${symbol}<br>
-              <b>🚨 SIGNAL:</b> <span class="${signalType === "LONG" ? "long" : "short"}">${signalType}</span><br>
-              <b>💰 Entry:</b> ${price.toFixed(4)}<br>
-              <b>⭐ TP:</b> ${tp}<br>
-              <b>⛔ SL:</b> ${sl}<br>
-              <b>⚙️ Leverage:</b> 10–20x<br>
-              <b>✅ Confidence:</b> ${confidence}
-            </div>
-          `;
-        }
-      } catch (err) {
-        console.error("Error analyzing", symbol, err);
-        return null;
-      }
-    }
+    function calculateEMA(closes, period) {
+      const k = 2 / (period + 1);
+      let ema = [closes[0]];
+      for (let i = 1; i < closes.length; i++) {
+        ema.push(closes[i] * k + ema[i - 1] * (1 - k));
+      }
+      return ema;
+    }
 
-    function calculateEMA(closes, period) {
-      const k = 2 / (period + 1);
-      let ema = [closes[0]];
-      for (let i = 1; i < closes.length; i++) {
-        ema.push(closes[i] * k + ema[i - 1] * (1 - k));
-      }
-      return ema;
-    }
+    function calculateRSI(closes, period) {
+      let gains = 0, losses = 0;
+      for (let i = 1; i <= period; i++) {
+        let diff = closes[i] - closes[i - 1];
+        if (diff >= 0) gains += diff;
+        else losses -= diff;
+      }
+      let rs = gains / losses;
+      let rsi = [100 - 100 / (1 + rs)];
 
-    function calculateRSI(closes, period) {
-      let gains = 0, losses = 0;
-      for (let i = 1; i <= period; i++) {
-        let diff = closes[i] - closes[i - 1];
-        if (diff >= 0) gains += diff;
-        else losses -= diff;
-      }
-      let rs = gains / losses;
-      let rsi = [100 - 100 / (1 + rs)];
+      for (let i = period + 1; i < closes.length; i++) {
+        let diff = closes[i] - closes[i - 1];
+        if (diff >= 0) {
+          gains = (gains * (period - 1) + diff) / period;
+          losses = (losses * (period - 1)) / period;
+        } else {
+          gains = (gains * (period - 1)) / period;
+          losses = (losses * (period - 1) - diff) / period;
+        }
+        rs = gains / losses;
+        rsi.push(100 - 100 / (1 + rs));
+      }
+      return rsi;
+    }
 
-      for (let i = period + 1; i < closes.length; i++) {
-        let diff = closes[i] - closes[i - 1];
-        if (diff >= 0) {
-          gains = (gains * (period - 1) + diff) / period;
-          losses = (losses * (period - 1)) / period;
-        } else {
-          gains = (gains * (period - 1)) / period;
-          losses = (losses * (period - 1) - diff) / period;
-        }
-        rs = gains / losses;
-        rsi.push(100 - 100 / (1 + rs));
-      }
-      return rsi;
-    }
+    function calculateMACD(closes) {
+      const ema12 = calculateEMA(closes, 12);
+      const ema26 = calculateEMA(closes, 26);
+      const macd = ema12.map((val, i) => val - ema26[i]);
+      const signal = calculateEMA(macd.slice(ema26.length - macd.length), 9);
+      return { macd: macd.slice(-signal.length), signal };
+    }
 
-    function calculateMACD(closes) {
-      const ema12 = calculateEMA(closes, 12);
-      const ema26 = calculateEMA(closes, 26);
-      const macd = ema12.map((val, i) => val - ema26[i]);
-      const signal = calculateEMA(macd.slice(ema26.length - macd.length), 9);
-      return { macd: macd.slice(-signal.length), signal };
-    }
+    function placeOrder(symbol, side, price, tp, sl) {
+      alert(`Placing ${side} order for ${symbol} at ${price}\nTP: ${tp}\nSL: ${sl}\nPosition Size: $20\nLeverage: max 20x (cross)`);
+      // Add actual Binance API integration here if needed
+    }
 
-    scan(); // auto scan on load
-  </script>
+    scan(); // auto scan on load
+  </script>
 </body>
 </html>
