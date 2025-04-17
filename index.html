@@ -5,35 +5,51 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     body {
-      background: black;
-      color: white;
-      font-family: monospace;
-      padding: 10px;
-    }
-    h2 {
-      color: #00ff99;
-    }
-    button {
-      background: #00ff99;
-      border: none;
-      padding: 10px 15px;
-      font-size: 16px;
-      border-radius: 10px;
-      margin-bottom: 10px;
-    }
-    .signal-block {
-      background: #111;
-      border: 1px solid #00ff99;
-      padding: 10px;
-      margin: 10px 0;
-      border-radius: 10px;
-    }
-    .short {
-      color: #ff3333;
-    }
-    .long {
-      color: #00ff00;
-    }
+  background-color: #121212;
+  color: #f0f0f0;
+  font-family: monospace;
+  padding: 1rem;
+}
+.signal-card {
+  border: 1px solid #333;
+  border-radius: 12px;
+  padding: 10px;
+  margin-bottom: 15px;
+  background-color: #1e1e1e;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+}
+.trade-button {
+  background-color: #00c853;
+  color: white;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  margin-top: 8px;
+}
+.trade-button:hover {
+  background-color: #00e676;
+  cursor: pointer;
+}
+#toast {
+  visibility: hidden;
+  min-width: 200px;
+  background-color: #323232;
+  color: white;
+  text-align: center;
+  padding: 10px;
+  border-radius: 10px;
+  position: fixed;
+  z-index: 1;
+  left: 50%;
+  bottom: 30px;
+  transform: translateX(-50%);
+}
+#toast.show {
+  visibility: visible;
+  animation: fadein 0.5s, fadeout 0.5s 2.5s;
+}
+@keyframes fadein { from { bottom: 20px; opacity: 0; } to { bottom: 30px; opacity: 1; } }
+@keyframes fadeout { from { bottom: 30px; opacity: 1; } to { bottom: 20px; opacity: 0; } }
   </style>
 </head>
 <body>
@@ -175,12 +191,25 @@
       return { macd: macd.slice(-signal.length), signal };
     }
 
-    function placeOrder(symbol, side, price, tp, sl) {
-      alert(`Placing ${side} order for ${symbol} at ${price}\nTP: ${tp}\nSL: ${sl}\nPosition Size: $20\nLeverage: max 20x (cross)`);
-      // Add actual Binance API integration here if needed
-    }
+    function placeOrder(symbol, side, entry, tp, sl) {
+  const msg = Placing ${side} order for ${symbol} at ${entry}\nTP: ${tp}\nSL: ${sl};
+  console.log(msg);
+
+  // Simulate response
+  const success = Math.random() > 0.1; // 90% chance of success
+
+  showToast(success ? ✅ Order placed for ${symbol} : ❌ Failed to place order for ${symbol});
+}
+
+function showToast(message) {
+  const toast = document.getElementById("toast");
+  toast.innerText = message;
+  toast.className = "show";
+  setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
+}
 
     scan(); // auto scan on load
   </script>
+  <div id="toast"></div>
 </body>
 </html>
