@@ -111,12 +111,12 @@
 
   // Adjust TP and SL based on LONG or SHORT
   const tp = signalType === "LONG"
-    ? (price * 1.0115).toFixed(5)   // LONG: TP = +1.5%
-    : (price * 0.985).toFixed(5);  // SHORT: TP = -1.5%
+    ? (price * 1.025).toFixed(5)   // LONG: TP = +2.5%
+    : (price * 0.975).toFixed(5);  // SHORT: TP = -2.5%
 
   const sl = signalType === "LONG"
-    ? (price * 0.99).toFixed(5)   // LONG: SL = -1%
-    : (price * 1.01).toFixed(5);  // SHORT: SL = +1%
+    ? (price * 0.95).toFixed(5)   // LONG: SL = -5%
+    : (price * 1.05).toFixed(5);  // SHORT: SL = +5%
 
           return `
             <div class="signal-block">
