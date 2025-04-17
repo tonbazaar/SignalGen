@@ -106,9 +106,17 @@
         }
 
         if (signalType) {
-          const price = lastClose;
-          const tp = (price * 1.03).toFixed(4);
-          const sl = (price * 0.98).toFixed(4);
+  const price = lastClose;
+
+  // Adjust TP and SL based on LONG or SHORT
+  const tp = signalType === "LONG"
+    ? (price * 1.03).toFixed(2)   // LONG: TP = +3%
+    : (price * 0.97).toFixed(2);  // SHORT: TP = -3%
+
+  const sl = signalType === "LONG"
+    ? (price * 0.98).toFixed(2)   // LONG: SL = -2%
+    : (price * 1.02).toFixed(2);  // SHORT: SL = +2%
+
           return `
             <div class="signal-block">
               <b>📊 Symbol:</b> ${symbol}<br>
