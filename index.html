@@ -192,24 +192,25 @@
     }
 
     function placeOrder(symbol, side, entry, tp, sl) {
-  const msg = Placing ${side} order for ${symbol} at ${entry}\nTP: ${tp}\nSL: ${sl};
-  console.log(msg);
+    const msg = `Placing ${side} order for ${symbol} at ${entry}\nTP: ${tp}\nSL: ${sl}`;
+    console.log(msg);
 
-  // Simulate response
-  const success = Math.random() > 0.1; // 90% chance of success
+    // Simulate response
+    const success = Math.random() > 0.1; // 90% chance of success
 
-  showToast(success ? ✅ Order placed for ${symbol} : ❌ Failed to place order for ${symbol});
+     showToast(success ? `✅ Order placed for ${symbol}` : `❌ Failed to place order for ${symbol}`);
+  }
+
+    function showToast(message) {
+     const toast = document.getElementById("toast");
+     toast.innerText = message;
+     toast.className = "show";
+     setTimeout(() => {
+     toast.className = toast.className.replace("show", "");
+  }, 3000);
 }
+</script>
 
-function showToast(message) {
-  const toast = document.getElementById("toast");
-  toast.innerText = message;
-  toast.className = "show";
-  setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
-}
-
-    scan(); // auto scan on load
-  </script>
-  <div id="toast"></div>
+<div id="toast"></div>
 </body>
 </html>
