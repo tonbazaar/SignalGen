@@ -56,13 +56,18 @@
 let allSymbols = [];
 
 async function loadSymbols() {
-  const res = await fetch("https://fapi.binance.com/fapi/v1/exchangeInfo");
-  const data = await res.json();
-  allSymbols = data.symbols
-    .filter(s => s.quoteAsset === "USDT" && s.contractType === "PERPETUAL" && s.status === "TRADING")
-    .map(s => s.symbol);
-  generateSignal();
-  setInterval(generateSignal, 180000); // Every 3 minutes
+  try {
+    const res = await fetch("https://fapi.binance.com/fapi/v1/exchangeInfo");
+    const data = await res.json();
+    allSymbols = data.symbols
+      .filter(s => s.quoteAsset === "USDT" && s.contractType === "PERPETUAL" && s.status === "TRADING")
+      .map(s => s.symbol);
+    console.log("Loaded symbols:", allSymbols.length);
+    generateSignal();
+    setInterval(generateSignal, 180000);
+  } catch (err) {
+    console.error("Failed to load symbols:", err);
+  }
 }
 
 function EMA(prices, length) {
@@ -124,7 +129,8 @@ async function fetchKlines(symbol) {
       open: parseFloat(d[1]),
       volume: parseFloat(d[5])
     }));
-  } catch {
+  } catch (err) {
+    console.error("Error fetching klines for", symbol, err);
     return null;
   }
 }
@@ -133,11 +139,10 @@ async function generateSignal() {
   const output = document.getElementById("output");
   const lastTime = document.getElementById("last-time");
   output.innerHTML = "Scanning...";
-
-  let finalSignals = "";
   let found = 0;
+  let logs = "";
 
-  const results = await Promise.all(allSymbols.map(async (symbol) => {
+  const results = await Promise.all(allSymbols.slice(0, 30).map(async (symbol) => {
     const klines = await fetchKlines(symbol);
     if (!klines || klines.length < 99) return null;
 
@@ -180,34 +185,30 @@ async function generateSignal() {
     const bullish = macdUp && macdStrong && rsi > 48 && rsi < 70 && nearEMA && strongVolume && decentVol && strongBody && prevStrongBody && prevBullish && rangeChange < 0.035;
     const bearish = macdDown && macdStrong && rsi < 52 && rsi > 30 && nearEMA && strongVolume && decentVol && strongBody && prevStrongBody && prevBearish && rangeChange > -0.035;
 
+    console.log(`${symbol} ➤ MACD: ${macd.histogram.toFixed(3)} | RSI: ${rsi.toFixed(2)} | Price: ${price.toFixed(2)} | Vol: ${currentVolume.toFixed(2)} | Signal: ${bullish ? 'LONG' : bearish ? 'SHORT' : '-'}`);
+
     if (bullish || bearish) {
       const signal = bullish ? "LONG" : "SHORT";
       const tp = (price * (bullish ? 1.03 : 0.97)).toFixed(4);
       const sl = (price * (bullish ? 0.98 : 1.02)).toFixed(4);
-
       found++;
       return `
         <div class="signal-block">
           <b>📊 Symbol:</b> ${symbol}<br>
-          <b>🚨 SIGNAL:</b> <span style="color:${bullish ? "#00ff00" : "#ff3333"}">${signal}</span><br>
+          <b>🚨 SIGNAL:</b> <span style="color:${bullish ? "#0f0" : "#f33"}">${signal}</span><br>
           <b>💰 Entry:</b> ${price.toFixed(4)}<br>
           <b>⭐ TP:</b> ${tp}<br>
           <b>⛔ SL:</b> ${sl}<br>
-          <b>⚙️ Leverage:</b> 10–20x<br>
-          <b>⏱️ Timeframe:</b> 15m<br>
-          <b>✅ Confidence:</b> HIGH<br>
-          <b>🕒 Time:</b> ${new Date().toLocaleTimeString()}<br>
         </div>`;
     }
     return null;
   }));
 
-  results.forEach(r => { if (r) finalSignals += r; });
-  output.innerHTML = finalSignals || "No sniper-grade signals right now.";
-  lastTime.innerText = `Last scan: ${new Date().toLocaleTimeString()}`;
+  const display = results.filter(r => r).join("");
+  output.innerHTML = display || "No sniper-grade signals found.";
+  lastTime.textContent = `Last checked: ${new Date().toLocaleTimeString()}`;
+  console.log(`Total signals found: ${found}`);
 }
 
 loadSymbols();
 </script>
-</body>
-</html>
