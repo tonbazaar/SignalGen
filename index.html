@@ -87,22 +87,22 @@
 
         if (
           latestEma9 > latestEma21 &&
-          latestRsi > 65 &&
+          latestRsi > 50 &&
           latestMacd > latestSignal &&
           lastVol > avgVol * 1.2 &&
           candleStrength > 0.002
         ) {
           signalType = "LONG";
-          confidence = latestRsi > 65 ? "High" : "Medium";
+          confidence = latestRsi > 55 ? "High" : "Medium";
         } else if (
           latestEma9 < latestEma21 &&
-          latestRsi < 35 &&
+          latestRsi < 45 &&
           latestMacd < latestSignal &&
           lastVol > avgVol * 1.2 &&
           candleStrength < -0.002
         ) {
           signalType = "SHORT";
-          confidence = latestRsi < 35 ? "High" : "Medium";
+          confidence = latestRsi < 45 ? "High" : "Medium";
         }
 
         if (signalType) {
