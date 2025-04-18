@@ -119,11 +119,11 @@
       if (signalType) {
         const price = lastClose;
         const tp = signalType === "LONG"
-          ? (price + latestAtr * 1.8).toFixed(6)
-          : (price - latestAtr * 1.8).toFixed(6);
+          ? (price + latestAtr * 1.5).toFixed(6)
+          : (price - latestAtr * 1.5).toFixed(6);
         const sl = signalType === "LONG"
-          ? (price - latestAtr * 2.2).toFixed(6)
-          : (price + latestAtr * 2.2).toFixed(6);
+          ? (price - latestAtr * 1.9).toFixed(6)
+          : (price + latestAtr * 1.9).toFixed(6);
 
 
       const telegramMessage = `
