@@ -216,7 +216,7 @@
   }
 
   async function sendToTelegram(message) {
-    const botToken = "YOUR_BOT_TOKEN";
+    const botToken = "7554774363:AAFGbzNsfVdNHL1ja1aKRn4bXQnpfA36wEU";
     const chatId = "@InsightFutureCalls";
     await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
       method: "POST",
@@ -237,6 +237,12 @@
       if (found) clearInterval(intervalId);
     }, 15000);
   }
+
+  let lastSignal = {};
+
+if (lastSignal[symbol] === signalType) return null;
+lastSignal[symbol] = signalType;
+
 
   scanLoop();
 </script>
