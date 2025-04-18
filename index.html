@@ -141,7 +141,7 @@ async function sendToTelegram(message) {
           ? (price - latestAtr * 2.2).toFixed(4)
           : (price + latestAtr * 2.2).toFixed(4);
 
-const chatId = "@InsightFutureCalls"; // or "-1001234567890" for private
+const telegramMessage =
 <b>📊 Symbol:</b> <code>${symbol}</code>
 <b>🚨 SIGNAL:</b> <b><code>${signalType}</code></b>
 <b>💰 Entry:</b> <code>${price.toFixed(4)}</code>
