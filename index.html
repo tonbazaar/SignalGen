@@ -109,10 +109,14 @@
 
     let signalType = null;
 
-    if (confirmLong(tf15) && confirmLong(tf1h)) signalType = "LONG";
-    else if (confirmShort(tf15) && confirmShort(tf1h)) signalType = "SHORT";
+if (confirmLong(tf15) && confirmLong(tf1h)) signalType = "LONG";
+else if (confirmShort(tf15) && confirmShort(tf1h)) signalType = "SHORT";
 
-    if (signalType) {
+// Prevent duplicate signal
+if (lastSignal[symbol] === signalType) return null;
+lastSignal[symbol] = signalType;
+
+if (signalType) {
       const price = tf15.close;
       const tp = signalType === "LONG"
         ? (price + tf15.atr * 1.8).toFixed(4)
@@ -238,13 +242,12 @@
     }, 15000);
   }
 
-  let lastSignal = {};
 
 if (lastSignal[symbol] === signalType) return null;
 lastSignal[symbol] = signalType;
 
-
   scanLoop();
+  let lastSignal = {};
 </script>
 </body>
 </html>
