@@ -132,16 +132,16 @@ async function sendToTelegram(message) {
         confidence = "High";
       }
 
-      if (signalType) {
-        const price = lastClose;
-        const tp = signalType === "LONG"
-          ? (price + latestAtr * 1.8).toFixed(4)
-          : (price - latestAtr * 1.8).toFixed(4);
-        const sl = signalType === "LONG"
-          ? (price - latestAtr * 2.2).toFixed(4)
-          : (price + latestAtr * 2.2).toFixed(4);
+        if (signalType) {
+  const price = lastClose;
+  const tp = signalType === "LONG"
+    ? (price + latestAtr * 1.8).toFixed(4)
+    : (price - latestAtr * 1.8).toFixed(4);
+  const sl = signalType === "LONG"
+    ? (price - latestAtr * 2.2).toFixed(4)
+    : (price + latestAtr * 2.2).toFixed(4);
 
-const telegramMessage =
+  const telegramMessage = `
 <b>📊 Symbol:</b> <code>${symbol}</code>
 <b>🚨 SIGNAL:</b> <b><code>${signalType}</code></b>
 <b>💰 Entry:</b> <code>${price.toFixed(4)}</code>
@@ -149,23 +149,24 @@ const telegramMessage =
 <b>⛔ SL:</b> <code>${sl}</code>
 <b>⚙️ Leverage:</b> <code>10–20x</code>
 <b>✅ Confidence:</b> <code>${confidence}</code>
-;
+  `;
 
-await sendToTelegram(telegramMessage);
-        
-        return `
-          <div class="signal-block">
-            <b>📊 Symbol:</b> ${symbol}<br>
-            <b>🚨 SIGNAL:</b> <span class="${signalType === "LONG" ? "long" : "short"}">${signalType}</span><br>
-            <b>💰 Entry:</b> ${price.toFixed(4)}<br>
-            <b>⭐ TP:</b> ${tp}<br>
-            <b>⛔ SL:</b> ${sl}<br>
-            <b>⚙️ Leverage:</b> 10–20x<br>
-            <b>✅ Confidence:</b> ${confidence}
-          </div>
-        `;
-      }
-    } catch (err) {
+  await sendToTelegram(telegramMessage);
+
+  return `
+    <div class="signal-block">
+      <b>📊 Symbol:</b> ${symbol}<br>
+      <b>🚨 SIGNAL:</b> <span class="${signalType === "LONG" ? "long" : "short"}">${signalType}</span><br>
+      <b>💰 Entry:</b> ${price.toFixed(4)}<br>
+      <b>⭐ TP:</b> ${tp}<br>
+      <b>⛔ SL:</b> ${sl}<br>
+      <b>⚙️ Leverage:</b> 10–20x<br>
+      <b>✅ Confidence:</b> ${confidence}
+    </div>
+  `;
+}
+      
+       catch (err) {
       console.error("Error analyzing", symbol, err);
       return null;
     }
