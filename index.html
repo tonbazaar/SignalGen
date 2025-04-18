@@ -264,7 +264,79 @@ async function scan() {
   lastTime.innerText = "Last scanned: " + new Date().toLocaleTimeString();
   return filtered.length > 0;
 }
+<script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/crypto-js.js"></script>
 
+<script>
+const binanceKey = "YOUR_API_KEY";
+const binanceSecret = "YOUR_API_SECRET";
+
+async function placeTrade(symbol, side, entry, tp, sl) {
+  const quantity = await getQuantity(symbol, entry);
+  const leverage = await getMaxLeverage(symbol);
+  await setLeverage(symbol, leverage);
+
+  await sendOrder(symbol, side, quantity); // Market order
+
+  // Set TP/SL (reduce only)
+  const opposite = side === "BUY" ? "SELL" : "BUY";
+  await sendLimit(symbol, opposite, quantity, tp, true); // TP
+  await sendLimit(symbol, opposite, quantity, sl, true); // SL
+}
+
+async function sendOrder(symbol, side, qty) {
+  return sendSignedRequest('/fapi/v1/order', {
+    symbol,
+    side,
+    type: "MARKET",
+    quantity: qty,
+    timestamp: Date.now()
+  }, "POST");
+}
+
+async function sendLimit(symbol, side, qty, price, reduceOnly) {
+  return sendSignedRequest('/fapi/v1/order', {
+    symbol,
+    side,
+    type: "LIMIT",
+    quantity: qty,
+    price,
+    timeInForce: "GTC",
+    reduceOnly,
+    timestamp: Date.now()
+  }, "POST");
+}
+
+async function setLeverage(symbol, lev) {
+  return sendSignedRequest('/fapi/v1/leverage', {
+    symbol,
+    leverage: lev,
+    timestamp: Date.now()
+  }, "POST");
+}
+
+async function getMaxLeverage(symbol) {
+  const res = await sendSignedRequest(`/fapi/v1/leverageBracket?timestamp=${Date.now()}`, {}, "GET");
+  const pair = res.find(p => p.symbol === symbol);
+  return pair?.brackets?.[0]?.initialLeverage ?? 20;
+}
+
+async function getQuantity(symbol, price) {
+  const usdt = 5;
+  const qty = (usdt / price).toFixed(3); // Adjust decimals if needed
+  return qty;
+}
+
+function sendSignedRequest(path, params, method = "GET") {
+  const query = new URLSearchParams(params).toString();
+  const signature = CryptoJS.HmacSHA256(query, binanceSecret).toString(CryptoJS.enc.Hex);
+  const url = `https://fapi.binance.com${path}?${query}&signature=${signature}`;
+  return fetch(url, {
+    method,
+    headers: { 'X-MBX-APIKEY': binanceKey }
+  }).then(r => r.json());
+}
+</script>
+  
 scanLoop();
 
 </script>
