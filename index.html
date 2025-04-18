@@ -201,6 +201,30 @@
     }
     return atr;
   }
+  
+let intervalId;
+
+async function scanLoop() {
+  await scan(); // first run
+  intervalId = setInterval(async () => {
+    const found = await scan();
+    if (found) clearInterval(intervalId); // stop if signal is found
+  }, 15000); // every 15s
+}
+
+async function scan() {
+  output.innerHTML = "Scanning...";
+  const res = await fetch("https://fapi.binance.com/fapi/v1/ticker/price");
+  const coins = await res.json();
+  const usdtPairs = coins.filter(c => c.symbol.endsWith("USDT") && !c.symbol.includes("_"));
+  const results = await Promise.all(usdtPairs.map(c => analyzeSymbol(c.symbol)));
+  const filtered = results.filter(r => r);
+  output.innerHTML = filtered.length > 0 ? filtered.join("") : "No strong signals found.";
+  lastTime.innerText = "Last scanned: " + new Date().toLocaleTimeString();
+  return filtered.length > 0;
+}
+
+scanLoop();
 
   scan();
 </script>
