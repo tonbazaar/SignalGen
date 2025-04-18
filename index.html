@@ -119,17 +119,17 @@
       if (signalType) {
         const price = lastClose;
         const tp = signalType === "LONG"
-          ? (price + latestAtr * 1.5).toFixed(6)
-          : (price - latestAtr * 1.5).toFixed(6);
+          ? (price + latestAtr * 1.7).toFixed(5)
+          : (price - latestAtr * 1.7).toFixed(5);
         const sl = signalType === "LONG"
-          ? (price - latestAtr * 1.9).toFixed(6)
-          : (price + latestAtr * 1.9).toFixed(6);
+          ? (price - latestAtr * 2).toFixed(5)
+          : (price + latestAtr * 2).toFixed(5);
 
 
       const telegramMessage = `
         <b>📊 Symbol:</b> <code>${symbol}</code>
         <b>🚨 SIGNAL:</b> <b><code>${signalType}</code></b>
-        <b>💰 Entry:</b> <code>${price.toFixed(6)}</code>
+        <b>💰 Entry:</b> <code>${price.toFixed(5)}</code>
         <b>⭐ TP:</b> <code>${tp}</code>
         <b>⛔ SL:</b> <code>${sl}</code>
         <b>⚙️ Leverage:</b> <code>10–20x</code>
@@ -142,7 +142,7 @@
           <div class="signal-block">
             <b>📊 Symbol:</b> ${symbol}<br>
             <b>🚨 SIGNAL:</b> <span class="${signalType === "LONG" ? "long" : "short"}">${signalType}</span><br>
-            <b>💰 Entry:</b> ${price.toFixed(6)}<br>
+            <b>💰 Entry:</b> ${price.toFixed(5)}<br>
             <b>⭐ TP:</b> ${tp}<br>
             <b>⛔ SL:</b> ${sl}<br>
             <b>⚙️ Leverage:</b> 10–20x<br>
