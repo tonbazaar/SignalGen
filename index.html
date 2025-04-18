@@ -126,7 +126,7 @@
           : (price + latestAtr * 2.2).toFixed(4);
 
 
-        const telegramMessage = `
+      const telegramMessage = `
         <b>📊 Symbol:</b> <code>${symbol}</code>
         <b>🚨 SIGNAL:</b> <b><code>${signalType}</code></b>
         <b>💰 Entry:</b> <code>${price.toFixed(4)}</code>
@@ -254,7 +254,6 @@ async function scan() {
 
 scanLoop();
 
-  scan();
 </script>
 </body>
 </html>
