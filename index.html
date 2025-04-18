@@ -44,6 +44,9 @@
 
   <!-- Replace your script section with this updated version -->
 <script>
+  const cooldowns = {}; // { symbol: timestamp }
+  const COOLDOWN_MINUTES = 10;
+  
   const output = document.getElementById("output");
   const lastTime = document.getElementById("lastTime");
 
@@ -117,6 +120,16 @@
       }
 
       if (signalType) {
+  const now = Date.now();
+  const lastSignalTime = cooldowns[symbol] || 0;
+
+  // Skip if within cooldown period
+  if (now - lastSignalTime < COOLDOWN_MINUTES * 60 * 1000) {
+    return null;
+  }
+
+  cooldowns[symbol] = now; // update cooldown
+        
         const price = lastClose;
         const tp = signalType === "LONG"
           ? (price + latestAtr * 1.6).toFixed(5)
