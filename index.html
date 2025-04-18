@@ -42,7 +42,8 @@
   <div id="lastTime" style="margin-bottom:10px;"></div>
   <div id="output">Loading...</div>
 
-  <!-- Replace your script section with this updated version -->
+  <!-- Replace your script section with this updated version --> 
+  <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/crypto-js.js"></script>
 <script>
   const cooldowns = {}; // { symbol: timestamp }
   const COOLDOWN_MINUTES = 10;
@@ -335,8 +336,8 @@ function sendSignedRequest(path, params, method = "GET") {
     headers: { 'X-MBX-APIKEY': binanceKey }
   }).then(r => r.json());
 }
-
-<script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/crypto-js.js"></script>
+  
+scanLoop();
   
 </script>
 </body>
