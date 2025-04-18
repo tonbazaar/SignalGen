@@ -87,7 +87,7 @@
 
         if (
          latestEma9 > latestEma21 &&
-         latestRsi > 50 && latestRsi < 60 &&
+         latestRsi > 50 && latestRsi < 55 &&
          latestMacd > latestSignal &&
          lastVol > avgVol * 1.2 &&
          candleStrength > 0.002
@@ -97,7 +97,7 @@
           } 
         else if (
         latestEma9 < latestEma21 &&
-        latestRsi < 50 && latestRsi > 40 &&
+        latestRsi < 50 && latestRsi > 45 &&
         latestMacd < latestSignal &&
         lastVol > avgVol * 1.2 &&
         candleStrength < -0.002
