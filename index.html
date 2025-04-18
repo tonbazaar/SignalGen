@@ -44,6 +44,34 @@
 
   <!-- Replace your script section with this updated version -->
 <script>
+  
+async function sendToTelegram(message) {
+  const botToken = "7554774363:AAFGbzNsfVdNHL1ja1aKRn4bXQnpfA36wEU";
+  const chatId = "@InsightFutureCalls"; // or use -100... for private channel
+
+  await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      chat_id: chatId,
+      text: message,
+      parse_mode: "HTML"
+    })
+  });
+}
+
+const chatId = "@InsightFutureCalls"; // or "-1001234567890" for private
+<b>📊 Symbol:</b> <code>${symbol}</code>
+<b>🚨 SIGNAL:</b> <b><code>${signalType}</code></b>
+<b>💰 Entry:</b> <code>${price.toFixed(4)}</code>
+<b>⭐ TP:</b> <code>${tp}</code>
+<b>⛔ SL:</b> <code>${sl}</code>
+<b>⚙️ Leverage:</b> <code>10–20x</code>
+<b>✅ Confidence:</b> <code>${confidence}</code>
+;
+
+await sendToTelegram(telegramMessage);
+  
   const output = document.getElementById("output");
   const lastTime = document.getElementById("lastTime");
 
