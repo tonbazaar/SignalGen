@@ -152,16 +152,18 @@
         await sendToTelegram(telegramMessage);
   
         return `
-          <div class="signal-block">
-            <b>📊 Symbol:</b> ${symbol}<br>
-            <b>🚨 SIGNAL:</b> <span class="${signalType === "LONG" ? "long" : "short"}">${signalType}</span><br>
-            <b>💰 Entry:</b> ${price.toFixed(5)}<br>
-            <b>⭐ TP:</b> ${tp}<br>
-            <b>⛔ SL:</b> ${sl}<br>
-            <b>⚙️ Leverage:</b> 10–20x<br>
-            <b>✅ Confidence:</b> ${confidence}
-          </div>
-        `;
+  <div class="signal-block">
+    <b>📊 Symbol:</b> ${symbol}<br>
+    <b>🚨 SIGNAL:</b> <span class="${signalType === "LONG" ? "long" : "short"}">${signalType}</span><br>
+    <b>💰 Entry:</b> ${price.toFixed(5)}<br>
+    <b>⭐ TP:</b> ${tp}<br>
+    <b>⛔ SL:</b> ${sl}<br>
+    <b>⚙️ Leverage:</b> ${confidence === "High" ? "20x (or max)" : "10–20x"}<br>
+    <b>✅ Confidence:</b> ${confidence}<br>
+    <button onclick="placeTrade('${symbol}', '${signalType === "LONG" ? "BUY" : "SELL"}', ${price.toFixed(5)}, ${tp}, ${sl})">Trade</button>
+  </div>
+`;
+
       }
     } catch (err) {
       console.error("Error analyzing", symbol, err);
