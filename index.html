@@ -27,6 +27,8 @@
       padding: 10px;
       margin: 10px 0;
       border-radius: 10px;
+      word-wrap: break-word;
+      font-size: 14px;
     }
     .short { color: #ff3333; }
     .long { color: #00ff00; }
@@ -41,6 +43,7 @@
 <script>
   const output = document.getElementById("output");
   const lastTime = document.getElementById("lastTime");
+  let lastSignal = {};
 
   async function scan() {
     output.innerHTML = "Scanning...";
@@ -55,77 +58,77 @@
   }
 
   async function analyzeSymbol(symbol) {
-  try {
-    const getData = async (interval) => {
-      const url = `https://fapi.binance.com/fapi/v1/klines?symbol=${symbol}&interval=${interval}&limit=100`;
-      const res = await fetch(url);
-      const data = await res.json();
-      return data;
-    };
-
-    const [data15m, data1h] = await Promise.all([getData("15m"), getData("1h")]);
-
-    const parseKline = (data) => {
-      const closes = data.map(c => parseFloat(c[4]));
-      const highs = data.map(c => parseFloat(c[2]));
-      const lows = data.map(c => parseFloat(c[3]));
-      const volumes = data.map(c => parseFloat(c[5]));
-      const open = parseFloat(data.at(-1)[1]);
-      const close = closes.at(-1);
-      const high = highs.at(-1);
-      const low = lows.at(-1);
-      const volume = volumes.at(-1);
-      const avgVol = volumes.slice(-20).reduce((a, b) => a + b, 0) / 20;
-      const ema9 = calculateEMA(closes, 9).at(-1);
-      const ema21 = calculateEMA(closes, 21).at(-1);
-      const rsi = calculateRSI(closes, 14).at(-1);
-      const { macd, signal } = calculateMACD(closes);
-      const atr = calculateATR(highs, lows, closes, 14).at(-1);
-
-      return {
-        ema9, ema21, rsi,
-        macd: macd.at(-1), signal: signal.at(-1),
-        close, open, high, low,
-        atr, volume, avgVol
+    try {
+      const getData = async (interval) => {
+        const url = `https://fapi.binance.com/fapi/v1/klines?symbol=${symbol}&interval=${interval}&limit=100`;
+        const res = await fetch(url);
+        const data = await res.json();
+        return data;
       };
-    };
 
-    const tf15 = parseKline(data15m);
-    const tf1h = parseKline(data1h);
+      const [data15m, data1h] = await Promise.all([getData("15m"), getData("1h")]);
 
-    const confirmLong = (tf) =>
-      tf.ema9 > tf.ema21 &&
-      tf.rsi >= 55 && tf.rsi <= 65 &&
-      tf.macd > tf.signal &&
-      tf.volume > tf.avgVol * 1.3 &&
-      (tf.close - tf.open) > tf.close * 0.003;
+      const parseKline = (data) => {
+        const closes = data.map(c => parseFloat(c[4]));
+        const highs = data.map(c => parseFloat(c[2]));
+        const lows = data.map(c => parseFloat(c[3]));
+        const volumes = data.map(c => parseFloat(c[5]));
+        const open = parseFloat(data.at(-1)[1]);
+        const close = closes.at(-1);
+        const high = highs.at(-1);
+        const low = lows.at(-1);
+        const volume = volumes.at(-1);
+        const avgVol = volumes.slice(-20).reduce((a, b) => a + b, 0) / 20;
+        const ema9 = calculateEMA(closes, 9).at(-1);
+        const ema21 = calculateEMA(closes, 21).at(-1);
+        const rsi = calculateRSI(closes, 14).at(-1);
+        const { macd, signal } = calculateMACD(closes);
+        const atr = calculateATR(highs, lows, closes, 14).at(-1);
 
-    const confirmShort = (tf) =>
-      tf.ema9 < tf.ema21 &&
-      tf.rsi <= 45 && tf.rsi >= 35 &&
-      tf.macd < tf.signal &&
-      tf.volume > tf.avgVol * 1.3 &&
-      (tf.close - tf.open) < -tf.close * 0.003;
+        return {
+          ema9, ema21, rsi,
+          macd: macd.at(-1), signal: signal.at(-1),
+          close, open, high, low,
+          atr, volume, avgVol
+        };
+      };
 
-    let signalType = null;
+      const tf15 = parseKline(data15m);
+      const tf1h = parseKline(data1h);
 
-if (confirmLong(tf15) && confirmLong(tf1h)) signalType = "LONG";
-else if (confirmShort(tf15) && confirmShort(tf1h)) signalType = "SHORT";
+      const confirmLong = (tf) =>
+        tf.ema9 > tf.ema21 &&
+        tf.rsi >= 55 && tf.rsi <= 65 &&
+        tf.macd > tf.signal &&
+        tf.volume > tf.avgVol * 1.3 &&
+        (tf.close - tf.open) > tf.close * 0.003;
 
-// Prevent duplicate signal
-if (lastSignal[symbol] === signalType) return null;
-lastSignal[symbol] = signalType;
+      const confirmShort = (tf) =>
+        tf.ema9 < tf.ema21 &&
+        tf.rsi <= 45 && tf.rsi >= 35 &&
+        tf.macd < tf.signal &&
+        tf.volume > tf.avgVol * 1.3 &&
+        (tf.close - tf.open) < -tf.close * 0.003;
 
-if (signalType) {
-      const price = tf15.close;
-      const tp = signalType === "LONG"
-        ? (price + tf15.atr * 1.8).toFixed(4)
-        : (price - tf15.atr * 1.8).toFixed(4);
-      const sl = signalType === "LONG"
-        ? (price - tf15.atr * 2.2).toFixed(4)
-        : (price + tf15.atr * 2.2).toFixed(4);
+      let signalType = null;
 
-      const telegramMessage = `
+      if (confirmLong(tf15) && confirmLong(tf1h)) signalType = "LONG";
+      else if (confirmShort(tf15) && confirmShort(tf1h)) signalType = "SHORT";
+
+      // Prevent duplicate signal
+      if (lastSignal[symbol] === signalType) return null;
+      lastSignal[symbol] = signalType;
+
+      if (signalType) {
+        const price = tf15.close;
+        const tp = signalType === "LONG"
+          ? (price + tf15.atr * 1.8).toFixed(4)
+          : (price - tf15.atr * 1.8).toFixed(4);
+        const sl = signalType === "LONG"
+          ? (price - tf15.atr * 2.2).toFixed(4)
+          : (price + tf15.atr * 2.2).toFixed(4);
+
+        const telegramMessage = `
 <b>📊 Symbol:</b> <code>${symbol}</code>
 <b>🚨 Multi-Timeframe SIGNAL:</b> <b><code>${signalType}</code></b>
 <b>💰 Entry:</b> <code>${price.toFixed(4)}</code>
@@ -134,25 +137,19 @@ if (signalType) {
 <b>⚙️ Leverage:</b> <code>10–15x</code>
 <b>✅ Confidence:</b> <code>Multi-TF Confirmed</code>`;
 
-      await sendToTelegram(telegramMessage);
+        await sendToTelegram(telegramMessage);
 
-      return `
-        <div class="signal-block">
-          <b>📊 Symbol:</b> ${symbol}<br>
-          <b>🚨 SIGNAL:</b> <span class="${signalType === "LONG" ? "long" : "short"}">${signalType}</span><br>
-          <b>💰 Entry:</b> ${price.toFixed(4)}<br>
-          <b>⭐ TP:</b> ${tp}<br>
-          <b>⛔ SL:</b> ${sl}<br>
-          <b>⚙️ Leverage:</b> 10–15x<br>
-          <b>✅ Confidence:</b> Multi-TF Confirmed
-        </div>`;
-    }
-  } catch (err) {
-    console.error("Error analyzing", symbol, err);
-    return null;
-  }
-}
-
+        return `
+          <div class="signal-block">
+            <b>📊 Symbol:</b> ${symbol}<br>
+            <b>🚨 SIGNAL:</b> <span class="${signalType === "LONG" ? "long" : "short"}">${signalType}</span><br>
+            <b>💰 Entry:</b> ${price.toFixed(4)}<br>
+            <b>⭐ TP:</b> ${tp}<br>
+            <b>⛔ SL:</b> ${sl}<br>
+            <b>⚙️ Leverage:</b> 10–15x<br>
+            <b>✅ Confidence:</b> Multi-TF Confirmed
+          </div>`;
+      }
 
     } catch (err) {
       console.error("Error analyzing", symbol, err);
@@ -220,7 +217,7 @@ if (signalType) {
   }
 
   async function sendToTelegram(message) {
-    const botToken = "7554774363:AAFGbzNsfVdNHL1ja1aKRn4bXQnpfA36wEU";
+    const botToken = "YOUR_BOT_TOKEN_HERE";
     const chatId = "@InsightFutureCalls";
     await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
       method: "POST",
@@ -233,21 +230,12 @@ if (signalType) {
     });
   }
 
-  let intervalId;
   async function scanLoop() {
     await scan();
-    intervalId = setInterval(async () => {
-      const found = await scan();
-      if (found) clearInterval(intervalId);
-    }, 15000);
+    setInterval(scan, 15000); // Keep scanning every 15 seconds
   }
 
-
-if (lastSignal[symbol] === signalType) return null;
-lastSignal[symbol] = signalType;
-
   scanLoop();
-  let lastSignal = {};
 </script>
 </body>
 </html>
