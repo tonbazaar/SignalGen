@@ -100,15 +100,15 @@
         tf.ema9 > tf.ema21 &&
         tf.rsi >= 55 && tf.rsi <= 65 &&
         tf.macd > tf.signal &&
-        tf.volume > tf.avgVol * 1.3 &&
-        (tf.close - tf.open) > tf.close * 0.003;
+        tf.volume > tf.avgVol * 1.2 &&
+        (tf.close - tf.open) > tf.close * 0.002;
 
       const confirmShort = (tf) =>
         tf.ema9 < tf.ema21 &&
         tf.rsi <= 45 && tf.rsi >= 35 &&
         tf.macd < tf.signal &&
-        tf.volume > tf.avgVol * 1.3 &&
-        (tf.close - tf.open) < -tf.close * 0.003;
+        tf.volume > tf.avgVol * 1.2 &&
+        (tf.close - tf.open) < -tf.close * 0.002;
 
       let signalType = null;
 
