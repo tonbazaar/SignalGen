@@ -55,102 +55,100 @@
   }
 
   async function analyzeSymbol(symbol) {
-    try {
-      const url = `https://fapi.binance.com/fapi/v1/klines?symbol=${symbol}&interval=15m&limit=100`;
+  try {
+    const getData = async (interval) => {
+      const url = `https://fapi.binance.com/fapi/v1/klines?symbol=${symbol}&interval=${interval}&limit=100`;
       const res = await fetch(url);
       const data = await res.json();
+      return data;
+    };
 
+    const [data15m, data1h] = await Promise.all([getData("15m"), getData("1h")]);
+
+    const parseKline = (data) => {
       const closes = data.map(c => parseFloat(c[4]));
       const highs = data.map(c => parseFloat(c[2]));
       const lows = data.map(c => parseFloat(c[3]));
       const volumes = data.map(c => parseFloat(c[5]));
-
-      const ema9 = calculateEMA(closes, 9);
-      const ema21 = calculateEMA(closes, 21);
-      const rsi = calculateRSI(closes, 14);
-      const { macd, signal } = calculateMACD(closes);
-      const atr = calculateATR(highs, lows, closes, 14);
-
-      const lastClose = closes.at(-1);
-      const lastOpen = parseFloat(data.at(-1)[1]);
-      const lastHigh = highs.at(-1);
-      const lastLow = lows.at(-1);
-      const lastVol = volumes.at(-1);
+      const open = parseFloat(data.at(-1)[1]);
+      const close = closes.at(-1);
+      const high = highs.at(-1);
+      const low = lows.at(-1);
+      const volume = volumes.at(-1);
       const avgVol = volumes.slice(-20).reduce((a, b) => a + b, 0) / 20;
+      const ema9 = calculateEMA(closes, 9).at(-1);
+      const ema21 = calculateEMA(closes, 21).at(-1);
+      const rsi = calculateRSI(closes, 14).at(-1);
+      const { macd, signal } = calculateMACD(closes);
+      const atr = calculateATR(highs, lows, closes, 14).at(-1);
 
-      const latestEma9 = ema9.at(-1);
-      const latestEma21 = ema21.at(-1);
-      const latestRsi = rsi.at(-1);
-      const latestMacd = macd.at(-1);
-      const latestSignal = signal.at(-1);
-      const latestAtr = atr.at(-1);
+      return {
+        ema9, ema21, rsi,
+        macd: macd.at(-1), signal: signal.at(-1),
+        close, open, high, low,
+        atr, volume, avgVol
+      };
+    };
 
-      const candleStrength = (lastClose - lastOpen) / lastClose;
-      const wickRatio = (lastHigh - lastLow) / lastClose;
-      const bodySize = Math.abs(lastClose - lastOpen) / lastClose;
+    const tf15 = parseKline(data15m);
+    const tf1h = parseKline(data1h);
 
-      let signalType = null;
-      let confidence = "Normal";
+    const confirmLong = (tf) =>
+      tf.ema9 > tf.ema21 &&
+      tf.rsi >= 55 && tf.rsi <= 65 &&
+      tf.macd > tf.signal &&
+      tf.volume > tf.avgVol * 1.3 &&
+      (tf.close - tf.open) > tf.close * 0.003;
 
-      // STRONG LONG
-      if (
-        latestEma9 > latestEma21 &&
-        latestRsi >= 55 && latestRsi <= 65 &&
-        latestMacd > latestSignal &&
-        lastVol > avgVol * 1.3 &&
-        candleStrength > 0.003 &&
-        bodySize > 0.003 &&
-        wickRatio < 0.015
-      ) {
-        signalType = "LONG";
-        confidence = "High";
-      }
+    const confirmShort = (tf) =>
+      tf.ema9 < tf.ema21 &&
+      tf.rsi <= 45 && tf.rsi >= 35 &&
+      tf.macd < tf.signal &&
+      tf.volume > tf.avgVol * 1.3 &&
+      (tf.close - tf.open) < -tf.close * 0.003;
 
-      // STRONG SHORT
-      else if (
-        latestEma9 < latestEma21 &&
-        latestRsi <= 45 && latestRsi >= 35 &&
-        latestMacd < latestSignal &&
-        lastVol > avgVol * 1.3 &&
-        candleStrength < -0.003 &&
-        bodySize > 0.003 &&
-        wickRatio < 0.015
-      ) {
-        signalType = "SHORT";
-        confidence = "High";
-      }
+    let signalType = null;
 
-      if (signalType) {
-        const price = lastClose;
-        const tp = signalType === "LONG"
-          ? (price + latestAtr * 1.8).toFixed(4)
-          : (price - latestAtr * 1.8).toFixed(4);
-        const sl = signalType === "LONG"
-          ? (price - latestAtr * 2.2).toFixed(4)
-          : (price + latestAtr * 2.2).toFixed(4);
+    if (confirmLong(tf15) && confirmLong(tf1h)) signalType = "LONG";
+    else if (confirmShort(tf15) && confirmShort(tf1h)) signalType = "SHORT";
 
-        const telegramMessage = `
+    if (signalType) {
+      const price = tf15.close;
+      const tp = signalType === "LONG"
+        ? (price + tf15.atr * 1.8).toFixed(4)
+        : (price - tf15.atr * 1.8).toFixed(4);
+      const sl = signalType === "LONG"
+        ? (price - tf15.atr * 2.2).toFixed(4)
+        : (price + tf15.atr * 2.2).toFixed(4);
+
+      const telegramMessage = `
 <b>📊 Symbol:</b> <code>${symbol}</code>
-<b>🚨 SIGNAL:</b> <b><code>${signalType}</code></b>
+<b>🚨 Multi-Timeframe SIGNAL:</b> <b><code>${signalType}</code></b>
 <b>💰 Entry:</b> <code>${price.toFixed(4)}</code>
 <b>⭐ TP:</b> <code>${tp}</code>
 <b>⛔ SL:</b> <code>${sl}</code>
 <b>⚙️ Leverage:</b> <code>10–15x</code>
-<b>✅ Confidence:</b> <code>${confidence}</code>`;
+<b>✅ Confidence:</b> <code>Multi-TF Confirmed</code>`;
 
-        await sendToTelegram(telegramMessage);
+      await sendToTelegram(telegramMessage);
 
-        return `
-          <div class="signal-block">
-            <b>📊 Symbol:</b> ${symbol}<br>
-            <b>🚨 SIGNAL:</b> <span class="${signalType === "LONG" ? "long" : "short"}">${signalType}</span><br>
-            <b>💰 Entry:</b> ${price.toFixed(4)}<br>
-            <b>⭐ TP:</b> ${tp}<br>
-            <b>⛔ SL:</b> ${sl}<br>
-            <b>⚙️ Leverage:</b> 10–15x<br>
-            <b>✅ Confidence:</b> ${confidence}
-          </div>`;
-      }
+      return `
+        <div class="signal-block">
+          <b>📊 Symbol:</b> ${symbol}<br>
+          <b>🚨 SIGNAL:</b> <span class="${signalType === "LONG" ? "long" : "short"}">${signalType}</span><br>
+          <b>💰 Entry:</b> ${price.toFixed(4)}<br>
+          <b>⭐ TP:</b> ${tp}<br>
+          <b>⛔ SL:</b> ${sl}<br>
+          <b>⚙️ Leverage:</b> 10–15x<br>
+          <b>✅ Confidence:</b> Multi-TF Confirmed
+        </div>`;
+    }
+  } catch (err) {
+    console.error("Error analyzing", symbol, err);
+    return null;
+  }
+}
+
 
     } catch (err) {
       console.error("Error analyzing", symbol, err);
