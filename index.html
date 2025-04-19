@@ -136,7 +136,7 @@ async function getPrecisionInfo(symbol) {
           latestMacd > latestSignal &&
           lastVol > avgVol * 1.3 &&
           candleStrength > 0.0025 &&
-          wickRatio < 0.013
+          wickRatio < 0.014
         ) {
           signalType = "LONG";
           confidence = "High";
@@ -146,7 +146,7 @@ async function getPrecisionInfo(symbol) {
           latestMacd < latestSignal &&
           lastVol > avgVol * 1.3 &&
           candleStrength < -0.0025 &&
-          wickRatio < 0.013
+          wickRatio < 0.014
         ) {
           signalType = "SHORT";
           confidence = "High";
