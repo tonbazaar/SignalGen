@@ -273,7 +273,7 @@ async function getPrecisionInfo(symbol) {
     await setLeverage(symbol, leverage);
 
     const adjustedPrice = parseFloat(entry).toFixed(pricePrecision);
-    const response = await sendLimit(symbol, side, quantity, adjustedPrice, false);
+    const response = await sendLimit(symbol, side, quantity, adjustedPrice, false, pricePrecision, quantityPrecision);
 
     if (!response || response.code) {
       console.error("Error placing order:", response ? response.msg : "Unknown error");
@@ -285,16 +285,16 @@ async function getPrecisionInfo(symbol) {
   }
 }
 
-    async function sendLimit(symbol, side, qty, price, reduceOnly) {
-      const params = {
-        symbol,
-        side,
-        type: "LIMIT",
-        quantity: parseFloat(qty).toFixed(3),       // force 3 decimals
-        price: parseFloat(price).toFixed(3),         // force 3 decimals
-        timeInForce: "GTC",
-        timestamp: Date.now()
-      };
+    async function sendLimit(symbol, side, qty, price, reduceOnly, pricePrecision, quantityPrecision) {
+  const params = {
+    symbol,
+    side,
+    type: "LIMIT",
+    quantity: parseFloat(qty).toFixed(quantityPrecision),
+    price: parseFloat(price).toFixed(pricePrecision),
+    timeInForce: "GTC",
+    timestamp: Date.now()
+  };
 
       if (reduceOnly) params.reduceOnly = true;
 
