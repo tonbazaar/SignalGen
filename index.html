@@ -264,45 +264,57 @@ async function getPrecisionInfo(symbol) {
     const binanceKey = "NRQ5aIWQZrRtFg7WXmAURVFo9IgDwmJBqxgNxuID9ttWmNWUqLPfVuDMwXpPjSCf";
     const binanceSecret = "Qun1mya44BXzV5DLxoRKD3AD4bv3liXgAbllBkTZySLLHkJV97bkMDTAhAOHLaLf";
 
-    async function placeTrade(symbol, side, entry) {
+    async function placeTrade(symbol, tradeSide, entry, tp, sl) {
   try {
-    const { pricePrecision, quantityPrecision } = await getPrecisionInfo(symbol);
-    const quantity = await getQuantity(symbol, entry, quantityPrecision);
-    const leverage = await getSafeLeverage(symbol);
+    // Fetch token info for leverage and quantity precision
+    const tokenInfo = await getTokenInfo(symbol);
+    const leverage = getSafeLeverage(tokenInfo.maxLeverage);
+    const precision = tokenInfo.quantityPrecision;
 
-    await setLeverage(symbol, leverage);
+    // Set leverage
+    await client.futuresLeverage({ symbol, leverage });
 
-    const adjustedPrice = parseFloat(entry).toFixed(pricePrecision);
-    const response = await sendLimit(symbol, side, quantity, adjustedPrice, false, pricePrecision, quantityPrecision);
+    // Calculate quantity (approx. $5 worth)
+    const priceData = await client.futuresMarkPrice({ symbol });
+    const markPrice = parseFloat(priceData.markPrice);
+    const quantity = parseFloat((5 / markPrice).toFixed(precision));
 
-    if (!response || response.code) {
-      console.error("Error placing order:", response ? response.msg : "Unknown error");
-      alert("Error placing order.");
-    }
+    // Place market order
+    const order = await client.futuresOrder({
+      symbol,
+      side: tradeSide,
+      type: 'MARKET',
+      quantity,
+    });
+
+    console.log(`Market order placed: ${tradeSide} ${symbol} @ ~${markPrice}`);
+
+    // Place Take Profit (LIMIT) order
+    await client.futuresOrder({
+      symbol,
+      side: tradeSide === 'BUY' ? 'SELL' : 'BUY',
+      type: 'LIMIT',
+      quantity: quantity,
+      price: tp.toFixed(precision),
+      timeInForce: 'GTC',
+      reduceOnly: true
+    });
+
+    // Place Stop Loss (STOP_MARKET) order
+    await client.futuresOrder({
+      symbol,
+      side: tradeSide === 'BUY' ? 'SELL' : 'BUY',
+      type: 'STOP_MARKET',
+      stopPrice: sl.toFixed(precision),
+      closePosition: true,
+      timeInForce: 'GTC'
+    });
+
+    console.log(`TP/SL orders placed for ${symbol} - TP: ${tp}, SL: ${sl}`);
   } catch (error) {
-    console.error("Error in placeTrade function:", error);
-    alert("An error occurred while placing the trade.");
+    console.error('Error placing trade:', error);
   }
 }
-
-async function sendLimit(symbol, side, qty, price, reduceOnly, pricePrecision, quantityPrecision) {
-  const orderParams = {
-    symbol: symbol,
-    side: side,
-    positionSide: side === 'BUY' ? 'LONG' : 'SHORT',
-    type: 'MARKET', // Or use 'LIMIT' if you want to use price
-    quantity: qty,
-    timestamp: Date.now()
-  };
-
-  if (reduceOnly) orderParams.reduceOnly = true;
-
-  const response = await sendSignedRequest('/fapi/v1/order', orderParams, "POST");
-  console.log("Order response:", response);
-  return response;
-}
-
-
     async function setLeverage(symbol, lev) {
       return sendSignedRequest('/fapi/v1/leverage', {
         symbol,
