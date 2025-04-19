@@ -134,9 +134,9 @@ async function getPrecisionInfo(symbol) {
           latestEma9 > latestEma21 &&
           latestRsi > 53 && latestRsi < 58 &&
           latestMacd > latestSignal &&
-          lastVol > avgVol * 1.2 &&
+          lastVol > avgVol * 1.4 &&
           candleStrength > 0.003 &&
-          wickRatio < 0.015
+          wickRatio < 0.0125
         ) {
           signalType = "LONG";
           confidence = "High";
@@ -144,9 +144,9 @@ async function getPrecisionInfo(symbol) {
           latestEma9 < latestEma21 &&
           latestRsi < 47 && latestRsi > 42 &&
           latestMacd < latestSignal &&
-          lastVol > avgVol * 1.2 &&
+          lastVol > avgVol * 1.4 &&
           candleStrength < -0.003 &&
-          wickRatio < 0.015
+          wickRatio < 0.0125
         ) {
           signalType = "SHORT";
           confidence = "High";
