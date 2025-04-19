@@ -351,7 +351,8 @@ async function sendLimit(symbol, side, qty, price, reduceOnly, pricePrecision, q
       .then(async r => {
         const data = await r.json();
         if (!r.ok) {
-          console.log("Binance response:", data);         console.error("Binance API error:", data);
+          console.log("Binance response:", data);         
+          console.error("Binance API error:", data);
           alert(`Binance Error: ${data.msg || "Unknown error"}`);
         }
         return data;
