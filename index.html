@@ -250,12 +250,12 @@
     const binanceSecret = "Qun1mya44BXzV5DLxoRKD3AD4bv3liXgAbllBkTZySLLHkJV97bkMDTAhAOHLaLf";
 
     async function placeTrade(symbol, side, entry) {
-  const quantity = await getQuantity(symbol, entry);
-  const leverage = await getMaxLeverage(symbol);
-  await setLeverage(symbol, leverage);
+  const quantity = await getQuantity(symbol, entry);
+  const leverage = await getMaxLeverage(symbol);
+  await setLeverage(symbol, leverage);
 
-  await sendOrder(symbol, side, quantity);
-  alert(`${symbol} ${side} order placed!`);
+  await sendLimit(symbol, side, quantity, entry, false);
+  alert(`${symbol} ${side} LIMIT order placed at ${entry}!`);
 }
 
     async function sendOrder(symbol, side, qty) {
