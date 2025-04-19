@@ -67,6 +67,19 @@
     const output = document.getElementById("output");
     const lastTime = document.getElementById("lastTime");
 
+const exchangeInfo = await fetch('https://fapi.binance.com/fapi/v1/exchangeInfo')
+  .then(res => res.json());
+const symbolInfo = exchangeInfo.symbols.find(s => s.symbol === symbol);
+const lotSize = symbolInfo.filters.find(f => f.filterType === 'LOT_SIZE');
+const priceFilter = symbolInfo.filters.find(f => f.filterType === 'PRICE_FILTER');
+
+const qtyPrecision = getPrecision(lotSize.stepSize);
+const pricePrecision = getPrecision(priceFilter.tickSize);
+
+const adjustedPrice = parseFloat(price).toFixed(pricePrecision);
+const adjustedQty = parseFloat(quantity).toFixed(qtyPrecision);
+
+
     async function scan() {
       output.innerHTML = "Scanning...";
       const res = await fetch("https://fapi.binance.com/fapi/v1/ticker/price");
