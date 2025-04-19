@@ -303,22 +303,27 @@
       return (usdt / price).toFixed(3);  // Adjust the quantity precision to 3 decimal places
     }
 
-    function sendSignedRequest(path, params, method = "GET") {
-      const query = new URLSearchParams(params).toString();
-      const signature = CryptoJS.HmacSHA256(query, binanceSecret).toString(CryptoJS.enc.Hex);
-      const url = `https://fapi.binance.com${path}?${query}&signature=${signature}`;
-      return fetch(url, {
-        method,
-        headers: { 'X-MBX-APIKEY': binanceKey }
-      }).then(async r => {
-        const data = await r.json();
-        if (!r.ok) {
-          console.error("Binance API error:", data);
-          alert(`Binance Error: ${data.msg || "Unknown error"}`);
-        }
-        return data;
-      });
+    async function sendSignedRequest(path, params, method = "GET") {
+  // Ensure the 'timestamp' parameter is included with the current Unix timestamp in milliseconds
+  params.timestamp = Date.now();
+
+  const query = new URLSearchParams(params).toString();
+  const signature = CryptoJS.HmacSHA256(query, binanceSecret).toString(CryptoJS.enc.Hex);
+  const url = `https://fapi.binance.com${path}?${query}&signature=${signature}`;
+
+  return fetch(url, {
+    method,
+    headers: { 'X-MBX-APIKEY': binanceKey }
+  }).then(async r => {
+    const data = await r.json();
+    if (!r.ok) {
+      console.error("Binance API error:", data);
+      alert(`Binance Error: ${data.msg || "Unknown error"}`);
     }
+    return data;
+  });
+}
+
   </script>
 </body>
 </html>
