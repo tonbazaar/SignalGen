@@ -1,168 +1,168 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Crypto Futures Signal Scanner</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style>
-    body {
-      background: black;
-      color: white;
-      font-family: monospace;
-      padding: 10px;
-    }
-    h2 {
-      color: #00ff99;
-    }
-    button {
-      background: #00ff99;
-      border: none;
-      padding: 8px 12px;
-      font-size: 14px;
-      border-radius: 8px;
-      margin-bottom: 10px;
-      cursor: pointer;
-      transition: background 0.3s;
-    }
-    button:hover {
-      background: #00cc77;
-    }
-    .signal-block {
-      background: #111;
-      border: 1px solid #00ff99;
-      padding: 10px;
-      margin: 10px 0;
-      border-radius: 10px;
-    }
-    .short {
-      color: #ff3333;
-    }
-    .long {
-      color: #00ff00;
-    }
-    .trade-btn {
-      background: #333;
-      color: #00ff99;
-      padding: 6px 10px;
-      font-size: 13px;
-      border: 1px solid #00ff99;
-      border-radius: 6px;
-      margin-top: 8px;
-    }
-    .trade-btn:hover {
-      background: #00ff99;
-      color: black;
-    }
-  </style>
+  <title>Crypto Futures Signal Scanner</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body {
+      background: black;
+      color: white;
+      font-family: monospace;
+      padding: 10px;
+    }
+    h2 {
+      color: #00ff99;
+    }
+    button {
+      background: #00ff99;
+      border: none;
+      padding: 8px 12px;
+      font-size: 14px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background: #00cc77;
+    }
+    .signal-block {
+      background: #111;
+      border: 1px solid #00ff99;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 10px;
+    }
+    .short {
+      color: #ff3333;
+    }
+    .long {
+      color: #00ff00;
+    }
+    .trade-btn {
+      background: #333;
+      color: #00ff99;
+      padding: 6px 10px;
+      font-size: 13px;
+      border: 1px solid #00ff99;
+      border-radius: 6px;
+      margin-top: 8px;
+    }
+    .trade-btn:hover {
+      background: #00ff99;
+      color: black;
+    }
+  </style>
 </head>
 <body>
-  <h2>Crypto Futures Signal Scanner</h2>
-  <button onclick="scan()">Scan Now</button>
-  <div id="lastTime" style="margin-bottom:10px;"></div>
-  <div id="output">Loading...</div>
+  <h2>Crypto Futures Signal Scanner</h2>
+  <button onclick="scan()">Scan Now</button>
+  <div id="lastTime" style="margin-bottom:10px;"></div>
+  <div id="output">Loading...</div>
 
-  <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/crypto-js.js"></script>
-  <script>
-    const cooldowns = {};
-    const COOLDOWN_MINUTES = 10;
-    const output = document.getElementById("output");
-    const lastTime = document.getElementById("lastTime");
+  <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/crypto-js.js"></script>
+  <script>
+    const cooldowns = {};
+    const COOLDOWN_MINUTES = 10;
+    const output = document.getElementById("output");
+    const lastTime = document.getElementById("lastTime");
 
 async function getPrecisionInfo(symbol) {
-  const res = await fetch('https://fapi.binance.com/fapi/v1/exchangeInfo');
-  const data = await res.json();
-  const symbolInfo = data.symbols.find(s => s.symbol === symbol);
-  if (!symbolInfo) throw new Error('Symbol not found');
+  const res = await fetch('https://fapi.binance.com/fapi/v1/exchangeInfo');
+  const data = await res.json();
+  const symbolInfo = data.symbols.find(s => s.symbol === symbol);
+  if (!symbolInfo) throw new Error('Symbol not found');
 
-  const priceFilter = symbolInfo.filters.find(f => f.filterType === "PRICE_FILTER");
-  const lotSize = symbolInfo.filters.find(f => f.filterType === "LOT_SIZE");
+  const priceFilter = symbolInfo.filters.find(f => f.filterType === "PRICE_FILTER");
+  const lotSize = symbolInfo.filters.find(f => f.filterType === "LOT_SIZE");
 
-  const pricePrecision = Math.round(-Math.log10(parseFloat(priceFilter.tickSize)));
-  const quantityPrecision = Math.round(-Math.log10(parseFloat(lotSize.stepSize)));
+  const pricePrecision = Math.round(-Math.log10(parseFloat(priceFilter.tickSize)));
+  const quantityPrecision = Math.round(-Math.log10(parseFloat(lotSize.stepSize)));
 
-  return { pricePrecision, quantityPrecision };
+  return { pricePrecision, quantityPrecision };
 }
 
-    async function scan() {
-      output.innerHTML = "Scanning...";
-      const res = await fetch("https://fapi.binance.com/fapi/v1/ticker/price");
-      const coins = await res.json();
-      const usdtPairs = coins.filter(c => c.symbol.endsWith("USDT") && !c.symbol.includes("_"));
-      const results = await Promise.all(usdtPairs.map(c => analyzeSymbol(c.symbol)));
-      const filtered = results.filter(r => r);
-      output.innerHTML = filtered.length > 0 ? filtered.join("") : "No strong signals found.";
-      lastTime.innerText = "Last scanned: " + new Date().toLocaleTimeString();
-      return filtered.length > 0;
-    }
+    async function scan() {
+      output.innerHTML = "Scanning...";
+      const res = await fetch("https://fapi.binance.com/fapi/v1/ticker/price");
+      const coins = await res.json();
+      const usdtPairs = coins.filter(c => c.symbol.endsWith("USDT") && !c.symbol.includes("_"));
+      const results = await Promise.all(usdtPairs.map(c => analyzeSymbol(c.symbol)));
+      const filtered = results.filter(r => r);
+      output.innerHTML = filtered.length > 0 ? filtered.join("") : "No strong signals found.";
+      lastTime.innerText = "Last scanned: " + new Date().toLocaleTimeString();
+      return filtered.length > 0;
+    }
 
-    async function analyzeSymbol(symbol) {
-      try {
-        const url = `https://fapi.binance.com/fapi/v1/klines?symbol=${symbol}&interval=5m&limit=100`;
-        const res = await fetch(url);
-        const data = await res.json();
+    async function analyzeSymbol(symbol) {
+      try {
+        const url = `https://fapi.binance.com/fapi/v1/klines?symbol=${symbol}&interval=5m&limit=100`;
+        const res = await fetch(url);
+        const data = await res.json();
 
-        const closes = data.map(c => parseFloat(c[4]));
-        const highs = data.map(c => parseFloat(c[2]));
-        const lows = data.map(c => parseFloat(c[3]));
-        const volumes = data.map(c => parseFloat(c[5]));
+        const closes = data.map(c => parseFloat(c[4]));
+        const highs = data.map(c => parseFloat(c[2]));
+        const lows = data.map(c => parseFloat(c[3]));
+        const volumes = data.map(c => parseFloat(c[5]));
 
-        const ema9 = calculateEMA(closes, 9);
-        const ema21 = calculateEMA(closes, 21);
-        const rsi = calculateRSI(closes, 14);
-        const { macd, signal } = calculateMACD(closes);
-        const atr = calculateATR(highs, lows, closes, 14);
+        const ema9 = calculateEMA(closes, 9);
+        const ema21 = calculateEMA(closes, 21);
+        const rsi = calculateRSI(closes, 14);
+        const { macd, signal } = calculateMACD(closes);
+        const atr = calculateATR(highs, lows, closes, 14);
 
-        const lastClose = closes.at(-1);
-        const lastHigh = highs.at(-1);
-        const lastLow = lows.at(-1);
-        const lastVol = volumes.at(-1);
-        const avgVol = volumes.slice(-20).reduce((a, b) => a + b, 0) / 20;
+        const lastClose = closes.at(-1);
+        const lastHigh = highs.at(-1);
+        const lastLow = lows.at(-1);
+        const lastVol = volumes.at(-1);
+        const avgVol = volumes.slice(-20).reduce((a, b) => a + b, 0) / 20;
 
-        const latestEma9 = ema9.at(-1);
-        const latestEma21 = ema21.at(-1);
-        const latestRsi = rsi.at(-1);
-        const latestMacd = macd.at(-1);
-        const latestSignal = signal.at(-1);
-        const latestAtr = atr.at(-1);
+        const latestEma9 = ema9.at(-1);
+        const latestEma21 = ema21.at(-1);
+        const latestRsi = rsi.at(-1);
+        const latestMacd = macd.at(-1);
+        const latestSignal = signal.at(-1);
+        const latestAtr = atr.at(-1);
 
-        const candleStrength = (lastClose - data.at(-1)[1]) / lastClose;
-        const wickRatio = (lastHigh - lastLow) / lastClose;
+        const candleStrength = (lastClose - data.at(-1)[1]) / lastClose;
+        const wickRatio = (lastHigh - lastLow) / lastClose;
 
-        let signalType = null;
-        let confidence = "Normal";
+        let signalType = null;
+        let confidence = "Normal";
 
-        if (
-          latestEma9 > latestEma21 &&
-          latestRsi > 52 && latestRsi < 60 &&
-          latestMacd > latestSignal &&
-          lastVol > avgVol * 1.2 &&
-          candleStrength > 0.002 &&
-          wickRatio < 0.015
-        ) {
-          signalType = "LONG";
-          confidence = "High";
-        } else if (
-          latestEma9 < latestEma21 &&
-          latestRsi < 48 && latestRsi > 40 &&
-          latestMacd < latestSignal &&
-          lastVol > avgVol * 1.2 &&
-          candleStrength < -0.002 &&
-          wickRatio < 0.015
-        ) {
-          signalType = "SHORT";
-          confidence = "High";
-        }
+        if (
+          latestEma9 > latestEma21 &&
+          latestRsi > 52 && latestRsi < 60 &&
+          latestMacd > latestSignal &&
+          lastVol > avgVol * 1.2 &&
+          candleStrength > 0.002 &&
+          wickRatio < 0.015
+        ) {
+          signalType = "LONG";
+          confidence = "High";
+        } else if (
+          latestEma9 < latestEma21 &&
+          latestRsi < 48 && latestRsi > 40 &&
+          latestMacd < latestSignal &&
+          lastVol > avgVol * 1.2 &&
+          candleStrength < -0.002 &&
+          wickRatio < 0.015
+        ) {
+          signalType = "SHORT";
+          confidence = "High";
+        }
 
-        if (signalType) {
-          const now = Date.now();
-          const lastSignalTime = cooldowns[symbol] || 0;
-          if (now - lastSignalTime < COOLDOWN_MINUTES * 60 * 1000) return null;
-          cooldowns[symbol] = now;
+        if (signalType) {
+          const now = Date.now();
+          const lastSignalTime = cooldowns[symbol] || 0;
+          if (now - lastSignalTime < COOLDOWN_MINUTES * 60 * 1000) return null;
+          cooldowns[symbol] = now;
 
-          const price = lastClose;
-          const tp = signalType === "LONG" ? (price + latestAtr * 1.6).toFixed(5) : (price - latestAtr * 1.6).toFixed(5);
-          const sl = signalType === "LONG" ? (price - latestAtr * 1.9).toFixed(5) : (price + latestAtr * 1.9).toFixed(5);
+          const price = lastClose;
+          const tp = signalType === "LONG" ? (price + latestAtr * 1.6).toFixed(5) : (price - latestAtr * 1.6).toFixed(5);
+          const sl = signalType === "LONG" ? (price - latestAtr * 1.9).toFixed(5) : (price + latestAtr * 1.9).toFixed(5);
 
-          const telegramMessage = `
+          const telegramMessage = `
 <b>📊 Symbol:</b> <code>${symbol}</code>
 <b>🚨 SIGNAL:</b> <b><code>${signalType}</code></b>
 <b>💰 Entry:</b> <code>${price.toFixed(5)}</code>
@@ -171,118 +171,118 @@ async function getPrecisionInfo(symbol) {
 <b>⚙️ Leverage:</b> <code>10–20x</code>
 <b>✅ Confidence:</b> <code>${confidence}</code>`;
 
-          await sendToTelegram(telegramMessage);
+          await sendToTelegram(telegramMessage);
 
-          return `
+          return `
 <div class="signal-block">
-  <b>📊 Symbol:</b> ${symbol}<br>
-  <b>🚨 SIGNAL:</b> <span class="${signalType === "LONG" ? "long" : "short"}">${signalType}</span><br>
-  <b>💰 Entry:</b> ${price.toFixed(5)}<br>
-  <b>⭐ TP:</b> ${tp}<br>
-  <b>⛔ SL:</b> ${sl}<br>
-  <b>⚙️ Leverage:</b> ${confidence === "High" ? "20x (or max)" : "10–20x"}<br>
-  <b>✅ Confidence:</b> ${confidence}<br>
-  <button class="trade-btn" onclick="placeTrade('${symbol}', '${signalType === "LONG" ? "BUY" : "SELL"}', '${price.toFixed(5)}')">Trade</button>
-  </div>`;
-        }
-      } catch (err) {
-        console.error("Error analyzing", symbol, err);
-        return null;
-      }
-    }
+  <b>📊 Symbol:</b> ${symbol}<br>
+  <b>🚨 SIGNAL:</b> <span class="${signalType === "LONG" ? "long" : "short"}">${signalType}</span><br>
+  <b>💰 Entry:</b> ${price.toFixed(5)}<br>
+  <b>⭐ TP:</b> ${tp}<br>
+  <b>⛔ SL:</b> ${sl}<br>
+  <b>⚙️ Leverage:</b> ${confidence === "High" ? "20x (or max)" : "10–20x"}<br>
+  <b>✅ Confidence:</b> ${confidence}<br>
+  <button class="trade-btn" onclick="placeTrade('${symbol}', '${signalType === "LONG" ? "BUY" : "SELL"}', '${price.toFixed(5)}')">Trade</button>
+  </div>`;
+        }
+      } catch (err) {
+        console.error("Error analyzing", symbol, err);
+        return null;
+      }
+    }
 
-    function calculateEMA(closes, period) {
-      const k = 2 / (period + 1);
-      let ema = [closes[0]];
-      for (let i = 1; i < closes.length; i++) {
-        ema.push(closes[i] * k + ema[i - 1] * (1 - k));
-      }
-      return ema;
-    }
+    function calculateEMA(closes, period) {
+      const k = 2 / (period + 1);
+      let ema = [closes[0]];
+      for (let i = 1; i < closes.length; i++) {
+        ema.push(closes[i] * k + ema[i - 1] * (1 - k));
+      }
+      return ema;
+    }
 
-    function calculateRSI(closes, period) {
-      let gains = 0, losses = 0;
-      for (let i = 1; i <= period; i++) {
-        let diff = closes[i] - closes[i - 1];
-        if (diff >= 0) gains += diff;
-        else losses -= diff;
-      }
-      let rs = gains / losses;
-      let rsi = [100 - 100 / (1 + rs)];
+    function calculateRSI(closes, period) {
+      let gains = 0, losses = 0;
+      for (let i = 1; i <= period; i++) {
+        let diff = closes[i] - closes[i - 1];
+        if (diff >= 0) gains += diff;
+        else losses -= diff;
+      }
+      let rs = gains / losses;
+      let rsi = [100 - 100 / (1 + rs)];
 
-      for (let i = period + 1; i < closes.length; i++) {
-        let diff = closes[i] - closes[i - 1];
-        if (diff >= 0) {
-          gains = (gains * (period - 1) + diff) / period;
-          losses = (losses * (period - 1)) / period;
-        } else {
-          gains = (gains * (period - 1)) / period;
-          losses = (losses * (period - 1) - diff) / period;
-        }
-        rs = gains / losses;
-        rsi.push(100 - 100 / (1 + rs));
-      }
-      return rsi;
-    }
+      for (let i = period + 1; i < closes.length; i++) {
+        let diff = closes[i] - closes[i - 1];
+        if (diff >= 0) {
+          gains = (gains * (period - 1) + diff) / period;
+          losses = (losses * (period - 1)) / period;
+        } else {
+          gains = (gains * (period - 1)) / period;
+          losses = (losses * (period - 1) - diff) / period;
+        }
+        rs = gains / losses;
+        rsi.push(100 - 100 / (1 + rs));
+      }
+      return rsi;
+    }
 
-    function calculateMACD(closes) {
-      const ema12 = calculateEMA(closes, 12);
-      const ema26 = calculateEMA(closes, 26);
-      const macd = ema12.map((val, i) => val - ema26[i]);
-      const signal = calculateEMA(macd.slice(ema26.length - macd.length), 9);
-      return { macd: macd.slice(-signal.length), signal };
-    }
+    function calculateMACD(closes) {
+      const ema12 = calculateEMA(closes, 12);
+      const ema26 = calculateEMA(closes, 26);
+      const macd = ema12.map((val, i) => val - ema26[i]);
+      const signal = calculateEMA(macd.slice(ema26.length - macd.length), 9);
+      return { macd: macd.slice(-signal.length), signal };
+    }
 
-    function calculateATR(highs, lows, closes, period) {
-      let trs = [];
-      for (let i = 1; i < highs.length; i++) {
-        const tr = Math.max(
-          highs[i] - lows[i],
-          Math.abs(highs[i] - closes[i - 1]),
-          Math.abs(lows[i] - closes[i - 1])
-        );
-        trs.push(tr);
-      }
-      const atr = [trs.slice(0, period).reduce((a, b) => a + b, 0) / period];
-      for (let i = period; i < trs.length; i++) {
-        atr.push((atr[atr.length - 1] * (period - 1) + trs[i]) / period);
-      }
-      return atr;
-    }
+    function calculateATR(highs, lows, closes, period) {
+      let trs = [];
+      for (let i = 1; i < highs.length; i++) {
+        const tr = Math.max(
+          highs[i] - lows[i],
+          Math.abs(highs[i] - closes[i - 1]),
+          Math.abs(lows[i] - closes[i - 1])
+        );
+        trs.push(tr);
+      }
+      const atr = [trs.slice(0, period).reduce((a, b) => a + b, 0) / period];
+      for (let i = period; i < trs.length; i++) {
+        atr.push((atr[atr.length - 1] * (period - 1) + trs[i]) / period);
+      }
+      return atr;
+    }
 
-    async function sendToTelegram(message) {
-      const botToken = "7554774363:AAFGbzNsfVdNHL1ja1aKRn4bXQnpfA36wEU";
-      const chatId = "@InsightFutureCalls";
+    async function sendToTelegram(message) {
+      const botToken = "7554774363:AAFGbzNsfVdNHL1ja1aKRn4bXQnpfA36wEU";
+      const chatId = "@InsightFutureCalls";
 
-      await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ chat_id: chatId, text: message, parse_mode: "HTML" })
-      });
-    }
+      await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ chat_id: chatId, text: message, parse_mode: "HTML" })
+      });
+    }
 
-    const binanceKey = "NRQ5aIWQZrRtFg7WXmAURVFo9IgDwmJBqxgNxuID9ttWmNWUqLPfVuDMwXpPjSCf";
-    const binanceSecret = "Qun1mya44BXzV5DLxoRKD3AD4bv3liXgAbllBkTZySLLHkJV97bkMDTAhAOHLaLf";
+    const binanceKey = "NRQ5aIWQZrRtFg7WXmAURVFo9IgDwmJBqxgNxuID9ttWmNWUqLPfVuDMwXpPjSCf";
+    const binanceSecret = "Qun1mya44BXzV5DLxoRKD3AD4bv3liXgAbllBkTZySLLHkJV97bkMDTAhAOHLaLf";
 
-    async function placeTrade(symbol, side, entry) {
-  try {
-    const { pricePrecision, quantityPrecision } = await getPrecisionInfo(symbol);
-    const quantity = await getQuantity(symbol, entry, quantityPrecision);
-    const leverage = await getSafeLeverage(symbol);
+    async function placeTrade(symbol, side, entry) {
+  try {
+    const { pricePrecision, quantityPrecision } = await getPrecisionInfo(symbol);
+    const quantity = await getQuantity(symbol, entry, quantityPrecision);
+    const leverage = await getSafeLeverage(symbol);
 
-    await setLeverage(symbol, leverage);
+    await setLeverage(symbol, leverage);
 
-    const adjustedPrice = parseFloat(entry).toFixed(pricePrecision);
-    const response = await sendLimit(symbol, side, quantity, adjustedPrice, false, pricePrecision, quantityPrecision);
+    const adjustedPrice = parseFloat(entry).toFixed(pricePrecision);
+    const response = await sendLimit(symbol, side, quantity, adjustedPrice, false, pricePrecision, quantityPrecision);
 
-    if (!response || response.code) {
-      console.error("Error placing order:", response ? response.msg : "Unknown error");
-      alert("Error placing order.");
-    }
-  } catch (error) {
-    console.error("Error in placeTrade function:", error);
-    alert("An error occurred while placing the trade.");
-  }
+    if (!response || response.code) {
+      console.error("Error placing order:", response ? response.msg : "Unknown error");
+      alert("Error placing order.");
+    }
+  } catch (error) {
+    console.error("Error in placeTrade function:", error);
+    alert("An error occurred while placing the trade.");
+  }
 }
 
 async function sendLimit(symbol, side, qty, price, reduceOnly, pricePrecision, quantityPrecision) {
@@ -303,73 +303,73 @@ async function sendLimit(symbol, side, qty, price, reduceOnly, pricePrecision, q
 }
 
 
-    async function setLeverage(symbol, lev) {
-      return sendSignedRequest('/fapi/v1/leverage', {
-        symbol,
-        leverage: lev,
-        timestamp: Date.now()
-      }, "POST");
-    }
+    async function setLeverage(symbol, lev) {
+      return sendSignedRequest('/fapi/v1/leverage', {
+        symbol,
+        leverage: lev,
+        timestamp: Date.now()
+      }, "POST");
+    }
 
-    async function getSafeLeverage(symbol) {
-  const res = await sendSignedRequest('/fapi/v1/leverageBracket', {}, 'GET');
-  
-  // res is an array of objects with symbol and brackets
-  const pair = res.find(p => p.symbol === symbol);
+    async function getSafeLeverage(symbol) {
+  const res = await sendSignedRequest('/fapi/v1/leverageBracket', {}, 'GET');
+  
+  // res is an array of objects with symbol and brackets
+  const pair = res.find(p => p.symbol === symbol);
 
-  if (!pair || !pair.brackets || pair.brackets.length === 0) {
-    console.warn(`Leverage bracket not found for ${symbol}`);
-    return 10; // default fallback leverage
-  }
+  if (!pair || !pair.brackets || pair.brackets.length === 0) {
+    console.warn(`Leverage bracket not found for ${symbol}`);
+    return 10; // default fallback leverage
+  }
 
-  const maxLeverage = pair.brackets[0].initialLeverage;
-  return Math.min(maxLeverage, 20);
+  const maxLeverage = pair.brackets[0].initialLeverage;
+  return Math.min(maxLeverage, 20);
 }
 
-    async function getQuantity(symbol, price, quantityPrecision) {
-  const usdt = 100; // USDT amount to use
-  const qty = usdt / parseFloat(price);
-  return parseFloat(qty).toFixed(quantityPrecision);
-    }
+    async function getQuantity(symbol, price, quantityPrecision) {
+  const usdt = 100; // USDT amount to use
+  const qty = usdt / parseFloat(price);
+  return parseFloat(qty).toFixed(quantityPrecision);
+    }
 
-    async function sendSignedRequest(path, params = {}, method = "GET") {
-  params.timestamp = Date.now();
-  const query = new URLSearchParams(params).toString();
-  const signature = CryptoJS.HmacSHA256(query, binanceSecret).toString(CryptoJS.enc.Hex);
+    async function sendSignedRequest(path, params = {}, method = "GET") {
+  params.timestamp = Date.now();
+  const query = new URLSearchParams(params).toString();
+  const signature = CryptoJS.HmacSHA256(query, binanceSecret).toString(CryptoJS.enc.Hex);
 
-  const fullUrl = `https://fapi.binance.com${path}?${query}&signature=${signature}`;
-  const options = {
-    method,
-    headers: { 'X-MBX-APIKEY': binanceKey }
-  };
+  const fullUrl = `https://fapi.binance.com${path}?${query}&signature=${signature}`;
+  const options = {
+    method,
+    headers: { 'X-MBX-APIKEY': binanceKey }
+  };
 
-  // For POST requests, use the body instead of query string
-  if (method === "POST") {
-    delete options.body;
-    return fetch(fullUrl, options)
-      .then(async r => {
-        const data = await r.json();
-        if (!r.ok) {
-          console.log("Binance response:", data);         
-          console.error("Binance API error:", data);
-          alert(`Binance Error: ${data.msg || "Unknown error"}`);
-        }
-        return data;
-      });
-  } else {
-    // GET request
-    return fetch(fullUrl, options)
-      .then(async r => {
-        const data = await r.json();
-        if (!r.ok) {
-          console.error("Binance API error:", data);
-          alert(`Binance Error: ${data.msg || "Unknown error"}`);
-        }
-        return data;
-      });
-  }
+  // For POST requests, use the body instead of query string
+  if (method === "POST") {
+    delete options.body;
+    return fetch(fullUrl, options)
+      .then(async r => {
+        const data = await r.json();
+        if (!r.ok) {
+          console.log("Binance response:", data);         
+          console.error("Binance API error:", data);
+          alert(`Binance Error: ${data.msg || "Unknown error"}`);
+        }
+        return data;
+      });
+  } else {
+    // GET request
+    return fetch(fullUrl, options)
+      .then(async r => {
+        const data = await r.json();
+        if (!r.ok) {
+          console.error("Binance API error:", data);
+          alert(`Binance Error: ${data.msg || "Unknown error"}`);
+        }
+        return data;
+      });
+  }
 }
 
-  </script>
+  </script>
 </body>
-  </html>
+  </html>
