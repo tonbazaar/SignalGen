@@ -254,8 +254,7 @@
   const leverage = await getMaxLeverage(symbol);
   await setLeverage(symbol, leverage);
 
-  await sendLimit(symbol, side, quantity, entry, false);
-  alert(`${symbol} ${side} LIMIT order placed at ${entry}!`);
+  await sendLimit(symbol, side, quantity, parseFloat(entry).toFixed(3), false);
 }
 
     async function sendOrder(symbol, side, qty) {
@@ -269,17 +268,22 @@
     }
 
     async function sendLimit(symbol, side, qty, price, reduceOnly) {
-      return sendSignedRequest('/fapi/v1/order', {
-        symbol,
-        side,
-        type: "LIMIT",
-        quantity: qty,
-        price,
-        timeInForce: "GTC",
-        reduceOnly,
-        timestamp: Date.now()
-      }, "POST");
-    }
+  const params = {
+    symbol,
+    side,
+    type: "LIMIT",
+    quantity: parseFloat(qty).toFixed(3),       // force 3 decimals
+    price: parseFloat(price).toFixed(3),         // force 3 decimals
+    timeInForce: "GTC",
+    timestamp: Date.now()
+  };
+
+  if (reduceOnly) params.reduceOnly = true;
+
+  const response = await sendSignedRequest('/fapi/v1/order', params, "POST");
+  console.log("LIMIT order response:", response);
+  return response;
+}
 
     async function setLeverage(symbol, lev) {
       return sendSignedRequest('/fapi/v1/leverage', {
@@ -305,10 +309,16 @@
       const signature = CryptoJS.HmacSHA256(query, binanceSecret).toString(CryptoJS.enc.Hex);
       const url = `https://fapi.binance.com${path}?${query}&signature=${signature}`;
       return fetch(url, {
-        method,
-        headers: { 'X-MBX-APIKEY': binanceKey }
-      }).then(r => r.json());
-    }
+  method,
+  headers: { 'X-MBX-APIKEY': binanceKey }
+}).then(async r => {
+  const data = await r.json();
+  if (!r.ok) {
+    console.error("Binance API error:", data);
+    alert(Binance Error: ${data.msg || "Unknown error"});
+  }
+  return data;
+});
 
     scan();
     setInterval(scan, 300000); // Scan every 5 min
