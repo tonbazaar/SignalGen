@@ -265,71 +265,71 @@ async function getPrecisionInfo(symbol) {
     const binanceSecret = "Qun1mya44BXzV5DLxoRKD3AD4bv3liXgAbllBkTZySLLHkJV97bkMDTAhAOHLaLf";
 
     async function placeTrade(symbol, side, entry, tp, sl) {
-  try {
-    const { pricePrecision, quantityPrecision } = await getPrecisionInfo(symbol);
-    const quantity = await getQuantity(symbol, entry, quantityPrecision);
-    const leverage = await getSafeLeverage(symbol);
+  try {
+    const { pricePrecision, quantityPrecision } = await getPrecisionInfo(symbol);
+    const quantity = await getQuantity(symbol, entry, quantityPrecision);
+    const leverage = await getSafeLeverage(symbol);
 
-    await setLeverage(symbol, leverage);
+    await setLeverage(symbol, leverage);
 
-    const adjustedPrice = parseFloat(entry).toFixed(pricePrecision);
-    const response = await sendLimit(symbol, side, quantity, adjustedPrice, tp, sl, false, pricePrecision, quantityPrecision);
+    const adjustedPrice = parseFloat(entry).toFixed(pricePrecision);
+    const response = await sendLimit(symbol, side, quantity, adjustedPrice, tp, sl, false, pricePrecision, quantityPrecision);
 
-    if (!response || response.code) {
-      console.error("Error placing order:", response ? response.msg : "Unknown error");
-      alert("Error placing order.");
-    }
-  } catch (error) {
-    console.error("Error in placeTrade function:", error);
-    alert("An error occurred while placing the trade.");
-  }
+    if (!response || response.code) {
+      console.error("Error placing order:", response ? response.msg : "Unknown error");
+      alert("Error placing order.");
+    }
+  } catch (error) {
+    console.error("Error in placeTrade function:", error);
+    alert("An error occurred while placing the trade.");
+  }
 }
 
 async function sendLimit(symbol, side, qty, price, tp, sl, reduceOnly, pricePrecision, quantityPrecision) {
-  const orderParams = {
-    symbol: symbol,
-    side: side,
-    positionSide: side === 'BUY' ? 'LONG' : 'SHORT',
-    type: 'MARKET',
-    quantity: qty,
-    timestamp: Date.now()
-  };
+  const orderParams = {
+    symbol: symbol,
+    side: side,
+    positionSide: side === 'BUY' ? 'LONG' : 'SHORT',
+    type: 'MARKET', // Still using MARKET as in your original
+    quantity: parseFloat(parseFloat(qty).toFixed(quantityPrecision)),
+    timestamp: Date.now()
+  };
 
-  if (reduceOnly) orderParams.reduceOnly = true;
+  if (reduceOnly) orderParams.reduceOnly = true;
 
-  const response = await sendSignedRequest('/fapi/v1/order', orderParams, "POST");
-  console.log("Order response:", response);
+  const response = await sendSignedRequest('/fapi/v1/order', orderParams, "POST");
+  console.log("Order response:", response);
 
-  if (response && !response.code) {
-    const positionSide = side === 'BUY' ? 'LONG' : 'SHORT';
-    const oppositeSide = side === 'BUY' ? 'SELL' : 'BUY';
+  if (response && !response.code) {
+    const positionSide = side === 'BUY' ? 'LONG' : 'SHORT';
+    const oppositeSide = side === 'BUY' ? 'SELL' : 'BUY';
 
-    // TP
-    await sendSignedRequest('/fapi/v1/order', {
-      symbol,
-      side: oppositeSide,
-      type: 'TAKE_PROFIT_MARKET',
-      stopPrice: tp.toFixed(pricePrecision),
-      closePosition: true,
-      positionSide,
-      timeInForce: 'GTC',
-      timestamp: Date.now()
-    }, "POST");
+    // TAKE PROFIT
+    await sendSignedRequest('/fapi/v1/order', {
+      symbol,
+      side: oppositeSide,
+      type: 'TAKE_PROFIT_MARKET',
+      stopPrice: parseFloat(tp).toFixed(pricePrecision),
+      closePosition: true,
+      positionSide,
+      priceProtect: true,
+      timestamp: Date.now()
+    }, "POST");
 
-    // SL
-    await sendSignedRequest('/fapi/v1/order', {
-      symbol,
-      side: oppositeSide,
-      type: 'STOP_MARKET',
-      stopPrice: sl.toFixed(pricePrecision),
-      closePosition: true,
-      positionSide,
-      timeInForce: 'GTC',
-      timestamp: Date.now()
-    }, "POST");
-  }
+    // STOP LOSS
+    await sendSignedRequest('/fapi/v1/order', {
+      symbol,
+      side: oppositeSide,
+      type: 'STOP_MARKET',
+      stopPrice: parseFloat(sl).toFixed(pricePrecision),
+      closePosition: true,
+      positionSide,
+      priceProtect: true,
+      timestamp: Date.now()
+    }, "POST");
+  }
 
-  return response;
+  return response;
 }
 
     async function setLeverage(symbol, lev) {
