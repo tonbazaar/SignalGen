@@ -285,7 +285,7 @@ async function getPrecisionInfo(symbol) {
   }
 }
 
-    async function sendLimit(symbol, side, qty, price, reduceOnly, pricePrecision, quantityPrecision) {
+async function sendLimit(symbol, side, qty, price, reduceOnly, pricePrecision, quantityPrecision) {
   
 const orderParams = {
   symbol: symbol,
@@ -297,7 +297,7 @@ const orderParams = {
 };
 
 
-      if (reduceOnly) params.reduceOnly = true;
+    if (reduceOnly) orderParams.reduceOnly = true;
 
       const response = await sendSignedRequest('/fapi/v1/order', params, "POST");
       console.log("LIMIT order response:", response);
