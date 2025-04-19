@@ -285,12 +285,6 @@ async function placeTrade(symbol, side, entry) {
   }
 }
     
-    catch (error) {
-    console.error("Error in placeTrade function:", error);
-    alert("An error occurred while placing the trade.");
-  }
-}
-
 async function sendLimit(symbol, side, qty, price, reduceOnly, pricePrecision, quantityPrecision) {
   const orderParams = {
     symbol: symbol,
