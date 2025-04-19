@@ -303,9 +303,8 @@
       return (usdt / price).toFixed(3);  // Adjust the quantity precision to 3 decimal places
     }
 
-    async function sendSignedRequest(path, params, method = "GET") {
-  // Ensure the 'timestamp' parameter is included with the current Unix timestamp in milliseconds
-  params.timestamp = Date.now();
+    async function sendSignedRequest(path, params, method = "GET"){
+    params.timestamp = Date.now();
 
   const query = new URLSearchParams(params).toString();
   const signature = CryptoJS.HmacSHA256(query, binanceSecret).toString(CryptoJS.enc.Hex);
