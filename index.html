@@ -311,11 +311,20 @@ async function sendLimit(symbol, side, qty, price, reduceOnly, pricePrecision, q
       }, "POST");
     }
 
-    async function getMaxLeverage(symbol) {
-  const res = await sendSignedRequest(`/fapi/v1/leverageBracket`, {}, "GET");
-  const pair = res.find(p => p.symbol === symbol);
-  return pair?.brackets?.[0]?.initialLeverage ?? 20;
+    async function getSafeLeverage(symbol) {
+  const response = await fetch('https://fapi.binance.com/fapi/v1/leverageBracket');
+  const data = await response.json();
+
+  const bracket = data.find(item => item.symbol === symbol.toUpperCase());
+  if (!bracket) return 20; // fallback to default
+
+  const maxLeverage = bracket.brackets[0].initialLeverage;
+  return Math.min(maxLeverage, 20);
 }
+
+  // Usage
+   const leverage = await getSafeLeverage("BELUSDT"); // returns safe leverage for the token
+
     
     async function getQuantity(symbol, price, quantityPrecision) {
   const usdt = 20; // USDT amount to use
