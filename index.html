@@ -182,8 +182,8 @@ async function getPrecisionInfo(symbol) {
   <b>⛔ SL:</b> ${sl}<br>
   <b>⚙️ Leverage:</b> ${confidence === "High" ? "20x (or max)" : "10–20x"}<br>
   <b>✅ Confidence:</b> ${confidence}<br>
-  <button class="trade-btn" onclick="placeTrade('${symbol}', '${signalType === "LONG" ? "BUY" : "SELL"}', ${price.toFixed(5)})">Trade</button>
-</div>`;
+  <button class="trade-btn" onclick="placeTrade('${symbol}', '${signalType === "LONG" ? "BUY" : "SELL"}', '${price.toFixed(5)}')">Trade</button>
+  </div>`;
         }
       } catch (err) {
         console.error("Error analyzing", symbol, err);
@@ -289,8 +289,8 @@ async function getPrecisionInfo(symbol) {
   
 const orderParams = {
   symbol: symbol,
-  side: signalType === 'LONG' ? 'BUY' : 'SELL',
-  positionSide: signalType === 'LONG' ? 'LONG' : 'SHORT',
+  side: side,
+  positionSide: side === 'BUY' ? 'LONG' : 'SHORT',
   type: 'MARKET',
   quantity: qty,
   timestamp: Date.now()
