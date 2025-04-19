@@ -268,7 +268,7 @@ async function getPrecisionInfo(symbol) {
   try {
     const { pricePrecision, quantityPrecision } = await getPrecisionInfo(symbol);
     const quantity = await getQuantity(symbol, entry, quantityPrecision);
-    const leverage = await getMaxLeverage(symbol);
+    const leverage = await getSafeLeverage(symbol);
 
     await setLeverage(symbol, leverage);
 
