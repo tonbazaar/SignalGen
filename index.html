@@ -288,13 +288,15 @@ async function getPrecisionInfo(symbol) {
     async function sendLimit(symbol, signalType, qty, price, reduceOnly, pricePrecision, quantityPrecision) {
   const params = {
   symbol,
-  side: signalType,  // FIXED here!
+  side: signalType,
   type: "LIMIT",
   quantity: parseFloat(qty).toFixed(quantityPrecision),
   price: parseFloat(price).toFixed(pricePrecision),
   timeInForce: "GTC",
-  timestamp: Date.now()
+  timestamp: Date.now(),
+  positionSide: "BOTH" // Use "BOTH" for One-Way Mode, or "LONG"/"SHORT" for Hedge Mode
 };
+
 
       if (reduceOnly) params.reduceOnly = true;
 
