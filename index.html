@@ -264,7 +264,7 @@ async function getPrecisionInfo(symbol) {
     const binanceKey = "NRQ5aIWQZrRtFg7WXmAURVFo9IgDwmJBqxgNxuID9ttWmNWUqLPfVuDMwXpPjSCf";
     const binanceSecret = "Qun1mya44BXzV5DLxoRKD3AD4bv3liXgAbllBkTZySLLHkJV97bkMDTAhAOHLaLf";
 
-    async function placeTrade(symbol, signalType, entry) {
+    async function placeTrade(symbol, side, entry) {
   try {
     const { pricePrecision, quantityPrecision } = await getPrecisionInfo(symbol);
     const quantity = await getQuantity(symbol, entry, quantityPrecision);
@@ -273,7 +273,7 @@ async function getPrecisionInfo(symbol) {
     await setLeverage(symbol, leverage);
 
     const adjustedPrice = parseFloat(entry).toFixed(pricePrecision);
-    const response = await sendLimit(symbol, signalType, quantity, adjustedPrice, false, pricePrecision, quantityPrecision);
+    const response = await sendLimit(symbol, side, quantity, adjustedPrice, false, pricePrecision, quantityPrecision);
 
     if (!response || response.code) {
       console.error("Error placing order:", response ? response.msg : "Unknown error");
@@ -285,16 +285,15 @@ async function getPrecisionInfo(symbol) {
   }
 }
 
-    async function sendLimit(symbol, signalType, qty, price, reduceOnly, pricePrecision, quantityPrecision) {
-  const params = {
-  symbol,
-  side: signalType,
-  type: "LIMIT",
-  quantity: parseFloat(qty).toFixed(quantityPrecision),
-  price: parseFloat(price).toFixed(pricePrecision),
-  timeInForce: "GTC",
-  timestamp: Date.now(),
-  positionSide: "BOTH" // Use "BOTH" for One-Way Mode, or "LONG"/"SHORT" for Hedge Mode
+    async function sendLimit(symbol, side, qty, price, reduceOnly, pricePrecision, quantityPrecision) {
+  
+const orderParams = {
+  symbol: symbol,
+  side: signalType === 'LONG' ? 'BUY' : 'SELL',
+  positionSide: signalType === 'LONG' ? 'LONG' : 'SHORT',
+  type: 'MARKET',
+  quantity: qty,
+  timestamp: Date.now()
 };
 
 
