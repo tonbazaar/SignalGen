@@ -303,24 +303,41 @@
       return (usdt / price).toFixed(3);  // Adjust the quantity precision to 3 decimal places
     }
 
-    async function sendSignedRequest(path, params, method = "GET"){
-    params.timestamp = Date.now();
-
+    async function sendSignedRequest(path, params = {}, method = "GET") {
+  params.timestamp = Date.now();
   const query = new URLSearchParams(params).toString();
   const signature = CryptoJS.HmacSHA256(query, binanceSecret).toString(CryptoJS.enc.Hex);
-  const url = `https://fapi.binance.com${path}?${query}&signature=${signature}`;
 
-  return fetch(url, {
+  const fullUrl = `https://fapi.binance.com${path}?${query}&signature=${signature}`;
+  const options = {
     method,
     headers: { 'X-MBX-APIKEY': binanceKey }
-  }).then(async r => {
-    const data = await r.json();
-    if (!r.ok) {
-      console.error("Binance API error:", data);
-      alert(`Binance Error: ${data.msg || "Unknown error"}`);
-    }
-    return data;
-  });
+  };
+
+  // For POST requests, use the body instead of query string
+  if (method === "POST") {
+    delete options.body;
+    return fetch(fullUrl, options)
+      .then(async r => {
+        const data = await r.json();
+        if (!r.ok) {
+          console.error("Binance API error:", data);
+          alert(`Binance Error: ${data.msg || "Unknown error"}`);
+        }
+        return data;
+      });
+  } else {
+    // GET request
+    return fetch(fullUrl, options)
+      .then(async r => {
+        const data = await r.json();
+        if (!r.ok) {
+          console.error("Binance API error:", data);
+          alert(`Binance Error: ${data.msg || "Unknown error"}`);
+        }
+        return data;
+      });
+  }
 }
 
   </script>
