@@ -317,14 +317,6 @@ async function getPrecisionInfo(symbol) {
   return pair?.brackets?.[0]?.initialLeverage ?? 20;
 }
     
-const { pricePrecision, quantityPrecision } = await getPrecisionInfo(symbol);
-    
-// Round price and quantity
-const adjustedPrice = parseFloat(price).toFixed(pricePrecision);
-const adjustedQuantity = parseFloat(usdt).toFixed(quantityPrecision);
-
-// Place the order with adjustedPrice and adjustedQuantity
-    
     async function getQuantity(symbol, price, quantityPrecision) {
   const usdt = 20; // USDT amount to use
   const qty = usdt / parseFloat(price);
