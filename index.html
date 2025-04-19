@@ -323,7 +323,7 @@ async function sendLimit(symbol, side, qty, price, reduceOnly, pricePrecision, q
 }
 
   // Usage
-   const leverage = await getSafeLeverage("BELUSDT"); // returns safe leverage for the token
+   const leverage = await getSafeLeverage("symbol"); // returns safe leverage for the token
 
     
     async function getQuantity(symbol, price, quantityPrecision) {
