@@ -287,14 +287,14 @@ async function getPrecisionInfo(symbol) {
 
     async function sendLimit(symbol, signalType, qty, price, reduceOnly, pricePrecision, quantityPrecision) {
   const params = {
-    symbol,
-    signalType,
-    type: "LIMIT",
-    quantity: parseFloat(qty).toFixed(quantityPrecision),
-    price: parseFloat(price).toFixed(pricePrecision),
-    timeInForce: "GTC",
-    timestamp: Date.now()
-  };
+  symbol,
+  side: signalType,  // FIXED here!
+  type: "LIMIT",
+  quantity: parseFloat(qty).toFixed(quantityPrecision),
+  price: parseFloat(price).toFixed(pricePrecision),
+  timeInForce: "GTC",
+  timestamp: Date.now()
+};
 
       if (reduceOnly) params.reduceOnly = true;
 
