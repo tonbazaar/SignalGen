@@ -182,7 +182,7 @@ async function getPrecisionInfo(symbol) {
   <b>⛔ SL:</b> ${sl}<br>
   <b>⚙️ Leverage:</b> ${confidence === "High" ? "20x (or max)" : "10–20x"}<br>
   <b>✅ Confidence:</b> ${confidence}<br>
-  <button class="trade-btn" onclick="placeTrade('${symbol}', '${signalType === "LONG" ? "BUY" : "SELL"}', '${price.toFixed(5)}')">Trade</button>
+  <button class="trade-btn" onclick="placeTrade('${symbol}', '${signalType === "LONG" ? "BUY" : "SELL"}', '${price.toFixed(5)}', '${tp}', '${sl}')">Trade</button>
   </div>`;
         }
       } catch (err) {
@@ -264,16 +264,23 @@ async function getPrecisionInfo(symbol) {
     const binanceKey = "NRQ5aIWQZrRtFg7WXmAURVFo9IgDwmJBqxgNxuID9ttWmNWUqLPfVuDMwXpPjSCf";
     const binanceSecret = "Qun1mya44BXzV5DLxoRKD3AD4bv3liXgAbllBkTZySLLHkJV97bkMDTAhAOHLaLf";
 
-    async function placeTrade(symbol, side, entry) {
-  try {
-    const { pricePrecision, quantityPrecision } = await getPrecisionInfo(symbol);
-    const quantity = await getQuantity(symbol, entry, quantityPrecision);
-    const leverage = await getSafeLeverage(symbol);
+    async function placeTrade(symbol, side, entry, tp, sl) {
+  // Example POST to Flask backend
+  await fetch("/api/trade", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      symbol,
+      side,
+      entry: parseFloat(entry),
+      tp: parseFloat(tp),
+      sl: parseFloat(sl)
+    })
+  });
 
-    await setLeverage(symbol, leverage);
+  alert(`Trade sent for ${symbol}`);
+}
 
-    const adjustedPrice = parseFloat(entry).toFixed(pricePrecision);
-    const response = await sendLimit(symbol, side, quantity, adjustedPrice, false, pricePrecision, quantityPrecision);
 
     if (!response || response.code) {
       console.error("Error placing order:", response ? response.msg : "Unknown error");
