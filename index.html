@@ -168,7 +168,7 @@
   <b>⚙️ Leverage:</b> ${confidence === "High" ? "20x (or max)" : "10–20x"}<br>
   <b>✅ Confidence:</b> ${confidence}<br>
   <button class="trade-btn" onclick="placeTrade('${symbol}', '${signalType === "LONG" ? "BUY" : "SELL"}', ${price.toFixed(5)})">Trade</button>
-  </div>`;
+</div>`;
         }
       } catch (err) {
         console.error("Error analyzing", symbol, err);
@@ -250,40 +250,39 @@
     const binanceSecret = "Qun1mya44BXzV5DLxoRKD3AD4bv3liXgAbllBkTZySLLHkJV97bkMDTAhAOHLaLf";
 
     async function placeTrade(symbol, side, entry) {
-  const quantity = await getQuantity(symbol, entry);
-  const leverage = await getMaxLeverage(symbol);
-  await setLeverage(symbol, leverage);
+      try {
+        const quantity = await getQuantity(symbol, entry);   // Get the quantity
+        const leverage = await getMaxLeverage(symbol);      // Get max leverage
+        await setLeverage(symbol, leverage);                // Set leverage
 
-  await sendLimit(symbol, side, quantity, parseFloat(entry).toFixed(3), false);
-}
-
-    async function sendOrder(symbol, side, qty) {
-      return sendSignedRequest('/fapi/v1/order', {
-        symbol,
-        side,
-        type: "MARKET",
-        quantity: qty,
-        timestamp: Date.now()
-      }, "POST");
+        const response = await sendLimit(symbol, side, quantity, parseFloat(entry).toFixed(3), false);
+        if (!response || response.code) {
+          console.error("Error placing order:", response ? response.msg : "Unknown error");
+          alert("Error placing order.");
+        }
+      } catch (error) {
+        console.error("Error in placeTrade function:", error);
+        alert("An error occurred while placing the trade.");
+      }
     }
 
     async function sendLimit(symbol, side, qty, price, reduceOnly) {
-  const params = {
-    symbol,
-    side,
-    type: "LIMIT",
-    quantity: parseFloat(qty).toFixed(3),       // force 3 decimals
-    price: parseFloat(price).toFixed(3),         // force 3 decimals
-    timeInForce: "GTC",
-    timestamp: Date.now()
-  };
+      const params = {
+        symbol,
+        side,
+        type: "LIMIT",
+        quantity: parseFloat(qty).toFixed(3),       // force 3 decimals
+        price: parseFloat(price).toFixed(3),         // force 3 decimals
+        timeInForce: "GTC",
+        timestamp: Date.now()
+      };
 
-  if (reduceOnly) params.reduceOnly = true;
+      if (reduceOnly) params.reduceOnly = true;
 
-  const response = await sendSignedRequest('/fapi/v1/order', params, "POST");
-  console.log("LIMIT order response:", response);
-  return response;
-}
+      const response = await sendSignedRequest('/fapi/v1/order', params, "POST");
+      console.log("LIMIT order response:", response);
+      return response;
+    }
 
     async function setLeverage(symbol, lev) {
       return sendSignedRequest('/fapi/v1/leverage', {
@@ -301,7 +300,7 @@
 
     async function getQuantity(symbol, price) {
       const usdt = 20;
-      return (usdt / price).toFixed(3);
+      return (usdt / price).toFixed(3);  // Adjust the quantity precision to 3 decimal places
     }
 
     function sendSignedRequest(path, params, method = "GET") {
@@ -309,19 +308,17 @@
       const signature = CryptoJS.HmacSHA256(query, binanceSecret).toString(CryptoJS.enc.Hex);
       const url = `https://fapi.binance.com${path}?${query}&signature=${signature}`;
       return fetch(url, {
-  method,
-  headers: { 'X-MBX-APIKEY': binanceKey }
-}).then(async r => {
-  const data = await r.json();
-  if (!r.ok) {
-    console.error("Binance API error:", data);
-    alert(Binance Error: ${data.msg || "Unknown error"});
-  }
-  return data;
-});
-
-    scan();
-    setInterval(scan, 300000); // Scan every 5 min
+        method,
+        headers: { 'X-MBX-APIKEY': binanceKey }
+      }).then(async r => {
+        const data = await r.json();
+        if (!r.ok) {
+          console.error("Binance API error:", data);
+          alert(`Binance Error: ${data.msg || "Unknown error"}`);
+        }
+        return data;
+      });
+    }
   </script>
 </body>
 </html>
