@@ -312,10 +312,17 @@ async function getPrecisionInfo(symbol) {
   const pair = res.find(p => p.symbol === symbol);
   return pair?.brackets?.[0]?.initialLeverage ?? 20;
 }
+    
+const { pricePrecision, quantityPrecision } = await getPrecisionInfo(symbol);
+// Round price and quantity
+const adjustedPrice = parseFloat(price).toFixed(pricePrecision);
+const adjustedQuantity = parseFloat(usdt).toFixed(quantityPrecision);
 
+// Place the order with adjustedPrice and adjustedQuantity
+    
     async function getQuantity(symbol, price) {
       const usdt = 20;
-      return (usdt / price).toFixed(2);  // Adjust the quantity precision to 3 decimal places
+      return (adjustedQuantity / AdjustedPrice).toFixed;  // Adjust the quantity precision to 3 decimal places
     }
 
     async function sendSignedRequest(path, params = {}, method = "GET") {
