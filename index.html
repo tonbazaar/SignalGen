@@ -285,22 +285,53 @@ async function getPrecisionInfo(symbol) {
   }
 }
 
-async function sendLimit(symbol, side, qty, price, reduceOnly, pricePrecision, quantityPrecision) {
-  const orderParams = {
+async function sendLimit(symbol, side, entryPrice, tp, sl, pricePrecision) {
+  const positionSide = side === 'BUY' ? 'LONG' : 'SHORT';
+  const closeSide = side === 'BUY' ? 'SELL' : 'BUY';
+
+  // 1. Open Market Order
+  const entryOrder = await sendSignedRequest('POST', '/fapi/v1/order', {
     symbol: symbol,
     side: side,
-    positionSide: side === 'BUY' ? 'LONG' : 'SHORT',
-    type: 'MARKET', // Or use 'LIMIT' if you want to use price
-    quantity: qty,
+    positionSide: positionSide,
+    type: 'MARKET',
+    quantity: await getPositionSize(symbol), // You can use fixed or calculated qty
     timestamp: Date.now()
+  });
+
+  // 2. Take Profit (LIMIT order with closePosition)
+  const tpOrder = await sendSignedRequest('POST', '/fapi/v1/order', {
+    symbol: symbol,
+    side: closeSide,
+    type: 'LIMIT',
+    price: tp.toFixed(pricePrecision),
+    timeInForce: 'GTC',
+    closePosition: true,
+    positionSide: positionSide,
+    reduceOnly: true,
+    timestamp: Date.now()
+  });
+
+  // 3. Stop Loss (STOP_MARKET order with closePosition)
+  const slOrder = await sendSignedRequest('POST', '/fapi/v1/order', {
+    symbol: symbol,
+    side: closeSide,
+    type: 'STOP_MARKET',
+    stopPrice: sl.toFixed(pricePrecision),
+    closePosition: true,
+    timeInForce: 'GTC',
+    positionSide: positionSide,
+    reduceOnly: true,
+    timestamp: Date.now()
+  });
+
+  return {
+    entryOrder,
+    tpOrder,
+    slOrder
   };
-
-  if (reduceOnly) orderParams.reduceOnly = true;
-
-  const response = await sendSignedRequest('/fapi/v1/order', orderParams, "POST");
-  console.log("Order response:", response);
-  return response;
 }
+
 
 
     async function setLeverage(symbol, lev) {
