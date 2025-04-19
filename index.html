@@ -138,7 +138,7 @@ async function getPrecisionInfo(symbol) {
           candleStrength > 0.002 &&
           wickRatio < 0.015
         ) {
-          signalType = "LONG";
+          signalType = "SHORT";
           confidence = "High";
         } else if (
           latestEma9 < latestEma21 &&
@@ -148,7 +148,7 @@ async function getPrecisionInfo(symbol) {
           candleStrength < -0.002 &&
           wickRatio < 0.015
         ) {
-          signalType = "SHORT";
+          signalType = "LONG";
           confidence = "High";
         }
 
