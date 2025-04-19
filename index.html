@@ -298,7 +298,7 @@
     }
 
     async function getQuantity(symbol, price) {
-      const usdt = 5;
+      const usdt = 20;
       return (usdt / price).toFixed(3);
     }
 
@@ -312,7 +312,7 @@
       }).then(r => r.json());
     }
 
-    scan(); // Run immediately
+    scanLoop();
     setInterval(scan, 15000); // Scan every 15 seconds
   </script>
 </body>
