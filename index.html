@@ -322,10 +322,6 @@ async function sendLimit(symbol, side, qty, price, reduceOnly, pricePrecision, q
   return Math.min(maxLeverage, 20);
 }
 
-  // Usage
-   const leverage = await getSafeLeverage("symbol"); // returns safe leverage for the token
-
-    
     async function getQuantity(symbol, price, quantityPrecision) {
   const usdt = 20; // USDT amount to use
   const qty = usdt / parseFloat(price);
