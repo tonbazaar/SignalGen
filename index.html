@@ -327,7 +327,7 @@ async function sendLimit(symbol, side, qty, price, reduceOnly, pricePrecision, q
 }
 
     async function getQuantity(symbol, price, quantityPrecision) {
-  const usdt = 100; // USDT amount to use
+  const usdt = 40; // USDT amount to use
   const qty = usdt / parseFloat(price);
   return parseFloat(qty).toFixed(quantityPrecision);
     }
