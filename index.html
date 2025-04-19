@@ -182,7 +182,7 @@ async function getPrecisionInfo(symbol) {
   <b>⛔ SL:</b> ${sl}<br>
   <b>⚙️ Leverage:</b> ${confidence === "High" ? "20x (or max)" : "10–20x"}<br>
   <b>✅ Confidence:</b> ${confidence}<br>
-  <button class="trade-btn" onclick="placeTrade('${symbol}', '${signalType === "LONG" ? "BUY" : "SELL"}', '${price.toFixed(5)}', '${tp}', '${sl}')">Trade</button>
+  <button class="trade-btn" onclick="placeTrade('${symbol}', '${signalType === "LONG" ? "BUY" : "SELL"}', '${price.toFixed(5)}')">Trade</button>
   </div>`;
         }
       } catch (err) {
@@ -264,23 +264,16 @@ async function getPrecisionInfo(symbol) {
     const binanceKey = "NRQ5aIWQZrRtFg7WXmAURVFo9IgDwmJBqxgNxuID9ttWmNWUqLPfVuDMwXpPjSCf";
     const binanceSecret = "Qun1mya44BXzV5DLxoRKD3AD4bv3liXgAbllBkTZySLLHkJV97bkMDTAhAOHLaLf";
 
-    async function placeTrade(symbol, side, entry, tp, sl) {
-  // Example POST to Flask backend
-  await fetch("/api/trade", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      symbol,
-      side,
-      entry: parseFloat(entry),
-      tp: parseFloat(tp),
-      sl: parseFloat(sl)
-    })
-  });
+    async function placeTrade(symbol, side, entry) {
+  try {
+    const { pricePrecision, quantityPrecision } = await getPrecisionInfo(symbol);
+    const quantity = await getQuantity(symbol, entry, quantityPrecision);
+    const leverage = await getMaxLeverage(symbol);
 
-  alert(`Trade sent for ${symbol}`);
-}
+    await setLeverage(symbol, leverage);
 
+    const adjustedPrice = parseFloat(entry).toFixed(pricePrecision);
+    const response = await sendLimit(symbol, side, quantity, adjustedPrice, false, pricePrecision, quantityPrecision);
 
     if (!response || response.code) {
       console.error("Error placing order:", response ? response.msg : "Unknown error");
@@ -292,53 +285,22 @@ async function getPrecisionInfo(symbol) {
   }
 }
 
-async function sendLimit(symbol, side, entryPrice, tp, sl, pricePrecision) {
-  const positionSide = side === 'BUY' ? 'LONG' : 'SHORT';
-  const closeSide = side === 'BUY' ? 'SELL' : 'BUY';
-
-  // 1. Open Market Order
-  const entryOrder = await sendSignedRequest('POST', '/fapi/v1/order', {
+async function sendLimit(symbol, side, qty, price, reduceOnly, pricePrecision, quantityPrecision) {
+  const orderParams = {
     symbol: symbol,
     side: side,
-    positionSide: positionSide,
-    type: 'MARKET',
-    quantity: await getPositionSize(symbol), // You can use fixed or calculated qty
+    positionSide: side === 'BUY' ? 'LONG' : 'SHORT',
+    type: 'MARKET', // Or use 'LIMIT' if you want to use price
+    quantity: qty,
     timestamp: Date.now()
-  });
-
-  // 2. Take Profit (LIMIT order with closePosition)
-  const tpOrder = await sendSignedRequest('POST', '/fapi/v1/order', {
-    symbol: symbol,
-    side: closeSide,
-    type: 'LIMIT',
-    price: tp.toFixed(pricePrecision),
-    timeInForce: 'GTC',
-    closePosition: true,
-    positionSide: positionSide,
-    reduceOnly: true,
-    timestamp: Date.now()
-  });
-
-  // 3. Stop Loss (STOP_MARKET order with closePosition)
-  const slOrder = await sendSignedRequest('POST', '/fapi/v1/order', {
-    symbol: symbol,
-    side: closeSide,
-    type: 'STOP_MARKET',
-    stopPrice: sl.toFixed(pricePrecision),
-    closePosition: true,
-    timeInForce: 'GTC',
-    positionSide: positionSide,
-    reduceOnly: true,
-    timestamp: Date.now()
-  });
-
-  return {
-    entryOrder,
-    tpOrder,
-    slOrder
   };
-}
 
+  if (reduceOnly) orderParams.reduceOnly = true;
+
+  const response = await sendSignedRequest('/fapi/v1/order', orderParams, "POST");
+  console.log("Order response:", response);
+  return response;
+}
 
 
     async function setLeverage(symbol, lev) {
@@ -349,21 +311,11 @@ async function sendLimit(symbol, side, entryPrice, tp, sl, pricePrecision) {
       }, "POST");
     }
 
-    async function getSafeLeverage(symbol) {
-  const res = await sendSignedRequest('/fapi/v1/leverageBracket', {}, 'GET');
-  
-  // res is an array of objects with symbol and brackets
+    async function getMaxLeverage(symbol) {
+  const res = await sendSignedRequest(`/fapi/v1/leverageBracket`, {}, "GET");
   const pair = res.find(p => p.symbol === symbol);
-
-  if (!pair || !pair.brackets || pair.brackets.length === 0) {
-    console.warn(`Leverage bracket not found for ${symbol}`);
-    return 10; // default fallback leverage
-  }
-
-  const maxLeverage = pair.brackets[0].initialLeverage;
-  return Math.min(maxLeverage, 20);
+  return pair?.brackets?.[0]?.initialLeverage ?? 20;
 }
-
     
     async function getQuantity(symbol, price, quantityPrecision) {
   const usdt = 20; // USDT amount to use
