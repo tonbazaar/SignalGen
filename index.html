@@ -285,12 +285,12 @@ async function getPrecisionInfo(symbol) {
   }
 }
 
-async function sendLimit(symbol, side, qty, price, reduceOnly, pricePrecision, quantityPrecision) {
+async function sendLimit(symbol, side, qty, price, tp, sl, reduceOnly, pricePrecision, quantityPrecision) {
   const orderParams = {
     symbol: symbol,
     side: side,
     positionSide: side === 'BUY' ? 'LONG' : 'SHORT',
-    type: 'MARKET', // Or use 'LIMIT' if you want to use price
+    type: 'MARKET',
     quantity: qty,
     timestamp: Date.now()
   };
@@ -299,9 +299,38 @@ async function sendLimit(symbol, side, qty, price, reduceOnly, pricePrecision, q
 
   const response = await sendSignedRequest('/fapi/v1/order', orderParams, "POST");
   console.log("Order response:", response);
+
+  if (response && !response.code) {
+    const positionSide = side === 'BUY' ? 'LONG' : 'SHORT';
+    const oppositeSide = side === 'BUY' ? 'SELL' : 'BUY';
+
+    // TP
+    await sendSignedRequest('/fapi/v1/order', {
+      symbol,
+      side: oppositeSide,
+      type: 'TAKE_PROFIT_MARKET',
+      stopPrice: tp.toFixed(pricePrecision),
+      closePosition: true,
+      positionSide,
+      timeInForce: 'GTC',
+      timestamp: Date.now()
+    }, "POST");
+
+    // SL
+    await sendSignedRequest('/fapi/v1/order', {
+      symbol,
+      side: oppositeSide,
+      type: 'STOP_MARKET',
+      stopPrice: sl.toFixed(pricePrecision),
+      closePosition: true,
+      positionSide,
+      timeInForce: 'GTC',
+      timestamp: Date.now()
+    }, "POST");
+  }
+
   return response;
 }
-
 
     async function setLeverage(symbol, lev) {
       return sendSignedRequest('/fapi/v1/leverage', {
