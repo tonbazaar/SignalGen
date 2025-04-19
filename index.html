@@ -268,7 +268,7 @@ async function getPrecisionInfo(symbol) {
   try {
     const { pricePrecision, quantityPrecision } = await getPrecisionInfo(symbol);
     const quantity = await getQuantity(symbol, entry, quantityPrecision);
-    const leverage = await getMaxLeverage(symbol);
+    const leverage = await getSafeLeverage(symbol);
 
     await setLeverage(symbol, leverage);
 
@@ -311,12 +311,21 @@ async function sendLimit(symbol, side, qty, price, reduceOnly, pricePrecision, q
       }, "POST");
     }
 
-    async function getMaxLeverage(symbol) {
-  const res = await sendSignedRequest(`/fapi/v1/leverageBracket`, {}, "GET");
+    async function getSafeLeverage(symbol) {
+  const res = await sendSignedRequest('/fapi/v1/leverageBracket', {}, 'GET');
+  
+  // res is an array of objects with symbol and brackets
   const pair = res.find(p => p.symbol === symbol);
-  return pair?.brackets?.[0]?.initialLeverage ?? 20;
+
+  if (!pair || !pair.brackets || pair.brackets.length === 0) {
+    console.warn(`Leverage bracket not found for ${symbol}`);
+    return 10; // default fallback leverage
+  }
+
+  const maxLeverage = pair.brackets[0].initialLeverage;
+  return Math.min(maxLeverage, 20);
 }
-    
+
     async function getQuantity(symbol, price, quantityPrecision) {
   const usdt = 20; // USDT amount to use
   const qty = usdt / parseFloat(price);
@@ -341,7 +350,8 @@ async function sendLimit(symbol, side, qty, price, reduceOnly, pricePrecision, q
       .then(async r => {
         const data = await r.json();
         if (!r.ok) {
-          console.log("Binance response:", data);         console.error("Binance API error:", data);
+          console.log("Binance response:", data);         
+          console.error("Binance API error:", data);
           alert(`Binance Error: ${data.msg || "Unknown error"}`);
         }
         return data;
