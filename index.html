@@ -293,10 +293,10 @@
     }
 
     async function getMaxLeverage(symbol) {
-      const res = await sendSignedRequest(`/fapi/v1/leverageBracket?timestamp=${Date.now()}`, {}, "GET");
-      const pair = res.find(p => p.symbol === symbol);
-      return pair?.brackets?.[0]?.initialLeverage ?? 20;
-    }
+  const res = await sendSignedRequest(`/fapi/v1/leverageBracket`, {}, "GET");
+  const pair = res.find(p => p.symbol === symbol);
+  return pair?.brackets?.[0]?.initialLeverage ?? 20;
+}
 
     async function getQuantity(symbol, price) {
       const usdt = 20;
