@@ -209,8 +209,8 @@ async function getPrecisionInfo(symbol) {
           cooldowns[symbol] = now;
 
           const price = side === "BUY"
-  ? lastClose + ATR * 0.3
-  : lastClose - ATR * 0.3;
+  ? lastClose + ATR * 0.2
+  : lastClose - ATR * 0.2;
 
           const tp = signalType === "LONG"
   ? (price + latestAtr * 2).toFixed(5)
