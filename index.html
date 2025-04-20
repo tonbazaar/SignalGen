@@ -364,6 +364,7 @@ async function sendLimit(symbol, side, qty, price, tp, sl, reduceOnly, pricePrec
     positionSide: side === 'BUY' ? 'LONG' : 'SHORT',
     type: 'LIMIT', 
     quantity: parseFloat(parseFloat(qty).toFixed(quantityPrecision)),
+    timeInForce: 'GTC',
     timestamp: Date.now()
   };
 
