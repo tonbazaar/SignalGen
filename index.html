@@ -224,7 +224,13 @@ async function getPrecisionInfo(symbol) {
           if (now - lastSignalTime < COOLDOWN_MINUTES * 60 * 1000) return null;
           cooldowns[symbol] = now;
 
-          const scriptprice = lastClose;
+          const signalPrice = lastClose;
+const offset = signalPrice * 0.01; // 1% of price
+
+const price = signalType === "LONG"
+  ? signalPrice - offset
+  : signalPrice + offset;
+
           const tp = signalType === "LONG" ? (price + latestAtr * 2).toFixed(5) : (price - latestAtr * 2).toFixed(5);
           const sl = signalType === "LONG" ? (price - latestAtr * 5).toFixed(5) : (price + latestAtr * 5).toFixed(5);
 
