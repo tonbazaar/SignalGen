@@ -362,7 +362,7 @@ async function sendLimit(symbol, side, qty, price, tp, sl, reduceOnly, pricePrec
     symbol: symbol,
     side: side,
     positionSide: side === 'BUY' ? 'LONG' : 'SHORT',
-    type: 'LIMIT', 
+    type: 'MARKET', 
     quantity: parseFloat(parseFloat(qty).toFixed(quantityPrecision)),
     timestamp: Date.now()
   };
