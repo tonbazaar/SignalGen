@@ -249,7 +249,7 @@ async function getPrecisionInfo(symbol) {
   <b>⛔ SL:</b> ${sl}<br>
   <b>⚙️ Leverage:</b> ${confidence === "High" ? "20x (or max)" : "10–20x"}<br>
   <b>✅ Confidence:</b> ${confidence}<br>
-  <button class="trade-btn" onclick="placeTrade('${symbol}', '${signalType === "LONG" ? "BUY" : "SELL"}', '${price.toFixed(5)}', '${tp}', '${sl}">Trade</button>
+  <button class="trade-btn" onclick="placeTrade('${symbol}', '${signalType === "LONG" ? "BUY" : "SELL"}', '${price.toFixed(5)}', '${tp}', '${sl}'">Trade</button>
   </div>`;
         }
       } catch (err) {
