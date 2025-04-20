@@ -433,7 +433,7 @@ async function sendLimit(symbol, side, qty, price, tp, sl, reduceOnly, pricePrec
   return parseFloat(qty).toFixed(quantityPrecision);
     }
 
-    async function monitorBreakEvenStop(symbol, signalType, tp1, entryPrice, pricePrecision) {
+    async function monitorBreakEvenStop(symbol, signalType, tp1, price, pricePrecision) {
   const oppositeSide = signalType === "LONG" ? "SELL" : "BUY";
   const positionSide = signalType === "LONG" ? "LONG" : "SHORT";
 
@@ -456,7 +456,7 @@ async function sendLimit(symbol, side, qty, price, tp, sl, reduceOnly, pricePrec
           symbol,
           side: oppositeSide,
           type: 'STOP_MARKET',
-          stopPrice: parseFloat(entryPrice).toFixed(pricePrecision),
+          stopPrice: parseFloat(price).toFixed(pricePrecision),
           closePosition: true,
           positionSide,
           priceProtect: true,
