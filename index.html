@@ -225,14 +225,14 @@ async function getPrecisionInfo(symbol) {
           cooldowns[symbol] = now;
 
           const signalPrice = lastClose;
-const offset = signalPrice * 0.005; // 0.5% of price
+const offset = signalPrice * 0.003; // 0.3% of price
 
 const price = signalType === "LONG"
   ? signalPrice - offset
   : signalPrice + offset;
 
           const tp = signalType === "LONG" ? (signalPrice + latestAtr * 2).toFixed(5) : (signalPrice - latestAtr * 2).toFixed(5);
-          const sl = signalType === "LONG" ? (signalPrice - latestAtr * 3.5).toFixed(5) : (signalPrice + latestAtr * 3.5).toFixed(5);
+          const sl = signalType === "LONG" ? (signalPrice - latestAtr * 3).toFixed(5) : (signalPrice + latestAtr * 3).toFixed(5);
 
           const telegramMessage = `
 <b>📊 Symbol:</b> <code>${symbol}</code>
