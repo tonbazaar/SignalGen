@@ -224,7 +224,12 @@ async function getPrecisionInfo(symbol) {
           if (now - lastSignalTime < COOLDOWN_MINUTES * 60 * 1000) return null;
           cooldowns[symbol] = now;
 
-          const price = lastClose;
+          const scriptprice = lastClose;
+
+          const price = signalType === "LONG"
+  ? scriptprice - latestAtr * 0.2
+  : scriptprice + latestAtr * 0.2;
+
           const tp = signalType === "LONG" ? (price + latestAtr * 2).toFixed(5) : (price - latestAtr * 2).toFixed(5);
           const sl = signalType === "LONG" ? (price - latestAtr * 5).toFixed(5) : (price + latestAtr * 5).toFixed(5);
 
@@ -356,7 +361,7 @@ async function sendLimit(symbol, side, qty, price, tp, sl, reduceOnly, pricePrec
     symbol: symbol,
     side: side,
     positionSide: side === 'BUY' ? 'LONG' : 'SHORT',
-    type: 'MARKET', // Still using MARKET as in your original
+    type: 'LIMIT', 
     quantity: parseFloat(parseFloat(qty).toFixed(quantityPrecision)),
     timestamp: Date.now()
   };
