@@ -231,8 +231,8 @@ const price = signalType === "LONG"
   ? signalPrice - offset
   : signalPrice + offset;
 
-          const tp = signalType === "LONG" ? (price + latestAtr * 2).toFixed(5) : (price - latestAtr * 2).toFixed(5);
-          const sl = signalType === "LONG" ? (price - latestAtr * 5).toFixed(5) : (price + latestAtr * 5).toFixed(5);
+          const tp = signalType === "LONG" ? (signalPrice + latestAtr * 2).toFixed(5) : (price - latestAtr * 2).toFixed(5);
+          const sl = signalType === "LONG" ? (signalPrice - latestAtr * 5).toFixed(5) : (price + latestAtr * 5).toFixed(5);
 
           const telegramMessage = `
 <b>📊 Symbol:</b> <code>${symbol}</code>
@@ -362,7 +362,7 @@ async function sendLimit(symbol, side, qty, price, tp, sl, reduceOnly, pricePrec
     symbol: symbol,
     side: side,
     positionSide: side === 'BUY' ? 'LONG' : 'SHORT',
-    type: 'MARKET', 
+    type: 'LIMIT', 
     quantity: parseFloat(parseFloat(qty).toFixed(quantityPrecision)),
     timestamp: Date.now()
   };
