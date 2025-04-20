@@ -230,6 +230,10 @@ async function getPrecisionInfo(symbol) {
           const sl = signalType === "LONG" ? (price - latestAtr * 3).toFixed(5) : (price + latestAtr * 3).toFixed(5);
           const tp1 = signalType === "LONG" ? (price + latestAtr).toFixed(5) : (price - latestAtr).toFixed(5);
 
+          const { pricePrecision } = await getPrecisionInfo(symbol);
+          monitorBreakEvenStop(symbol, signalType, tp1, price, pricePrecision);
+
+
           const telegramMessage = `
 <b>📊 Symbol:</b> <code>${symbol}</code>
 <b>🚨 SIGNAL:</b> <b><code>${signalType}</code></b>
@@ -250,7 +254,7 @@ async function getPrecisionInfo(symbol) {
   <b>⛔ SL:</b> ${sl}<br>
   <b>⚙️ Leverage:</b> ${confidence === "High" ? "20x (or max)" : "10–20x"}<br>
   <b>✅ Confidence:</b> ${confidence}<br>
-  <button class="trade-btn" onclick="placeTrade('${symbol}', '${signalType === "LONG" ? "BUY" : "SELL"}', '${price.toFixed(5)}', '${tp}', '${sl}')">Trade</button>
+  <button class="trade-btn" onclick="placeTrade('${symbol}', '${signalType === "LONG" ? "BUY" : "SELL"}', '${price.toFixed(5)}', '${tp}', '${sl},'{tp1}'">Trade</button>
   </div>`;
         }
       } catch (err) {
