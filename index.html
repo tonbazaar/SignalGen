@@ -117,7 +117,7 @@ let autoScanActive = false;
     }
     
     const cooldowns = {};
-    const COOLDOWN_MINUTES = 10;
+    const COOLDOWN_MINUTES = 60;
     const output = document.getElementById("output");
     const lastTime = document.getElementById("lastTime");
 
@@ -140,7 +140,7 @@ async function getPrecisionInfo(symbol) {
   if (!autoTriggered) {
     clearInterval(scanInterval); // Reset interval when manually scanning
     autoScanActive = true;
-    scanInterval = setInterval(() => scan(true), 1500); // Run every 15s
+    scanInterval = setInterval(() => scan(true), 15000); // Run every 15s
   }
 
   output.innerHTML = "Scanning...";
