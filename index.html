@@ -360,7 +360,7 @@ async function placeTrade(symbol, side, entry, tp, sl) {
   }
 }
 
-async function sendMarket(symbol, side, qty, price, tp, sl, reduceOnly, pricePrecision, quantityPrecision) {
+async function sendLimit(symbol, side, qty, price, tp, sl, reduceOnly, pricePrecision, quantityPrecision) {
   const orderParams = {
   symbol: symbol,
   side: side,
