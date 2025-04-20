@@ -330,27 +330,6 @@ async function getPrecisionInfo(symbol) {
     const binanceKey = "NRQ5aIWQZrRtFg7WXmAURVFo9IgDwmJBqxgNxuID9ttWmNWUqLPfVuDMwXpPjSCf";
     const binanceSecret = "Qun1mya44BXzV5DLxoRKD3AD4bv3liXgAbllBkTZySLLHkJV97bkMDTAhAOHLaLf";
 
-    async function placeTrade(symbol, side, entry, tp, sl) {
-  try {
-    const { pricePrecision, quantityPrecision } = await getPrecisionInfo(symbol);
-    const quantity = await getQuantity(symbol, entry, quantityPrecision);
-    const leverage = await getSafeLeverage(symbol);
-
-    await setLeverage(symbol, leverage);
-
-    const adjustedPrice = parseFloat(entry).toFixed(pricePrecision);
-    const response = await sendLimit(symbol, side, quantity, adjustedPrice, tp, sl, false, pricePrecision, quantityPrecision);
-
-    if (!response || response.code) {
-      console.error("Error placing order:", response ? response.msg : "Unknown error");
-      alert("Error placing order.");
-    }
-  } catch (error) {
-    console.error("Error in placeTrade function:", error);
-    alert("An error occurred while placing the trade.");
-  }
-}
-
 async function placeTrade(symbol, side, entry, tp, sl) {
   try {
     const { pricePrecision, quantityPrecision } = await getPrecisionInfo(symbol);
