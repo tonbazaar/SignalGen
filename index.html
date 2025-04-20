@@ -228,6 +228,7 @@ async function getPrecisionInfo(symbol) {
           const tpBuffer = price * 0.001;
           const tp = signalType === "LONG" ? (price + latestAtr * 2 - tpBuffer).toFixed(5) : (price - latestAtr * 2 - tpBuffer).toFixed(5);
           const sl = signalType === "LONG" ? (price - latestAtr * 3).toFixed(5) : (price + latestAtr * 3).toFixed(5);
+          const tp1 = signalType === "LONG" ? (price + latestAtr).toFixed(5) : (price - latestAtr).toFixed(5);
 
           const telegramMessage = `
 <b>📊 Symbol:</b> <code>${symbol}</code>
@@ -333,6 +334,8 @@ async function getPrecisionInfo(symbol) {
 
 async function placeTrade(symbol, side, entry, tp, sl) {
   try {
+    monitorBreakEvenStop(symbol, signalType, tp1, price, pricePrecision);
+
     const { pricePrecision, quantityPrecision } = await getPrecisionInfo(symbol);
     const quantity = await getQuantity(symbol, entry, quantityPrecision);
     const leverage = await getSafeLeverage(symbol);
@@ -428,6 +431,44 @@ async function sendLimit(symbol, side, qty, price, tp, sl, reduceOnly, pricePrec
   return parseFloat(qty).toFixed(quantityPrecision);
     }
 
+    async function monitorBreakEvenStop(symbol, signalType, tp1, entryPrice, pricePrecision) {
+  const oppositeSide = signalType === "LONG" ? "SELL" : "BUY";
+  const positionSide = signalType === "LONG" ? "LONG" : "SHORT";
+
+  const interval = setInterval(async () => {
+    try {
+      const current = await getCurrentPrice(symbol); // your function to fetch price
+
+      const tpHit = signalType === "LONG"
+        ? current >= parseFloat(tp1)
+        : current <= parseFloat(tp1);
+
+      if (tpHit) {
+        clearInterval(interval);
+
+        // Cancel all existing SL/TP orders
+        await cancelAllOpenOrders(symbol);
+
+        // Place new SL at entry (break-even)
+        await sendSignedRequest('/fapi/v1/order', {
+          symbol,
+          side: oppositeSide,
+          type: 'STOP_MARKET',
+          stopPrice: parseFloat(entryPrice).toFixed(pricePrecision),
+          closePosition: true,
+          positionSide,
+          priceProtect: true,
+          timestamp: Date.now()
+        }, "POST");
+
+        console.log("Break-even SL placed at entry.");
+      }
+    } catch (err) {
+      console.error("Error monitoring break-even:", err.message);
+    }
+  }, 10000); // check every 10s
+}
+
     async function sendSignedRequest(path, params = {}, method = "GET") {
   params.timestamp = Date.now();
   const query = new URLSearchParams(params).toString();
@@ -465,6 +506,7 @@ async function sendLimit(symbol, side, qty, price, tp, sl, reduceOnly, pricePrec
       });
   }
 }
+    
 
   </script>
 </body>
