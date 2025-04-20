@@ -359,14 +359,15 @@ const price = signalType === "LONG"
 
 async function sendLimit(symbol, side, qty, price, tp, sl, reduceOnly, pricePrecision, quantityPrecision) {
   const orderParams = {
-    symbol: symbol,
-    side: side,
-    positionSide: side === 'BUY' ? 'LONG' : 'SHORT',
-    type: 'LIMIT', 
-    quantity: parseFloat(parseFloat(qty).toFixed(quantityPrecision)),
-    timeInForce: 'GTC',
-    timestamp: Date.now()
-  };
+  symbol: symbol,
+  side: side,
+  positionSide: side === 'BUY' ? 'LONG' : 'SHORT',
+  type: 'LIMIT',
+  price: parseFloat(price).toFixed(pricePrecision), // <<< THIS LINE WAS MISSING
+  quantity: parseFloat(parseFloat(qty).toFixed(quantityPrecision)),
+  timeInForce: 'GTC',
+  timestamp: Date.now()
+};
 
   if (reduceOnly) orderParams.reduceOnly = true;
 
