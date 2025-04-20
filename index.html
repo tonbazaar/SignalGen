@@ -231,9 +231,8 @@ async function getPrecisionInfo(symbol) {
         const tp1 = signalType === "LONG" ? (price + latestAtr).toFixed(5) : (price - latestAtr).toFixed(5);
 
         const { pricePrecision } = await getPrecisionInfo(symbol);
-        monitorBreakEvenStop(symbol, signalType, tp1, price, pricePrecision);
+        function monitorBreakEvenStop(symbol, signalType, tp1, price, pricePrecision);
 
-          
           const telegramMessage = `
 <b>📊 Symbol:</b> <code>${symbol}</code>
 <b>🚨 SIGNAL:</b> <b><code>${signalType}</code></b>
@@ -298,12 +297,19 @@ async function getPrecisionInfo(symbol) {
     }
 
     function calculateMACD(closes) {
-      const ema12 = calculateEMA(closes, 12);
-      const ema26 = calculateEMA(closes, 26);
-      const macd = ema12.map((val, i) => val - ema26[i]);
-      const signal = calculateEMA(macd.slice(ema26.length - macd.length), 9);
-      return { macd: macd.slice(-signal.length), signal };
-    }
+  const ema12 = calculateEMA(closes, 12);
+  const ema26 = calculateEMA(closes, 26);
+
+  // Align EMA12 with EMA26 by slicing off the extra leading values
+  const alignedEma12 = ema12.slice(ema12.length - ema26.length);
+  const macd = alignedEma12.map((val, i) => val - ema26[i]);
+
+  const signal = calculateEMA(macd, 9);
+  return {
+    macd: macd.slice(-signal.length), // align macd with signal
+    signal
+  };
+}
 
     function calculateATR(highs, lows, closes, period) {
       let trs = [];
