@@ -225,9 +225,8 @@ async function getPrecisionInfo(symbol) {
           cooldowns[symbol] = now;
 
         const price = lastClose;
-        const tpBuffer = price * 0.001;
 
-const maxSlAtr = latestAtr * 0.8; // Cap max SL to 0.8 ATR
+const maxSlAtr = latestAtr * 0.7; // Cap max SL to 0.8 ATR
 
 let rawSl = signalType === "LONG"
   ? price - latestAtr * 1.3
