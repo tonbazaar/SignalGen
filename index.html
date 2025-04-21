@@ -199,7 +199,7 @@ async function getPrecisionInfo(symbol) {
         if (
           latestEma9 > latestEma21 &&
           latestRsi > 55 &&
-          latestMacd - latestSignal > 0.02 &&
+          latestMacd > latestSignal &&
           lastVol > avgVol * 1.3 &&
           candleStrength > 0.003 &&
           wickRatio < 0.01
@@ -209,7 +209,7 @@ async function getPrecisionInfo(symbol) {
         } else if (
           latestEma9 < latestEma21 &&
           latestRsi < 45 &&
-          latestMacd - latestSignal > 0.02 &&
+          latestMacd > latestSignal &&
           lastVol > avgVol * 1.3 &&
           candleStrength < -0.003 &&
           wickRatio < 0.01
