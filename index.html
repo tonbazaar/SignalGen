@@ -197,21 +197,21 @@ async function getPrecisionInfo(symbol) {
         let confidence = "Normal";
 
         if (
-          latestEma9 < latestEma21 &&
-          latestRsi < 48 && latestRsi > 41 &&
-          latestMacd < latestSignal &&
-          lastVol > avgVol * 1.3 &&
-          candleStrength < -0.0025 &&
-          wickRatio < 0.014
-        ) {
-          signalType = "LONG";
-          confidence = "High";
-        } else if (
           latestEma9 > latestEma21 &&
           latestRsi > 52 && latestRsi < 57 &&
           latestMacd > latestSignal &&
           lastVol > avgVol * 1.3 &&
           candleStrength > 0.0025 &&
+          wickRatio < 0.014
+        ) {
+          signalType = "LONG";
+          confidence = "High";
+        } else if (
+          latestEma9 < latestEma21 &&
+          latestRsi < 48 && latestRsi > 41 &&
+          latestMacd < latestSignal &&
+          lastVol > avgVol * 1.3 &&
+          candleStrength < -0.0025 &&
           wickRatio < 0.014
         ) {
           signalType = "SHORT";
@@ -228,12 +228,12 @@ async function getPrecisionInfo(symbol) {
         const tpBuffer = price * 0.001;
 
 const tp = signalType === "LONG" 
-  ? (price + latestAtr * 1.9 + tpBuffer).toFixed(5) 
-  : (price - latestAtr * 1.9 - tpBuffer).toFixed(5);
+  ? (price + latestAtr * 1.6 + tpBuffer).toFixed(5) 
+  : (price - latestAtr * 1.6 - tpBuffer).toFixed(5);
 
 const sl = signalType === "LONG" 
-  ? (price - latestAtr * 1.6 ).toFixed(5) 
-  : (price + latestAtr * 1.6 ).toFixed(5);
+  ? (price - latestAtr * 1.3 ).toFixed(5) 
+  : (price + latestAtr * 1.3 ).toFixed(5);
 
           const telegramMessage = `
 <b>📊 Symbol:</b> <code>${symbol}</code>
