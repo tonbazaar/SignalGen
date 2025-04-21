@@ -198,7 +198,7 @@ async function getPrecisionInfo(symbol) {
 
         if (
           latestEma9 > latestEma21 &&
-          latestRsi > 52 && latestRsi < 60 &&
+          latestRsi > 57 && latestRsi < 62 &&
           latestMacd > latestSignal &&
           lastVol > avgVol * 1.2 &&
           candleStrength > 0.002 &&
@@ -208,7 +208,7 @@ async function getPrecisionInfo(symbol) {
           confidence = "High";
         } else if (
           latestEma9 < latestEma21 &&
-          latestRsi < 48 && latestRsi > 40 &&
+          latestRsi < 43 && latestRsi > 35 &&
           latestMacd < latestSignal &&
           lastVol > avgVol * 1.2 &&
           candleStrength < -0.002 &&
