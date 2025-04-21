@@ -204,7 +204,7 @@ async function getPrecisionInfo(symbol) {
           candleStrength > 0.0025 &&
           wickRatio < 0.014
         ) {
-          signalType = "LONG";
+          signalType = "SHORT";
           confidence = "High";
         } else if (
           latestEma9 < latestEma21 &&
@@ -214,7 +214,7 @@ async function getPrecisionInfo(symbol) {
           candleStrength < -0.0025 &&
           wickRatio < 0.014
         ) {
-          signalType = "SHORT";
+          signalType = "LONG";
           confidence = "High";
         }
 
@@ -231,7 +231,7 @@ async function getPrecisionInfo(symbol) {
         ? (price + latestAtr * 1.5 - tpBuffer).toFixed(5) 
         : (price - latestAtr * 1.5 - tpBuffer).toFixed(5);
 
-        const sl = signalType === "LONG" 
+        const sl = signalType === "SHORT" 
         ? (price - latestAtr * 1).toFixed(5) 
         : (price + latestAtr * 1).toFixed(5);
 
