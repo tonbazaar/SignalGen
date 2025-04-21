@@ -161,63 +161,94 @@ async function getPrecisionInfo(symbol) {
 }
 
     async function analyzeSymbol(symbol) {
-      try {
-        const url = `https://fapi.binance.com/fapi/v1/klines?symbol=${symbol}&interval=5m&limit=100`;
-        const res = await fetch(url);
-        const data = await res.json();
+    async function analyzeSymbol(symbol) {
+  try {
+    const url = `https://fapi.binance.com/fapi/v1/klines?symbol=${symbol}&interval=5m&limit=100`;
+    const res = await fetch(url);
+    const data = await res.json();
 
-        const closes = data.map(c => parseFloat(c[4]));
-        const highs = data.map(c => parseFloat(c[2]));
-        const lows = data.map(c => parseFloat(c[3]));
-        const volumes = data.map(c => parseFloat(c[5]));
+    const closes = data.map(c => parseFloat(c[4]));
+    const opens = data.map(c => parseFloat(c[1]));
+    const highs = data.map(c => parseFloat(c[2]));
+    const lows = data.map(c => parseFloat(c[3]));
+    const volumes = data.map(c => parseFloat(c[5]));
 
-        const ema9 = calculateEMA(closes, 9);
-        const ema21 = calculateEMA(closes, 21);
-        const rsi = calculateRSI(closes, 14);
-        const { macd, signal } = calculateMACD(closes);
-        const atr = calculateATR(highs, lows, closes, 14);
+    const ema9 = calculateEMA(closes, 9);
+    const ema21 = calculateEMA(closes, 21);
+    const rsi = calculateRSI(closes, 14);
+    const { macd, signal } = calculateMACD(closes);
+    const atr = calculateATR(highs, lows, closes, 14);
 
-        const lastClose = closes.at(-1);
-        const lastHigh = highs.at(-1);
-        const lastLow = lows.at(-1);
-        const lastVol = volumes.at(-1);
-        const avgVol = volumes.slice(-20).reduce((a, b) => a + b, 0) / 20;
+    const lastClose = closes.at(-1);
+    const lastOpen = opens.at(-1);
+    const lastHigh = highs.at(-1);
+    const lastLow = lows.at(-1);
+    const lastVol = volumes.at(-1);
+    const avgVol = volumes.slice(-20).reduce((a, b) => a + b, 0) / 20;
 
-        const latestEma9 = ema9.at(-1);
-        const latestEma21 = ema21.at(-1);
-        const latestRsi = rsi.at(-1);
-        const latestMacd = macd.at(-1);
-        const latestSignal = signal.at(-1);
-        const latestAtr = atr.at(-1);
+    const latestEma9 = ema9.at(-1);
+    const latestEma21 = ema21.at(-1);
+    const latestRsi = rsi.at(-1);
+    const latestMacd = macd.at(-1);
+    const latestSignal = signal.at(-1);
+    const latestAtr = atr.at(-1);
+    const macdHistogram = latestMacd - latestSignal;
 
-        const candleStrength = (lastClose - data.at(-1)[1]) / lastClose;
-        const wickRatio = (lastHigh - lastLow) / lastClose;
+    const candleStrength = (lastClose - lastOpen) / lastClose;
+    const wickRatio = (lastHigh - lastLow) / lastClose;
 
-        let signalType = null;
-        let confidence = "Normal";
+    const recentBearishCount = closes.slice(-3).filter((c, i) => c < opens[opens.length - 3 + i]).length;
+    const recentBullishCount = closes.slice(-3).filter((c, i) => c > opens[opens.length - 3 + i]).length;
 
-        if (
-          latestEma9 > latestEma21 &&
-          latestRsi > 55 &&
-          latestMacd > latestSignal &&
-          lastVol > avgVol * 1.3 &&
-          candleStrength > 0.003 &&
-          wickRatio < 0.01
-        ) {
-          signalType = "LONG";
-          confidence = "High";
-        } else if (
-          latestEma9 < latestEma21 &&
-          latestRsi < 45 &&
-          latestMacd < latestSignal &&
-          lastVol > avgVol * 1.3 &&
-          candleStrength < -0.003 &&
-          wickRatio < 0.01
-        ) {
-          signalType = "SHORT";
-          confidence = "High";
-        }
+    let signalType = null;
+    let confidence = "Normal";
 
+    if (
+      latestEma9 > latestEma21 &&
+      latestRsi > 58 &&
+      macdHistogram > 0.0001 &&
+      lastVol > avgVol * 1.3 &&
+      candleStrength > 0.003 &&
+      wickRatio < 0.015 &&
+      recentBearishCount <= 1
+    ) {
+      signalType = "LONG";
+      confidence = "High";
+    } else if (
+      latestEma9 < latestEma21 &&
+      latestRsi < 42 &&
+      macdHistogram < -0.0001 &&
+      lastVol > avgVol * 1.3 &&
+      candleStrength < -0.003 &&
+      wickRatio < 0.015 &&
+      recentBullishCount <= 1
+    ) {
+      signalType = "SHORT";
+      confidence = "High";
+    }
+
+    return {
+      symbol,
+      signalType,
+      confidence,
+      price: lastClose,
+      ema9: latestEma9,
+      ema21: latestEma21,
+      rsi: latestRsi,
+      macd: latestMacd,
+      signalLine: latestSignal,
+      atr: latestAtr,
+      wickRatio: wickRatio.toFixed(5),
+      candleStrength: candleStrength.toFixed(5),
+      lastVol,
+      avgVol: avgVol.toFixed(2)
+    };
+
+  } catch (err) {
+    console.error(`Error analyzing ${symbol}:`, err.message);
+    return null;
+  }
+}
         if (signalType) {
           const now = Date.now();
           const lastSignalTime = cooldowns[symbol] || 0;
