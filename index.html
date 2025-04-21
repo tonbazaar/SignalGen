@@ -198,21 +198,21 @@ async function getPrecisionInfo(symbol) {
 
         if (
           latestEma9 > latestEma21 &&
-          latestRsi > 57 && latestRsi < 62 &&
-          latestMacd > latestSignal &&
-          lastVol > avgVol * 1.2 &&
-          candleStrength > 0.002 &&
-          wickRatio < 0.015
+          latestRsi > 55 &&
+          latestMacd - latestSignal > 0.02 &&
+          lastVol > avgVol * 1.5 &&
+          candleStrength > 0.004 &&
+          wickRatio < 0.01
         ) {
           signalType = "LONG";
           confidence = "High";
         } else if (
           latestEma9 < latestEma21 &&
-          latestRsi < 43 && latestRsi > 35 &&
-          latestMacd < latestSignal &&
-          lastVol > avgVol * 1.2 &&
-          candleStrength < -0.002 &&
-          wickRatio < 0.015
+          latestRsi < 45 &&
+          latestMacd - latestSignal > 0.02 &&
+          lastVol > avgVol * 1.5 &&
+          candleStrength < -0.004 &&
+          wickRatio < 0.01
         ) {
           signalType = "SHORT";
           confidence = "High";
@@ -225,14 +225,33 @@ async function getPrecisionInfo(symbol) {
           cooldowns[symbol] = now;
 
         const price = lastClose;
-        const tpBuffer = price * 0.002;
-const tp = signalType === "LONG" 
-  ? (price + latestAtr * 1.5 - tpBuffer).toFixed(5) 
-  : (price - latestAtr * 1.5 + tpBuffer).toFixed(5);
+        const atrMultiplier = 2.0; // You can tune this
+const rrRatio = 1.5; // Risk:Reward
+const minSlPercent = 0.003; // 0.3%
 
-const sl = signalType === "LONG" 
-  ? (price - latestAtr * 1.5 ).toFixed(5) 
-  : (price + latestAtr * 1.5 ).toFixed(5);
+let sl, tp;
+
+const rawSl = signalType === "LONG"
+  ? price - latestAtr * atrMultiplier
+  : price + latestAtr * atrMultiplier;
+
+const minSl = price * minSlPercent;
+
+// Ensure SL is not too tight
+sl = signalType === "LONG"
+  ? Math.min(price - minSl, rawSl)
+  : Math.max(price + minSl, rawSl);
+
+// Calculate TP based on SL distance (risk-reward logic)
+const risk = Math.abs(price - sl);
+tp = signalType === "LONG"
+  ? (price + risk * rrRatio)
+  : (price - risk * rrRatio);
+
+// Format to 5 decimals (adjust if needed for token precision)
+sl = sl.toFixed(5);
+tp = tp.toFixed(5);
+
 
           const telegramMessage = `
 <b>📊 Symbol:</b> <code>${symbol}</code>
