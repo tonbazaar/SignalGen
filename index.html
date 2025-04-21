@@ -197,21 +197,21 @@ async function getPrecisionInfo(symbol) {
         let confidence = "Normal";
 
         if (
-          latestEma9 < latestEma21 &&
-          latestRsi < 43 && latestRsi > 35 &&
-          latestMacd < latestSignal &&
-          lastVol > avgVol * 1.2 &&
-          candleStrength < -0.002 &&
-          wickRatio < 0.015
-        ) {
-          signalType = "LONG";
-          confidence = "High";
-        } else if (
           latestEma9 > latestEma21 &&
           latestRsi > 57 && latestRsi < 62 &&
           latestMacd > latestSignal &&
           lastVol > avgVol * 1.2 &&
           candleStrength > 0.002 &&
+          wickRatio < 0.015
+        ) {
+          signalType = "LONG";
+          confidence = "High";
+        } else if (
+          latestEma9 < latestEma21 &&
+          latestRsi < 43 && latestRsi > 35 &&
+          latestMacd < latestSignal &&
+          lastVol > avgVol * 1.2 &&
+          candleStrength < -0.002 &&
           wickRatio < 0.015
         ) {
           signalType = "SHORT";
