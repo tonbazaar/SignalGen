@@ -227,13 +227,26 @@ async function getPrecisionInfo(symbol) {
         const price = lastClose;
         const tpBuffer = price * 0.001;
 
+const maxSlAtr = latestAtr * 0.8; // Cap max SL to 0.8 ATR
+
+let rawSl = signalType === "LONG"
+  ? price - latestAtr * 1.3
+  : price + latestAtr * 1.3;
+
+// If raw SL is too far from price, reduce to maxSlAtr
+if (signalType === "LONG" && (price - rawSl) > maxSlAtr) {
+  rawSl = price - maxSlAtr;
+} else if (signalType === "SHORT" && (rawSl - price) > maxSlAtr) {
+  rawSl = price + maxSlAtr;
+}
+
+const sl = rawSl.toFixed(5);
+
+const tpBuffer = price * 0.001;
 const tp = signalType === "LONG" 
-  ? (price + latestAtr * 1.6 + tpBuffer).toFixed(5) 
+  ? (price + latestAtr * 1.6 + tpBuffer).toFixed(5)
   : (price - latestAtr * 1.6 - tpBuffer).toFixed(5);
 
-const sl = signalType === "LONG" 
-  ? (price - latestAtr * 1.3 ).toFixed(5) 
-  : (price + latestAtr * 1.3 ).toFixed(5);
 
           const telegramMessage = `
 <b>📊 Symbol:</b> <code>${symbol}</code>
