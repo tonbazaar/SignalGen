@@ -227,8 +227,8 @@ async function getPrecisionInfo(symbol) {
         const price = lastClose;
         const tpBuffer = price * 0.002;
 const tp = signalType === "LONG" 
-  ? (price + latestAtr * 1.5 + tpBuffer).toFixed(5) 
-  : (price - latestAtr * 1.5 - tpBuffer).toFixed(5);
+  ? (price + latestAtr * 1.5 - tpBuffer).toFixed(5) 
+  : (price - latestAtr * 1.5 + tpBuffer).toFixed(5);
 
 const sl = signalType === "LONG" 
   ? (price - latestAtr * 1.5 ).toFixed(5) 
