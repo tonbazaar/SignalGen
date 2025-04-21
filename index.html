@@ -225,27 +225,14 @@ async function getPrecisionInfo(symbol) {
           cooldowns[symbol] = now;
 
         const price = lastClose;
+        const tpBuffer = price * 0.002;
+const tp = signalType === "LONG" 
+  ? (price + latestAtr * 1.5 + tpBuffer).toFixed(5) 
+  : (price - latestAtr * 1.5 - tpBuffer).toFixed(5);
 
-const maxSlAtr = latestAtr * 2; // Cap max SL to 0.8 ATR
-
-let rawSl = signalType === "LONG"
-  ? price - latestAtr * 3
-  : price + latestAtr * 3;
-
-// If raw SL is too far from price, reduce to maxSlAtr
-if (signalType === "LONG" && (price - rawSl) > maxSlAtr) {
-  rawSl = price - maxSlAtr;
-} else if (signalType === "SHORT" && (rawSl - price) > maxSlAtr) {
-  rawSl = price + maxSlAtr;
-}
-
-const sl = rawSl.toFixed(5);
-
-const tpBuffer = price * 0.001;
-const tp = signalType === "LONG" 
-  ? (price + latestAtr * 1.5 + tpBuffer).toFixed(5)
-  : (price - latestAtr * 1.5 - tpBuffer).toFixed(5);
-
+const sl = signalType === "LONG" 
+  ? (price - latestAtr * 1.2 ).toFixed(5) 
+  : (price + latestAtr * 1.2 ).toFixed(5);
 
           const telegramMessage = `
 <b>📊 Symbol:</b> <code>${symbol}</code>
@@ -443,7 +430,7 @@ async function sendLimit(symbol, side, qty, price, tp, sl, reduceOnly, pricePrec
 }
 
     async function getQuantity(symbol, price, quantityPrecision) {
-  const usdt = 40; // USDT amount to use
+  const usdt = 100; // USDT amount to use
   const qty = usdt / parseFloat(price);
   return parseFloat(qty).toFixed(quantityPrecision);
     }
