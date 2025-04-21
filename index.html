@@ -226,23 +226,6 @@ async function getPrecisionInfo(symbol) {
       confidence = "High";
     }
 
-    return {
-      symbol,
-      signalType,
-      confidence,
-      price: lastClose,
-      ema9: latestEma9,
-      ema21: latestEma21,
-      rsi: latestRsi,
-      macd: latestMacd,
-      signalLine: latestSignal,
-      atr: latestAtr,
-      wickRatio: wickRatio.toFixed(5),
-      candleStrength: candleStrength.toFixed(5),
-      lastVol,
-      avgVol: avgVol.toFixed(2)
-    };
-
   } catch (err) {
     console.error(`Error analyzing ${symbol}:`, err.message);
     return null;
