@@ -377,7 +377,7 @@ async function sendLimit(symbol, side, qty, price, tp, sl, reduceOnly, pricePrec
 
   if (response && !response.code) {
     const positionSide = side === 'BUY' ? 'LONG' : 'SHORT';
-    const oppositeSide = side === 'SELL' ? 'SELL' : 'BUY';
+    const oppositeSide = side === 'BUY' ? 'SELL' : 'BUY';
 
     // TAKE PROFIT
     await sendSignedRequest('/fapi/v1/order', {
