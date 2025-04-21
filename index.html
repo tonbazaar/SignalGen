@@ -197,16 +197,6 @@ async function getPrecisionInfo(symbol) {
         let confidence = "Normal";
 
         if (
-          latestEma9 < latestEma21 &&
-          latestRsi < 48 && latestRsi > 41 &&
-          latestMacd < latestSignal &&
-          lastVol > avgVol * 1.3 &&
-          candleStrength < -0.0025 &&
-          wickRatio < 0.014
-        ) {
-          signalType = "LONG";
-          confidence = "High";
-        } else if (
           latestEma9 > latestEma21 &&
           latestRsi > 52 && latestRsi < 57 &&
           latestMacd > latestSignal &&
@@ -215,6 +205,16 @@ async function getPrecisionInfo(symbol) {
           wickRatio < 0.014
         ) {
           signalType = "SHORT";
+          confidence = "High";
+        } else if (
+          latestEma9 < latestEma21 &&
+          latestRsi < 48 && latestRsi > 41 &&
+          latestMacd < latestSignal &&
+          lastVol > avgVol * 1.3 &&
+          candleStrength < -0.0025 &&
+          wickRatio < 0.014
+        ) {
+          signalType = "LONG";
           confidence = "High";
         }
 
@@ -227,11 +227,11 @@ async function getPrecisionInfo(symbol) {
         const price = lastClose;
         const tpBuffer = price * 0.001;
           
-        const tp = signalType === "LONG" 
+        const tp = signalType === "SHORT" 
         ? (price + latestAtr * 1.5 - tpBuffer).toFixed(5) 
         : (price - latestAtr * 1.5 - tpBuffer).toFixed(5);
 
-        const sl = signalType === "SHORT" 
+        const sl = signalType === "LONG" 
         ? (price - latestAtr * 1).toFixed(5) 
         : (price + latestAtr * 1).toFixed(5);
 
@@ -249,13 +249,13 @@ async function getPrecisionInfo(symbol) {
           return `
 <div class="signal-block">
   <b>📊 Symbol:</b> ${symbol}<br>
-  <b>🚨 SIGNAL:</b> <span class="${signalType === "LONG" ? "long" : "short"}">${signalType}</span><br>
+  <b>🚨 SIGNAL:</b> <span class="${signalType === "SHORT" ? "short" : "long"}">${signalType}</span><br>
   <b>💰 Entry:</b> ${price.toFixed(5)}<br>
   <b>⭐ TP:</b> ${tp}<br>
   <b>⛔ SL:</b> ${sl}<br>
   <b>⚙️ Leverage:</b> ${confidence === "High" ? "20x (or max)" : "10–20x"}<br>
   <b>✅ Confidence:</b> ${confidence}<br>
-  <button class="trade-btn" onclick="placeTrade('${symbol}', '${signalType === "LONG" ? "BUY" : "SELL"}', '${price.toFixed(5)}', '${tp}', '${sl}')">Trade</button>
+  <button class="trade-btn" onclick="placeTrade('${symbol}', '${signalType === "SHORT" ? "SELL" : "BUY"}', '${price.toFixed(5)}', '${tp}', '${sl}')">Trade</button>
   </div>`;
         }
       } catch (err) {
@@ -364,7 +364,7 @@ async function sendLimit(symbol, side, qty, price, tp, sl, reduceOnly, pricePrec
   const orderParams = { 
     symbol: symbol, 
     side: side, 
-    positionSide: side === 'BUY' ? 'LONG' : 'SHORT', 
+    positionSide: side === 'SELL' ? 'SHORT' : 'LONG', 
     type: 'MARKET', 
     quantity: parseFloat(parseFloat(qty).toFixed(quantityPrecision)), 
     timestamp: Date.now() 
@@ -376,8 +376,8 @@ async function sendLimit(symbol, side, qty, price, tp, sl, reduceOnly, pricePrec
   console.log("Order response:", response);
 
   if (response && !response.code) {
-    const positionSide = side === 'BUY' ? 'LONG' : 'SHORT';
-    const oppositeSide = side === 'BUY' ? 'SELL' : 'BUY';
+    const positionSide = side === 'SELL' ? 'SHORT' : 'LONG';
+    const oppositeSide = side === 'SELL' ? 'BUY' : 'SELL';
 
     // TAKE PROFIT
     await sendSignedRequest('/fapi/v1/order', {
