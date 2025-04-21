@@ -231,8 +231,8 @@ const tp = signalType === "LONG" 
   : (price - latestAtr * 1.5 - tpBuffer).toFixed(5);
 
 const sl = signalType === "LONG" 
-  ? (price - latestAtr * 1.2 ).toFixed(5) 
-  : (price + latestAtr * 1.2 ).toFixed(5);
+  ? (price - latestAtr * 1.5 ).toFixed(5) 
+  : (price + latestAtr * 1.5 ).toFixed(5);
 
           const telegramMessage = `
 <b>📊 Symbol:</b> <code>${symbol}</code>
