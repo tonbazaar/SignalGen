@@ -226,11 +226,6 @@ async function getPrecisionInfo(symbol) {
       confidence = "High";
     }
 
-  } catch (err) {
-    console.error(`Error analyzing ${symbol}:`, err.message);
-    return null;
-  }
-}
         if (signalType) {
           const now = Date.now();
           const lastSignalTime = cooldowns[symbol] || 0;
