@@ -515,27 +515,29 @@ async function updateMarketCondition() {
   document.getElementById("marketStatus").textContent = `Market: ${marketCondition}`;
   document.getElementById("marketStatus").style.color = marketCondition === "GOOD" ? "#00ff99" : "#ff6600";
 }
-    
-updateMarketCondition();
-setInterval(updateMarketCondition, 30000); // every 30 seconds
 
   async function refreshStatsAndMarket() {
-  const balance = await getFuturesBalance();
-  document.getElementById("futuresBalance").textContent = `Balance: $${balance}`;
+  try {
+    const balance = await getFuturesBalance();
+    document.getElementById("futuresBalance").textContent = `Balance: $${balance}`;
 
-  const positionCount = await getOpenPositionsCount();
-  document.getElementById("positionsCount").textContent = `Open: ${positionCount}`;
+    const positionCount = await getOpenPositionsCount();
+    document.getElementById("positionsCount").textContent = `Open: ${positionCount}`;
 
-  const pnl = await getTodayPnL();
-  document.getElementById("todayPnl").textContent = `PnL: ${pnl >= 0 ? "+" : ""}$${pnl.toFixed(2)}`;
+    const pnl = await getTodayPnL();
+    document.getElementById("todayPnl").textContent = `PnL: ${pnl >= 0 ? "+" : ""}$${pnl.toFixed(2)}`;
 
-  await updateMarketCondition(); // This gets BTC indicators and shows GOOD or BAD
+    await updateMarketCondition(); // refresh market GOOD/BAD
+  } catch (err) {
+    console.error("Error refreshing stats/market:", err);
+  }
 }
 
-window.onload = () => {
-  refreshStatsAndMarket(); // run once on load
-  setInterval(refreshStatsAndMarket, 30000); // repeat every 30 sec
+    window.onload = () => {
+  refreshStatsAndMarket(); // Initial load
+  setInterval(refreshStatsAndMarket, 30000); // Every 30 seconds
 };
+
     
 window.onload = async () => {
   const balance = await getFuturesBalance();
