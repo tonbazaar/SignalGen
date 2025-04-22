@@ -519,6 +519,24 @@ async function updateMarketCondition() {
 updateMarketCondition();
 setInterval(updateMarketCondition, 30000); // every 30 seconds
 
+  async function refreshStatsAndMarket() {
+  const balance = await getFuturesBalance();
+  document.getElementById("futuresBalance").textContent = `Balance: $${balance}`;
+
+  const positionCount = await getOpenPositionsCount();
+  document.getElementById("positionsCount").textContent = `Open: ${positionCount}`;
+
+  const pnl = await getTodayPnL();
+  document.getElementById("todayPnl").textContent = `PnL: ${pnl >= 0 ? "+" : ""}$${pnl.toFixed(2)}`;
+
+  await updateMarketCondition(); // This gets BTC indicators and shows GOOD or BAD
+}
+
+window.onload = () => {
+  refreshStatsAndMarket(); // run once on load
+  setInterval(refreshStatsAndMarket, 30000); // repeat every 30 sec
+};
+    
 window.onload = async () => {
   const balance = await getFuturesBalance();
   document.getElementById("futuresBalance").textContent = `Balance: $${balance}`;
