@@ -515,7 +515,9 @@ async function updateMarketCondition() {
   document.getElementById("marketStatus").textContent = `Market: ${marketCondition}`;
   document.getElementById("marketStatus").style.color = marketCondition === "GOOD" ? "#00ff99" : "#ff6600";
 }
-
+    
+updateMarketCondition();
+ 
   async function refreshStatsAndMarket() {
   try {
     const balance = await getFuturesBalance();
