@@ -96,6 +96,7 @@ button[type="submit"] {
   <span id="futuresBalance" style="font-weight: bold; color: #00ff99;">Balance: ...</span>
   <span id="positionsCount" style="font-weight: bold; color: #00ff99;">Open: ...</span>
   <span id="todayPnl" style="font-weight: bold; color: #00ff99;">PnL: ...</span>
+  <span id="marketStatus" style="font-weight: bold; color: #ffcc00;">Market: Checking...</span>
    </div>
    <div id="lastTime" style="margin-bottom:10px;"></div>
     <div id="output">Loading...</div>
@@ -466,6 +467,30 @@ async function sendLimit(symbol, side, qty, price, tp, sl, reduceOnly, pricePrec
   const qty = usdt / parseFloat(price);
   return parseFloat(qty).toFixed(quantityPrecision);
     }
+
+async function checkMarketCondition() {
+  const data = await getKlines("BTCUSDT", "5m", 6); // 30 minutes (6 candles)
+
+  const prices = data.map(c => parseFloat(c[4])); // closing prices
+  const high = Math.max(...prices);
+  const low = Math.min(...prices);
+  const rangePercent = ((high - low) / low) * 100;
+
+  let status = "Bad";
+  let color = "#ff4d4d"; // red
+
+  if (rangePercent < 1.5) {
+    status = "Good";
+    color = "#00ff99"; // green
+  }
+
+  const statusEl = document.getElementById("marketStatus");
+  statusEl.innerText = `Market: ${status}`;
+  statusEl.style.color = color;
+}
+
+setInterval(checkMarketCondition, 60000); // every 60 seconds
+checkMarketCondition(); // on load
 
 window.onload = async () => {
   const balance = await getFuturesBalance();
