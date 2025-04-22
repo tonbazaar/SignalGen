@@ -120,18 +120,11 @@ if (envURL) {
 }
 
 function startApp() {
-  const correctPassword = window.env.PASS_WORD;
-  const botToken = window.env.BOT_TOKEN;
-  const chatId = window.env.CHAT_ID;
-  const binanceKey = window.env.BINANCE_KEY;
-  const binanceSecret = window.env.BINANCE_SECRET;
-  const usdt = window.env.TRADE_USDT;
-}
-   
+  
 let scanInterval = null;
 let autoScanActive = false;
     
-  //const correctPassword = window.env.PASS_WORD; // Change this to your own password
+  const correctPassword = window.env.PASS_WORD; // Change this to your own password
 
     function checkPassword() {
       const input = document.getElementById("passwordInput").value;
@@ -381,8 +374,8 @@ tp = tp.toFixed(5);
     }
 
     async function sendToTelegram(message) {
-      //const botToken = window.env.BOT_TOKEN;
-      //const chatId = window.env.CHAT_ID;
+      const botToken = window.env.BOT_TOKEN;
+      const chatId = window.env.CHAT_ID;
 
       await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
         method: "POST",
@@ -391,8 +384,8 @@ tp = tp.toFixed(5);
       });
     }
 
-    //const binanceKey = window.env.BINANCE_KEY;
-    //const binanceSecret = window.env.BINANCE_SECRET;
+    const binanceKey = window.env.BINANCE_KEY;
+    const binanceSecret = window.env.BINANCE_SECRET;
 
 async function placeTrade(symbol, side, entry, tp, sl) {
   try {
@@ -485,8 +478,8 @@ async function sendLimit(symbol, side, qty, price, tp, sl, reduceOnly, pricePrec
   return Math.min(maxLeverage, 20);
 }
 
-    async function getQuantity(symbol, price, quantityPrecision) {
-  //const usdt = window.env.TRADE_USDT; // USDT amount to use
+  async function getQuantity(symbol, price, quantityPrecision) {
+  const usdt = window.env.TRADE_USDT; // USDT amount to use
   const qty = usdt / parseFloat(price);
   return parseFloat(qty).toFixed(quantityPrecision);
     }
@@ -573,6 +566,7 @@ async function getTodayPnL() {
         return data;
       });
   }
+}
 }
     
   </script>
