@@ -105,20 +105,35 @@ button[type="submit"] {
   <script>
 
 const urlParams = new URLSearchParams(window.location.search);
-  const envURL = urlParams.get('env');
+const envURL = urlParams.get('env');
 
-  if (envURL) {
-    const script = document.createElement('script');
-    script.src = envURL;
-    script.onload = () => {
-      console.log("User env.js loaded.");
-      startApp(); // this function should start your app after env is loaded
-    };
-    document.head.appendChild(script);
-  } else {
-    alert("Missing ?env= parameter in URL.");
-  }
+if (envURL) {
+  const script = document.createElement('script');
+  script.src = envURL;
+  script.onload = () => {
+    console.log("User env.js loaded:", window.env);
     
+    const correctPassword = window.env.PASS_WORD;
+
+    window.checkPassword = function () {
+      const input = document.getElementById("passwordInput").value;
+      const error = document.getElementById("error");
+
+      if (input === correctPassword) {
+        document.getElementById("login").style.display = "none";
+        document.getElementById("mainContent").style.display = "block";
+        startApp(); // Now start your script logic
+      } else {
+        error.innerText = "Incorrect password.";
+      }
+    };
+
+  };
+  document.head.appendChild(script);
+} else {
+  alert("Missing ?env= parameter in URL.");
+}
+
 let scanInterval = null;
 let autoScanActive = false;
     
