@@ -489,8 +489,8 @@ async function checkMarketCondition() {
   statusEl.style.color = color;
 }
 
-setInterval(checkMarketCondition, 60000); // every 60 seconds
-checkMarketCondition(); // on load
+//setInterval(checkMarketCondition, 60000); // every 60 seconds
+//checkMarketCondition(); // on load
 
 window.onload = async () => {
   const balance = await getFuturesBalance();
