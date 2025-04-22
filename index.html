@@ -468,29 +468,31 @@ async function sendLimit(symbol, side, qty, price, tp, sl, reduceOnly, pricePrec
   return parseFloat(qty).toFixed(quantityPrecision);
     }
 
-async function checkMarketCondition() {
-  const data = await getKlines("BTCUSDT", "5m", 6); // 30 minutes (6 candles)
-
-  const prices = data.map(c => parseFloat(c[4])); // closing prices
-  const high = Math.max(...prices);
-  const low = Math.min(...prices);
-  const rangePercent = ((high - low) / low) * 100;
-
-  let status = "Bad";
-  let color = "#ff4d4d"; // red
-
-  if (rangePercent < 1.5) {
-    status = "Good";
-    color = "#00ff99"; // green
-  }
-
-  const statusEl = document.getElementById("marketStatus");
-  statusEl.innerText = `Market: ${status}`;
-  statusEl.style.color = color;
+async function getKlines(symbol, interval, limit) {
+  const url = `https://fapi.binance.com/fapi/v1/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`;
+  const res = await fetch(url);
+  return res.json();
 }
 
-//setInterval(checkMarketCondition, 60000); // every 60 seconds
-//checkMarketCondition(); // on load
+async function checkMarketCondition() {
+  const data = await getKlines("BTCUSDT", "5m", 6); // last 30 minutes (6 candles)
+  const closes = data.map(c => parseFloat(c[4])); // closing prices
+  const high = Math.max(...closes);
+  const low = Math.min(...closes);
+  const percentChange = ((high - low) / low) * 100;
+
+  const marketEl = document.getElementById("marketStatus");
+  if (percentChange < 1.5) {
+    marketEl.innerText = "Market: Good";
+    marketEl.style.color = "#00ff99"; // green
+  } else {
+    marketEl.innerText = "Market: Bad";
+    marketEl.style.color = "#ff4d4d"; // red
+  }
+}
+
+checkMarketCondition();
+setInterval(checkMarketCondition, 60000); // update every 60s
 
 window.onload = async () => {
   const balance = await getFuturesBalance();
