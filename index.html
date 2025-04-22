@@ -492,14 +492,26 @@ async function getOpenPositionsCount() {
 }
 
 async function getTodayPnL() {
-  const incomeData = await sendSignedRequest("/fapi/v1/income?incomeType=REALIZED_PNL&limit=100");
-  const today = new Date().toISOString().split('T')[0];
-  
-  const todayPnl = incomeData
-    .filter(entry => entry.incomeType === "REALIZED_PNL" && entry.time && new Date(entry.time).toISOString().split('T')[0] === today)
-    .reduce((sum, entry) => sum + parseFloat(entry.income), 0);
-  
-  return todayPnl;
+  try {
+    const incomeData = await sendSignedRequest("/fapi/v1/income", {
+      incomeType: "REALIZED_PNL",
+      limit: 100
+    });
+
+    const today = new Date().toISOString().split("T")[0];
+
+    const todayPnl = incomeData
+      .filter(entry => {
+        const entryDate = new Date(entry.time).toISOString().split("T")[0];
+        return entry.incomeType === "REALIZED_PNL" && entryDate === today;
+      })
+      .reduce((sum, entry) => sum + parseFloat(entry.income), 0);
+
+    return todayPnl;
+  } catch (err) {
+    console.error("Error fetching PnL:", err);
+    return 0;
+  }
 }
 
     async function sendSignedRequest(path, params = {}, method = "GET") {
