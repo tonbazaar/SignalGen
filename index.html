@@ -92,8 +92,10 @@ button[type="submit"] {
   <div id="mainContent" style="display:none;">
     <h2>Crypto Futures Signal Scanner</h2>
     <button onclick="scan()">Scan Now</button>
-    <span id="futuresBalance" style="margin-left: 10px; font-weight: bold; color: #00ff99;">Balance: ...</span>
-    <div id="lastTime" style="margin-bottom:10px;"></div>
+  <span id="futuresBalance" style="margin-left: 10px; font-weight: bold; color: #39FF14;">
+  Balance: ... <span id="positionsCount" style="margin-left: 15px; color: #FFA500;">Open Positions: ...</span>
+</span>
+   <div id="lastTime" style="margin-bottom:10px;"></div>
     <div id="output">Loading...</div>
   </div>
 
@@ -467,12 +469,21 @@ async function sendLimit(symbol, side, qty, price, tp, sl, reduceOnly, pricePrec
 window.onload = async () => {
   const balance = await getFuturesBalance();
   document.getElementById("futuresBalance").textContent = `Balance: $${balance}`;
+
+  const positionCount = await getOpenPositionsCount();
+  document.getElementById("positionsCount").textContent = `Open Positions: ${positionCount}`;
 };
 
 async function getFuturesBalance() {
   const data = await sendSignedRequest("/fapi/v2/account");
   const usdtAsset = data.assets.find(a => a.asset === "USDT");
   return usdtAsset ? parseFloat(usdtAsset.availableBalance).toFixed(2) : "0.00";
+}
+
+async function getOpenPositionsCount() {
+  const positions = await sendSignedRequest("/fapi/v2/positionRisk");
+  const openPositions = positions.filter(p => parseFloat(p.positionAmt) !== 0);
+  return openPositions.length;
 }
 
     async function sendSignedRequest(path, params = {}, method = "GET") {
