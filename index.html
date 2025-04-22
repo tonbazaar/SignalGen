@@ -104,21 +104,6 @@ button[type="submit"] {
   <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/crypto-js.js"></script>
   <script>
 
-const urlParams = new URLSearchParams(window.location.search);
-const envURL = urlParams.get('env');
-
-if (envURL) {
-  const script = document.createElement('script');
-  script.src = envURL;
-  script.onload = () => {
-    console.log("env.js loaded");
-    startApp(); // make sure ALL env access happens inside this
-  };
-  document.head.appendChild(script);
-} else {
-  alert("Missing ?env= parameter in URL.");
-}
-
 let scanInterval = null;
 let autoScanActive = false;
     
@@ -140,6 +125,21 @@ let autoScanActive = false;
     const COOLDOWN_MINUTES = 60;
     const output = document.getElementById("output");
     const lastTime = document.getElementById("lastTime");
+
+const urlParams = new URLSearchParams(window.location.search);
+const envURL = urlParams.get('env');
+
+if (envURL) {
+  const script = document.createElement('script');
+  script.src = envURL;
+  script.onload = () => {
+    console.log("env.js loaded");
+    startApp(); // make sure ALL env access happens inside this
+  };
+  document.head.appendChild(script);
+} else {
+  alert("Missing ?env= parameter in URL.");
+}
 
 async function getPrecisionInfo(symbol) {
   const res = await fetch('https://fapi.binance.com/fapi/v1/exchangeInfo');
