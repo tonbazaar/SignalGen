@@ -112,24 +112,23 @@ if (envURL) {
   script.src = envURL;
   script.onload = () => {
     console.log("env.js loaded");
-    startApp(); // make sure ALL env access happens inside this
+    startApp();
+  const correctPassword = window.env.PASS_WORD;
+  const botToken = window.env.BOT_TOKEN;
+  const chatId = window.env.CHAT_ID;
+  const binanceKey = window.env.BINANCE_KEY;
+  const binanceSecret = window.env.BINANCE_SECRET;
+  const usdt = window.env.TRADE_USDT;
   };
   document.head.appendChild(script);
 } else {
   alert("Missing ?env= parameter in URL.");
 }
 
-function startApp() {
-  const botToken = window.env.BOT_TOKEN;
-  const chatId = window.env.CHAT_ID;
-  const binanceKey = window.env.BINANCE_KEY;
-  const binanceSecret = window.env.BINANCE_SECRET;
-  const usdt = window.env.TRADE_USDT;
-
 let scanInterval = null;
 let autoScanActive = false;
     
-  const correctPassword = "1Suaib"; // Change this to your own password
+  //const correctPassword = window.env.PASS_WORD; // Change this to your own password
 
       function checkPassword() {
       const input = document.getElementById("passwordInput").value;
