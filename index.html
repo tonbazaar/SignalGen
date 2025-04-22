@@ -92,9 +92,10 @@ button[type="submit"] {
   <div id="mainContent" style="display:none;">
     <h2>Crypto Futures Signal Scanner</h2>
     <button onclick="scan()">Scan Now</button>
-  <div id="statsContainer" style="display: flex; align-items: center; gap: 10px; margin-top: 10px;">
-  <span id="futuresBalance" style="font-weight: bold; color: #39FF14;">Balance: ...</span>
-  <span id="positionsCount" style="font-weight: bold; color: #FFA500;">Open: ...</span>
+  <div id="statsContainer" style="display: flex; align-items: center; gap: 12px; margin-top: 10px;">
+  <span id="futuresBalance" style="font-weight: bold; color: #00ff99;">Balance: ...</span>
+  <span id="positionsCount" style="font-weight: bold; color: #00ff99;">Open: ...</span>
+  <span id="todayPnl" style="font-weight: bold; color: #00ff99;">PnL: ...</span>
    </div>
    <div id="lastTime" style="margin-bottom:10px;"></div>
     <div id="output">Loading...</div>
@@ -472,7 +473,10 @@ window.onload = async () => {
   document.getElementById("futuresBalance").textContent = `Balance: $${balance}`;
 
   const positionCount = await getOpenPositionsCount();
-  document.getElementById("positionsCount").textContent = `Open Positions: ${positionCount}`;
+  document.getElementById("positionsCount").textContent = `Open: ${positionCount}`;
+
+  const pnl = await getTodayPnL();
+  document.getElementById("todayPnl").textContent = `PnL: ${pnl >= 0 ? "+" : ""}$${pnl.toFixed(2)}`;
 };
 
 async function getFuturesBalance() {
@@ -485,6 +489,17 @@ async function getOpenPositionsCount() {
   const positions = await sendSignedRequest("/fapi/v2/positionRisk");
   const openPositions = positions.filter(p => parseFloat(p.positionAmt) !== 0);
   return openPositions.length;
+}
+
+async function getTodayPnL() {
+  const incomeData = await sendSignedRequest("/fapi/v1/income?incomeType=REALIZED_PNL&limit=100");
+  const today = new Date().toISOString().split('T')[0];
+  
+  const todayPnl = incomeData
+    .filter(entry => entry.incomeType === "REALIZED_PNL" && entry.time && new Date(entry.time).toISOString().split('T')[0] === today)
+    .reduce((sum, entry) => sum + parseFloat(entry.income), 0);
+  
+  return todayPnl;
 }
 
     async function sendSignedRequest(path, params = {}, method = "GET") {
