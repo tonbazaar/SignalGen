@@ -504,18 +504,24 @@ window.onload = async () => {
   const pnl = await getTodayPnL();
   document.getElementById("todayPnl").textContent = `PnL: ${pnl >= 0 ? "+" : ""}$${pnl.toFixed(2)}`;
 };
-
+    
 async function getFuturesBalance() {
   const data = await sendSignedRequest("/fapi/v2/account");
   const usdtAsset = data.assets.find(a => a.asset === "USDT");
   return usdtAsset ? parseFloat(usdtAsset.availableBalance).toFixed(2) : "0.00";
 }
 
+getFuturesBalance();
+setInterval(getFuturesBalance, 60000); // update every 60s
+
 async function getOpenPositionsCount() {
   const positions = await sendSignedRequest("/fapi/v2/positionRisk");
   const openPositions = positions.filter(p => parseFloat(p.positionAmt) !== 0);
   return openPositions.length;
 }
+
+getOpenPositionsCount();
+setInterval(getOpenPositionsCount, 60000); // update every 60s
 
 async function getTodayPnL() {
   try {
@@ -539,6 +545,9 @@ async function getTodayPnL() {
     return 0;
   }
 }
+
+getTodayPnL();
+setInterval(getTodayPnL, 60000); // update every 60s
 
     async function sendSignedRequest(path, params = {}, method = "GET") {
   params.timestamp = Date.now();
@@ -580,4 +589,4 @@ async function getTodayPnL() {
     
   </script>
 </body>
-  </html>
+</html>
