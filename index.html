@@ -464,6 +464,17 @@ async function sendLimit(symbol, side, qty, price, tp, sl, reduceOnly, pricePrec
   return parseFloat(qty).toFixed(quantityPrecision);
     }
 
+window.onload = async () => {
+  const balance = await getFuturesBalance();
+  document.getElementById("futuresBalance").textContent = `Balance: $${balance}`;
+};
+
+async function getFuturesBalance() {
+  const data = await sendSignedRequest("/fapi/v2/account");
+  const usdtAsset = data.assets.find(a => a.asset === "USDT");
+  return usdtAsset ? parseFloat(usdtAsset.availableBalance).toFixed(2) : "0.00";
+}
+
     async function sendSignedRequest(path, params = {}, method = "GET") {
   params.timestamp = Date.now();
   const query = new URLSearchParams(params).toString();
@@ -502,16 +513,6 @@ async function sendLimit(symbol, side, qty, price, tp, sl, reduceOnly, pricePrec
   }
 }
     
-    window.onload = async () => {
-  const balance = await getFuturesBalance();
-  document.getElementById("futuresBalance").textContent = Balance: $${balance};
-};
-
-async function getFuturesBalance() {
-  const data = await sendSignedRequest("/fapi/v2/account");
-  const usdtAsset = data.assets.find(a => a.asset === "USDT");
-  return usdtAsset ? parseFloat(usdtAsset.availableBalance).toFixed(2) : "0.00";
-}
   </script>
 </body>
   </html>
