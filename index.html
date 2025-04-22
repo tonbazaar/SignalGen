@@ -101,30 +101,14 @@ button[type="submit"] {
     <div id="output">Loading...</div>
   </div>
 
+  <script src="env.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/crypto-js.js"></script>
   <script>
-
-const urlParams = new URLSearchParams(window.location.search);
-const envURL = urlParams.get('env');
-
-if (envURL) {
-  const script = document.createElement('script');
-  script.src = envURL;
-  script.onload = () => {
-    console.log("env.js loaded");
-    startApp(); // call only after env is loaded
-  };
-  document.head.appendChild(script);
-} else {
-  alert("Missing ?env= parameter in URL.");
-}
-
     
 let scanInterval = null;
 let autoScanActive = false;
     
-  const correctPassword = window.env.PASS_WORD; // Change this to your own password
-
+      const correctPassword = window.env.PASS_WORD;
       function checkPassword() {
       const input = document.getElementById("passwordInput").value;
       const error = document.getElementById("error");
@@ -137,14 +121,6 @@ let autoScanActive = false;
       }
     }
 
-function startApp() {
-  //const correctPassword = window.env.PASS_WORD;
-  const botToken = window.env.BOT_TOKEN;
-  const chatId = window.env.CHAT_ID;
-  const binanceKey = window.env.BINANCE_KEY;
-  const binanceSecret = window.env.BINANCE_SECRET;
-  const usdt = window.env.TRADE_USDT;
-    
     const cooldowns = {};
     const COOLDOWN_MINUTES = 60;
     const output = document.getElementById("output");
@@ -381,8 +357,8 @@ tp = tp.toFixed(5);
     }
 
     async function sendToTelegram(message) {
-      //const botToken = window.env.BOT_TOKEN;
-      //const chatId = window.env.CHAT_ID;
+      const botToken = window.env.BOT_TOKEN;
+      const chatId = window.env.CHAT_ID;
 
       await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
         method: "POST",
@@ -391,8 +367,8 @@ tp = tp.toFixed(5);
       });
     }
 
-    //const binanceKey = window.env.BINANCE_KEY;
-    //const binanceSecret = window.env.BINANCE_SECRET;
+    const binanceKey = window.env.BINANCE_KEY;
+    const binanceSecret = window.env.BINANCE_SECRET;
 
 async function placeTrade(symbol, side, entry, tp, sl) {
   try {
@@ -486,7 +462,7 @@ async function sendLimit(symbol, side, qty, price, tp, sl, reduceOnly, pricePrec
 }
 
   async function getQuantity(symbol, price, quantityPrecision) {
-  //const usdt = window.env.TRADE_USDT; // USDT amount to use
+  const usdt = window.env.TRADE_USDT; // USDT amount to use
   const qty = usdt / parseFloat(price);
   return parseFloat(qty).toFixed(quantityPrecision);
     }
@@ -573,7 +549,6 @@ async function getTodayPnL() {
         return data;
       });
   }
-}
 }
     
   </script>
