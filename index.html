@@ -517,31 +517,8 @@ async function updateMarketCondition() {
 }
     
 updateMarketCondition();
- 
-  async function refreshStatsAndMarket() {
-  try {
-    const balance = await getFuturesBalance();
-    document.getElementById("futuresBalance").textContent = `Balance: $${balance}`;
 
-    const positionCount = await getOpenPositionsCount();
-    document.getElementById("positionsCount").textContent = `Open: ${positionCount}`;
-
-    const pnl = await getTodayPnL();
-    document.getElementById("todayPnl").textContent = `PnL: ${pnl >= 0 ? "+" : ""}$${pnl.toFixed(2)}`;
-
-    await updateMarketCondition(); // refresh market GOOD/BAD
-  } catch (err) {
-    console.error("Error refreshing stats/market:", err);
-  }
-}
-
-    window.onload = () => {
-  refreshStatsAndMarket(); // Initial load
-  setInterval(refreshStatsAndMarket, 30000); // Every 30 seconds
-};
-
-    
-window.onload = async () => {
+ window.onload = async () => {
   const balance = await getFuturesBalance();
   document.getElementById("futuresBalance").textContent = `Balance: $${balance}`;
 
@@ -625,6 +602,30 @@ async function getTodayPnL() {
   }
 }
     
+    async function refreshStatsAndMarket() {
+  try {
+    const balance = await getFuturesBalance();
+    document.getElementById("futuresBalance").textContent = `Balance: $${balance}`;
+
+    const positionCount = await getOpenPositionsCount();
+    document.getElementById("positionsCount").textContent = `Open: ${positionCount}`;
+
+    const pnl = await getTodayPnL();
+    document.getElementById("todayPnl").textContent = `PnL: ${pnl >= 0 ? "+" : ""}$${pnl.toFixed(2)}`;
+
+    await updateMarketCondition();
+
+    console.log("Refreshed at:", new Date().toLocaleTimeString());
+  } catch (err) {
+    console.error("Error during refresh:", err);
+  }
+}
+
+window.onload = () => {
+  refreshStatsAndMarket(); // initial call
+  setInterval(refreshStatsAndMarket, 30000); // auto-refresh every 30 sec
+};
+
   </script>
 </body>
 </html>
