@@ -104,27 +104,6 @@ button[type="submit"] {
   <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/crypto-js.js"></script>
   <script>
     
-const urlParams = new URLSearchParams(window.location.search);
-const envURL = urlParams.get('env');
-
-if (envURL) {
-  const script = document.createElement('script');
-  script.src = envURL;
-  script.onload = () => {
-    console.log("env.js loaded");
-    startApp();{
-  const correctPassword = window.env.PASS_WORD;
-  const botToken = window.env.BOT_TOKEN;
-  const chatId = window.env.CHAT_ID;
-  const binanceKey = window.env.BINANCE_KEY;
-  const binanceSecret = window.env.BINANCE_SECRET;
-  const usdt = window.env.TRADE_USDT;
-  };
-  document.head.appendChild(script);
-} else {
-  alert("Missing ?env= parameter in URL.");
-}
-
 let scanInterval = null;
 let autoScanActive = false;
     
@@ -141,6 +120,14 @@ let autoScanActive = false;
         error.innerText = "Incorrect password.";
       }
     }
+
+function startApp() {
+  const correctPassword = window.env.PASS_WORD;
+  const botToken = window.env.BOT_TOKEN;
+  const chatId = window.env.CHAT_ID;
+  const binanceKey = window.env.BINANCE_KEY;
+  const binanceSecret = window.env.BINANCE_SECRET;
+  const usdt = window.env.TRADE_USDT;
     
     const cooldowns = {};
     const COOLDOWN_MINUTES = 60;
