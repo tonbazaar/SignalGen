@@ -96,6 +96,7 @@ button[type="submit"] {
     <div id="output">Loading...</div>
   </div>
 
+  <script src="env.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/crypto-js.js"></script>
   <script>
     
@@ -352,8 +353,8 @@ tp = tp.toFixed(5);
     }
 
     async function sendToTelegram(message) {
-      const botToken = "7554774363:AAFGbzNsfVdNHL1ja1aKRn4bXQnpfA36wEU";
-      const chatId = "@InsightFutureCalls";
+      const botToken = window.env.BOT_TOKEN;
+      const chatId = window.env.CHAT_ID;
 
       await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
         method: "POST",
@@ -362,8 +363,8 @@ tp = tp.toFixed(5);
       });
     }
 
-    const binanceKey = "NRQ5aIWQZrRtFg7WXmAURVFo9IgDwmJBqxgNxuID9ttWmNWUqLPfVuDMwXpPjSCf";
-    const binanceSecret = "Qun1mya44BXzV5DLxoRKD3AD4bv3liXgAbllBkTZySLLHkJV97bkMDTAhAOHLaLf";
+    const binanceKey = window.env.BINANCE_KEY;
+    const binanceSecret = window.env.BINANCE_SECRET;
 
 async function placeTrade(symbol, side, entry, tp, sl) {
   try {
@@ -457,7 +458,7 @@ async function sendLimit(symbol, side, qty, price, tp, sl, reduceOnly, pricePrec
 }
 
     async function getQuantity(symbol, price, quantityPrecision) {
-  const usdt = 40; // USDT amount to use
+  const usdt = window.env.TRADE_USDT; // USDT amount to use
   const qty = usdt / parseFloat(price);
   return parseFloat(qty).toFixed(quantityPrecision);
     }
