@@ -118,11 +118,20 @@ if (envURL) {
 } else {
   alert("Missing ?env= parameter in URL.");
 }
-    
+
+function startApp() {
+  const correctPassword = window.env.PASS_WORD;
+  const botToken = window.env.BOT_TOKEN;
+  const chatId = window.env.CHAT_ID;
+  const binanceKey = window.env.BINANCE_KEY;
+  const binanceSecret = window.env.BINANCE_SECRET;
+  const usdt = window.env.TRADE_USDT;
+}
+   
 let scanInterval = null;
 let autoScanActive = false;
     
-  const correctPassword = window.env.PASS_WORD; // Change this to your own password
+  //const correctPassword = window.env.PASS_WORD; // Change this to your own password
 
     function checkPassword() {
       const input = document.getElementById("passwordInput").value;
