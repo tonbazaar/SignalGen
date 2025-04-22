@@ -105,18 +105,22 @@ button[type="submit"] {
   <script>
 
 const urlParams = new URLSearchParams(window.location.search);
+const urlParams = new URLSearchParams(window.location.search);
   const envURL = urlParams.get('env');
 
   if (envURL) {
     const script = document.createElement('script');
     script.src = envURL;
     script.onload = () => {
-      console.log("User env.js loaded");
-      startApp(); // Initialize your app logic here
+      console.log("✅ User env.js loaded:", window.env);
+      startApp(); // Call your app start logic AFTER env is loaded
+    };
+    script.onerror = () => {
+      alert("❌ Failed to load user env file.");
     };
     document.head.appendChild(script);
   } else {
-    alert("No env.js URL provided.");
+    alert("❗ Please provide ?env= in the URL.");
   }
     
 let scanInterval = null;
