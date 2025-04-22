@@ -96,7 +96,7 @@ button[type="submit"] {
   <span id="futuresBalance" style="font-weight: bold; color: #00ff99;">Balance: ...</span>
   <span id="positionsCount" style="font-weight: bold; color: #00ff99;">Open: ...</span>
   <span id="todayPnl" style="font-weight: bold; color: #00ff99;">PnL: ...</span>
-  <span id="marketStatus" style="font-weight: bold; color: #ffcc00;">Market: ...</span>
+  <span id="marketStatus" style="font-weight: bold;">Market: ...</span>
    </div>
    <div id="lastTime" style="margin-bottom:10px;"></div>
     <div id="output">Loading...</div>
@@ -468,27 +468,52 @@ async function sendLimit(symbol, side, qty, price, tp, sl, reduceOnly, pricePrec
   return parseFloat(qty).toFixed(quantityPrecision);
     }
 
-async function getKlines(symbol, interval, limit) {
-  const url = `https://fapi.binance.com/fapi/v1/klines?symbol=${symbol}&interval=${interval}&limit=${limit}`;
-  const res = await fetch(url);
-  return res.json();
+async function getBTCIndicators() {
+  const res = await fetch("https://fapi.binance.com/fapi/v1/klines?symbol=BTCUSDT&interval=5m&limit=200");
+  const data = await res.json();
+
+  const closes = data.map(c => parseFloat(c[4]));
+  const volumes = data.map(c => parseFloat(c[5]));
+
+  const ema50 = getEMA(closes, 50);
+  const ema200 = getEMA(closes, 200);
+  const currentVolume = volumes[volumes.length - 1];
+  const avgVolume = volumes.slice(-30).reduce((a, b) => a + b, 0) / 30;
+
+  return {
+    ema50: ema50[ema50.length - 1],
+    ema200: ema200[ema200.length - 1],
+    currentVolume,
+    avgVolume
+  };
 }
 
-async function checkMarketCondition() {
-  const data = await getKlines("BTCUSDT", "5m", 6); // last 30 minutes (6 candles)
-  const closes = data.map(c => parseFloat(c[4])); // closing prices
-  const high = Math.max(...closes);
-  const low = Math.min(...closes);
-  const percentChange = ((high - low) / low) * 100;
+function getEMA(prices, period) {
+  const k = 2 / (period + 1);
+  const ema = [prices.slice(0, period).reduce((a, b) => a + b) / period];
 
-  const marketEl = document.getElementById("marketStatus");
-  if (percentChange < 1.5) {
-    marketEl.innerText = "Market: Good";
-    marketEl.style.color = "#00ff99"; // green
-  } else {
-    marketEl.innerText = "Market: Bad";
-    marketEl.style.color = "#ff4d4d"; // red
+  for (let i = period; i < prices.length; i++) {
+    ema.push(prices[i] * k + ema[ema.length - 1] * (1 - k));
   }
+
+  return ema;
+}
+
+async function updateMarketCondition() {
+  const { ema50, ema200, currentVolume, avgVolume } = await getBTCIndicators();
+
+  let marketCondition = "BAD";
+
+  // Check trend & volatility alignment
+  const trendOkay = Math.abs(ema50 - ema200) / ema200 > 0.002; // 0.2% difference
+  const noVolumeSpike = currentVolume < avgVolume * 1.8;
+
+  if (trendOkay && noVolumeSpike) {
+    marketCondition = "GOOD";
+  }
+
+  document.getElementById("marketStatus").textContent = `Market: ${marketCondition}`;
+  document.getElementById("marketStatus").style.color = marketCondition === "GOOD" ? "#00ff99" : "#ff6600";
 }
 
 window.onload = async () => {
