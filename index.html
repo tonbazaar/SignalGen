@@ -120,7 +120,6 @@ if (envURL) {
 }
 
 function startApp() {
-  const correctPassword = window.env.PASS_WORD;
   const botToken = window.env.BOT_TOKEN;
   const chatId = window.env.CHAT_ID;
   const binanceKey = window.env.BINANCE_KEY;
@@ -130,9 +129,9 @@ function startApp() {
 let scanInterval = null;
 let autoScanActive = false;
     
-  //const correctPassword = window.env.PASS_WORD; // Change this to your own password
+  const correctPassword = "1Suaib"; // Change this to your own password
 
-   async function checkPassword() {
+      function checkPassword() {
       const input = document.getElementById("passwordInput").value;
       const error = document.getElementById("error");
 
