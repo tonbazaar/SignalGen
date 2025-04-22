@@ -515,6 +515,9 @@ async function updateMarketCondition() {
   document.getElementById("marketStatus").textContent = `Market: ${marketCondition}`;
   document.getElementById("marketStatus").style.color = marketCondition === "GOOD" ? "#00ff99" : "#ff6600";
 }
+    
+updateMarketCondition();
+setInterval(updateMarketCondition, 30000); // every 30 seconds
 
 window.onload = async () => {
   const balance = await getFuturesBalance();
