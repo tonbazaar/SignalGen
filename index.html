@@ -126,7 +126,7 @@ let scanInterval = null;
 let autoScanActive = false;
     
       const correctPassword = window.env.PASS_WORD;
-      window.function checkPassword() {
+      window.checkPassword = function () {
       const input = document.getElementById("passwordInput").value;
       const error = document.getElementById("error");
 
