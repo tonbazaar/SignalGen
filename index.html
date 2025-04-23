@@ -102,9 +102,25 @@ button[type="submit"] {
     <div id="output">Loading...</div>
   </div>
 
-  <script src="env.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/crypto-js.js"></script>
   <script>
+
+   window.onload = async () => {
+  const envUrl = prompt("Paste your GitHub raw env.js link:");
+
+  if (!envUrl || !envUrl.endsWith(".js")) {
+    alert("Invalid URL");
+    return;
+  }
+
+  const script = document.createElement("script");
+  script.src = envUrl;
+  script.onload = () => initApp(); // Run main logic
+  script.onerror = () => alert("Failed to load your env.js file.");
+  document.head.appendChild(script);
+};
+
+function initApp() { 
     
 let scanInterval = null;
 let autoScanActive = false;
@@ -625,7 +641,7 @@ window.onload = () => {
   refreshStatsAndMarket(); // initial call
   setInterval(refreshStatsAndMarket, 300000); // auto-refresh every 5 min
 };
-
+}
   </script>
 </body>
 </html>
