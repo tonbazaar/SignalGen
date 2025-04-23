@@ -205,6 +205,12 @@ async function getPrecisionInfo(symbol) {
     const recentBearishCount = closes.slice(-3).filter((c, i) => c < opens[opens.length - 3 + i]).length;
     const recentBullishCount = closes.slice(-3).filter((c, i) => c > opens[opens.length - 3 + i]).length;
 
+    let btcNow = btcPrice; // current BTC price
+    let btcBefore = btcPrice5MinAgo; // price from 15 min ago
+
+    let btcTrend = btcNow > btcBefore ? "UP" : btcNow < btcBefore ? "DOWN" : "FLAT";
+
+    
     let signalType = null;
     let confidence = "Normal";
 
@@ -215,7 +221,8 @@ async function getPrecisionInfo(symbol) {
       lastVol > avgVol * 1.3 &&
       candleStrength > 0.003 &&
       wickRatio < 0.015 &&
-      recentBearishCount <= 1
+      recentBearishCount <= 1 &&
+      btcTrend === "UP"
     ) {
       signalType = "LONG";
       confidence = "High";
@@ -226,7 +233,8 @@ async function getPrecisionInfo(symbol) {
       lastVol > avgVol * 1.3 &&
       candleStrength < -0.003 &&
       wickRatio < 0.015 &&
-      recentBullishCount <= 1
+      recentBullishCount <= 1 &&
+      btcTrend === "DOWN"
     ) {
       signalType = "SHORT";
       confidence = "High";
