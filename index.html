@@ -125,8 +125,8 @@ function initApp() {
 let scanInterval = null;
 let autoScanActive = false;
     
-      const correctPassword = window.env.PASS_WORD;
-      window.checkPassword = function () {
+      correctPassword = window.env.PASS_WORD;
+      function checkPassword () {
       const input = document.getElementById("passwordInput").value;
       const error = document.getElementById("error");
 
