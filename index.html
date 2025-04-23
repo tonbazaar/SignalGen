@@ -206,7 +206,7 @@ async function getPrecisionInfo(symbol) {
     const recentBullishCount = closes.slice(-3).filter((c, i) => c > opens[opens.length - 3 + i]).length;
 
     let btcNow = btcPrice; // current BTC price
-    let btcBefore = btcPrice5MinAgo; // price from 15 min ago
+    let btcBefore = btcPrice15MinAgo; // price from 15 min ago
 
     let btcTrend = btcNow > btcBefore ? "UP" : btcNow < btcBefore ? "DOWN" : "FLAT";
 
