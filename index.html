@@ -31,13 +31,13 @@ button[type="submit"] {
 }
   
     body {
-      background: #DCDCDC;
-      color: black;
+      background: black;
+      color: white;
       font-family: monospace;
       padding: 10px;
     }
     h2 {
-      color: red;
+      color: #00ff99;
     }
     button {
       background: #00ff99;
@@ -93,9 +93,9 @@ button[type="submit"] {
     <h2>Crypto Futures Signal Scanner</h2>
     <button onclick="scan()">Scan Now</button>
   <div id="statsContainer" style="display: flex; align-items: center; gap: 12px; margin-top: 10px;">
-  <span id="futuresBalance" style="font-weight: bold; color: #0019FF;">Balance: ...</span>
-  <span id="positionsCount" style="font-weight: bold; color: #0019FF;">Open: ...</span>
-  <span id="todayPnl" style="font-weight: bold; color: #0019FF;">PnL: ...</span>
+  <span id="futuresBalance" style="font-weight: bold; color: #00ff99;">Balance: ...</span>
+  <span id="positionsCount" style="font-weight: bold; color: #00ff99;">Open: ...</span>
+  <span id="todayPnl" style="font-weight: bold; color: #00ff99;">PnL: ...</span>
   <span id="marketStatus" style="font-weight: bold;">Market: ...</span>
    </div>
    <div id="lastTime" style="margin-bottom:10px;"></div>
@@ -513,7 +513,7 @@ async function updateMarketCondition() {
   }
 
   document.getElementById("marketStatus").textContent = `Market: ${marketCondition}`;
-  document.getElementById("marketStatus").style.color = marketCondition === "GOOD" ? "#90FF15" : "#ff8300";
+  document.getElementById("marketStatus").style.color = marketCondition === "GOOD" ? "#00ff99" : "#ff8300";
 }
     
 updateMarketCondition();
