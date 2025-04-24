@@ -107,7 +107,7 @@ button[type="submit"] {
   <div id="statsContainer" style="display: flex; align-items: center; gap: 12px; margin-top: 10px;">
   <span id="futuresBalance" style="font-weight: bold; color: #2e7d32;">Balance: ...</span>
   <span id="positionsCount" style="font-weight: bold; color: #4603FBFE;">Open: ...</span>
-  <span id="pnlValue" style="font-weight: bold;">+0.00 USDT</span>
+  <span id="pnlValue" style="font-weight: bold;">PNL: +0.00 </span>
   <span id="marketStatus" style="font-weight: bold;">Market: ...</span>
    </div>
    <div id="lastTime" style="margin-bottom:10px;"></div>
@@ -570,7 +570,7 @@ async function getTodayPnL() {
       .reduce((sum, entry) => sum + parseFloat(entry.income), 0);
 
     const pnlElement = document.getElementById("pnlValue");
-    pnlElement.textContent = `${todayPnl >= 0 ? '+' : ''}${todayPnl.toFixed(2)} USDT`;
+    pnlElement.textContent = `PNL: ${todayPnl >= 0 ? '+' : ''}${todayPnl.toFixed(2)}`;
 
     if (todayPnl > 0) {
       pnlElement.className = 'profit';
