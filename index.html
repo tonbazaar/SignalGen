@@ -67,9 +67,6 @@ button[type="submit"] {
     .loss {
      color: #d32f2f; /* Red */
   }
-    .neutral {
-     color: #616161; /* Grey */
-    }
     
     .short {
       color: #d32f2f;
@@ -578,7 +575,6 @@ async function getTodayPnL() {
 } else {
   pnlElement.className = 'neutral';
     }
-
 
   } catch (err) {
     console.error("Error fetching PnL:", err);
