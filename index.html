@@ -632,13 +632,27 @@ async function getTodayPnL() {
         const data = await r.json();
         if (!r.ok) {
           console.error("Binance API error:", data);
-          alert(`Binance Error: ${data.msg || "Unknown error"}`);
+          showError(`Binance Error: ${data.msg || "Unknown error"}`);
         }
         return data;
       });
   }
 }
-    
+
+
+function showError(msg) {
+  const box = document.createElement('div');
+  box.textContent = msg;
+  box.style.cssText = `
+      position:fixed; top:20px; left:50%; transform:translateX(-50%);
+      max-width:90%; padding:14px 18px;
+      background:#ff4444; color:#fff; font-family:monospace;
+      border-radius:8px; z-index:9999;
+  `;
+  document.body.appendChild(box);
+  setTimeout(()=> box.remove(), 5000);  // disappear after 5 s
+}
+
     async function refreshStatsAndMarket() {
   try {
     const balance = await getFuturesBalance();
