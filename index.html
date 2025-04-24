@@ -569,18 +569,20 @@ async function getTodayPnL() {
       })
       .reduce((sum, entry) => sum + parseFloat(entry.income), 0);
 
+    const pnlElement = document.getElementById("pnlValue");
+    pnlElement.textContent = `${todayPnl >= 0 ? '+' : ''}${todayPnl.toFixed(2)} USDT`;
+
     if (todayPnl > 0) {
-  pnlElement.className = 'profit';
-} else if (todayPnl < 0) {
-  pnlElement.className = 'loss';
-} else {
-  pnlElement.className = 'neutral';
+      pnlElement.className = 'profit';
+    } else if (todayPnl < 0) {
+      pnlElement.className = 'loss';
+    } else {
+      pnlElement.className = 'neutral';
     }
-    
-  return todayPnl;
-  } catch (err) {
-    console.error("Error fetching PnL:", err);
-    return 0;
+
+    return todayPnl;
+  } catch (error) {
+    console.error("Error fetching today's PnL:", error);
   }
 }
 
