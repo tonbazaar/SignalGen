@@ -60,6 +60,17 @@ button[type="submit"] {
       margin: 10px 0;
       border-radius: 10px;
     }
+    
+    .profit {
+     color: #2e7d32; /* Green */
+    }
+    .loss {
+     color: #c62828; /* Red */
+  }
+    .neutral {
+     color: #616161; /* Grey */
+    }
+    
     .short {
       color: #d32f2f;
     }
@@ -96,7 +107,7 @@ button[type="submit"] {
   <div id="statsContainer" style="display: flex; align-items: center; gap: 12px; margin-top: 10px;">
   <span id="futuresBalance" style="font-weight: bold; color: #2e7d32;">Balance: ...</span>
   <span id="positionsCount" style="font-weight: bold; color: #4603FBFE;">Open: ...</span>
-  <span id="todayPnl" style="font-weight: bold; color: #4603FBFE;">PnL: ...</span>
+  <span id="todayPnl" style="font-weight: bold;">PnL: ...</span>
   <span id="marketStatus" style="font-weight: bold;">Market: ...</span>
    </div>
    <div id="lastTime" style="margin-bottom:10px;"></div>
@@ -559,6 +570,16 @@ async function getTodayPnL() {
       .reduce((sum, entry) => sum + parseFloat(entry.income), 0);
 
     return todayPnl;
+
+    if (todayPnl > 0) {
+  pnlElement.className = 'profit';
+} else if (todayPnl < 0) {
+  pnlElement.className = 'loss';
+} else {
+  pnlElement.className = 'neutral';
+    }
+
+
   } catch (err) {
     console.error("Error fetching PnL:", err);
     return 0;
