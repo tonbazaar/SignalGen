@@ -411,11 +411,11 @@ async function placeTrade(symbol, side, entry, tp, sl) {
 
     if (!response || response.code) {
       console.error("Error placing order:", response ? response.msg : "Unknown error");
-      alert("Error placing order.");
+      showError("Error placing order.");
     }
   } catch (error) {
     console.error("Error in placeTrade function:", error);
-    alert("An error occurred while placing the trade.");
+    showError("An error occurred while placing the trade.");
   }
 }
 
@@ -621,7 +621,7 @@ async function getTodayPnL() {
         if (!r.ok) {
           console.log("Binance response:", data);         
           console.error("Binance API error:", data);
-          alert(`Binance Error: ${data.msg || "Unknown error"}`);
+          showError(`Binance Error: ${data.msg || "Unknown error"}`);
         }
         return data;
       });
