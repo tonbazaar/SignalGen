@@ -62,11 +62,14 @@ button[type="submit"] {
     }
     
     .profit {
-     color: #388e3c; /* Green */
-    }
-    .loss {
-     color: #d32f2f; /* Red */
-  }
+  color: #2e7d32; /* Green */
+}
+.loss {
+  color: #c62828; /* Red */
+}
+.neutral {
+  color: #616161; /* Grey */
+}
     
     .short {
       color: #d32f2f;
@@ -566,8 +569,6 @@ async function getTodayPnL() {
       })
       .reduce((sum, entry) => sum + parseFloat(entry.income), 0);
 
-    return todayPnl;
-
     if (todayPnl > 0) {
   pnlElement.className = 'profit';
 } else if (todayPnl < 0) {
@@ -575,7 +576,8 @@ async function getTodayPnL() {
 } else {
   pnlElement.className = 'neutral';
     }
-
+    
+  return todayPnl;
   } catch (err) {
     console.error("Error fetching PnL:", err);
     return 0;
