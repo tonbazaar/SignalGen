@@ -1,3 +1,8 @@
 window.env = {
-  PASS_WORD: "1Suaibhasan@@"
+    BOT_TOKEN: "7554774363:AAFGbzNsfVdNHL1ja1aKRn4bXQnpfA36wEU",
+    CHAT_ID: "7788499741",
+    BINANCE_KEY: "NRQ5aIWQZrRtFg7WXmAURVFo9IgDwmJBqxgNxuID9ttWmNWUqLPfVuDMwXpPjSCf",
+    BINANCE_SECRET: "Qun1mya44BXzV5DLxoRKD3AD4bv3liXgAbllBkTZySLLHkJV97bkMDTAhAOHLaLf",
+    TRADE_USDT: 40 ,
+    PASS_WORD: "1Suaibhasan@"
 };
