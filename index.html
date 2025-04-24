@@ -19,13 +19,15 @@
 }
 
 button[type="submit"] {
-  background-color: #00c853;
+  padding: 10px 20px;
+  background-color: #00c896;
   color: white;
-  border-radius: 8px;
-  padding: 6px 14px;
-  font-weight: bold;
+  font-size: 16px;
   border: none;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  display: block;
 }
   
     body {
@@ -512,7 +514,7 @@ async function updateMarketCondition() {
   }
 
   document.getElementById("marketStatus").textContent = `Market: ${marketCondition}`;
-  document.getElementById("marketStatus").style.color = marketCondition === "GOOD" ? "#4CAF50FF" : "#FE9800FF";
+  document.getElementById("marketStatus").style.color = marketCondition === "GOOD" ? "#388e3c" : "#d32f2f";
 }
     
 updateMarketCondition();
