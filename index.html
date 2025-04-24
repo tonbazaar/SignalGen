@@ -60,10 +60,10 @@ button[type="submit"] {
       border-radius: 10px;
     }
     .short {
-      color: #ff3333;
+      color: #FC032FFE;
     }
     .long {
-      color: #00ff00;
+      color: #4CAF50FF;
     }
     .trade-btn {
       background: #333;
@@ -513,7 +513,7 @@ async function updateMarketCondition() {
   }
 
   document.getElementById("marketStatus").textContent = `Market: ${marketCondition}`;
-  document.getElementById("marketStatus").style.color = marketCondition === "GOOD" ? "#00ff99" : "#ff8300";
+  document.getElementById("marketStatus").style.color = marketCondition === "GOOD" ? "#4CAF50FF" : "#FE9800FF";
 }
     
 updateMarketCondition();
