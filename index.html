@@ -195,7 +195,7 @@ async function getPrecisionInfo(symbol) {
 
     async function analyzeSymbol(symbol) {
   try {
-    const url = `https://fapi.binance.com/fapi/v1/klines?symbol=${symbol}&interval=5m&limit=100`;
+    const url = `https://fapi.binance.com/fapi/v1/klines?symbol=${symbol}&interval=15m&limit=100`;
     const res = await fetch(url);
     const data = await res.json();
 
@@ -239,7 +239,7 @@ async function getPrecisionInfo(symbol) {
       latestEma9 > latestEma21 &&
       latestRsi > 58 &&
       macdHistogram > 0.0001 &&
-      lastVol > avgVol * 1.5 &&
+      lastVol > avgVol * 1.3 &&
       candleStrength > 0.003 &&
       wickRatio < 0.015 &&
       recentBearishCount <= 1
@@ -250,7 +250,7 @@ async function getPrecisionInfo(symbol) {
       latestEma9 < latestEma21 &&
       latestRsi < 42 &&
       macdHistogram < -0.0001 &&
-      lastVol > avgVol * 1.5 &&
+      lastVol > avgVol * 1.3 &&
       candleStrength < -0.003 &&
       wickRatio < 0.015 &&
       recentBullishCount <= 1
