@@ -266,30 +266,36 @@ async function getPrecisionInfo(symbol) {
           cooldowns[symbol] = now;
 
         const price = lastClose;
-  const atrMultiplier = 10.0; // 5x farther SL
-const rrRatio = 1.5; 
-const minSlPercent = 0.003; 
+          
+const atrMultiplier = 2.0; // ATR factor
+const rrRatio = 1.5; // Risk:Reward ratio
+const margin = 1; // Your $1 trade amount
+const desiredLoss = 3; // You accept $3 loss maximum
 
-let sl, tp;
+// How much % loss you're ready for (relative to margin)
+const lossPercent = desiredLoss / margin; // 5.0 (means 500%)
 
-const rawSl = signalType === "LONG"
-  ? price - latestAtr * atrMultiplier
-  : price + latestAtr * atrMultiplier;
+const fixedSlDistance = price * (lossPercent / 100); // % based
 
-const minSl = price * minSlPercent;
+const atrSlDistance = latestAtr * atrMultiplier; // ATR based
 
-sl = signalType === "LONG"
-  ? Math.min(price - minSl, rawSl)
-  : Math.max(price + minSl, rawSl);
+// Choose the farther one
+const chosenSlDistance = Math.max(fixedSlDistance, atrSlDistance);
 
+// Calculate SL
+let sl = signalType === "LONG"
+  ? price - chosenSlDistance
+  : price + chosenSlDistance;
+
+// Calculate TP (risk * reward ratio)
 const risk = Math.abs(price - sl);
-
-tp = signalType === "LONG"
+let tp = signalType === "LONG"
   ? (price + risk * rrRatio)
   : (price - risk * rrRatio);
 
-sl = sl.toFixed(5);
-tp = tp.toFixed(5);
+// Format nicely
+sl = parseFloat(sl).toFixed(pricePrecision);
+tp = parseFloat(tp).toFixed(pricePrecision
 
           const telegramMessage = `
 <b>📊 Symbol:</b> <code>${symbol}</code>
