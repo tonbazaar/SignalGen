@@ -235,6 +235,15 @@ async function getPrecisionInfo(symbol) {
     //let signalType = null;
     //let confidence = "Normal";
 
+// --- Fetch 1H EMA trend ---
+    const url1h = `https://fapi.binance.com/fapi/v1/klines?symbol=${symbol}&interval=1h&limit=50`;
+    const res1h = await fetch(url1h);
+    const data1h = await res1h.json();
+    const closes1h = data1h.map(c => parseFloat(c[4]));
+    const ema9_1h = calculateEMA(closes1h, 9).at(-1);
+    const ema21_1h = calculateEMA(closes1h, 21).at(-1);
+
+    
     // 5M timeframe indicators (same as your original)
 const is5MLong = 
   latestEma9 > latestEma21 &&
