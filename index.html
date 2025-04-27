@@ -259,7 +259,7 @@ async function getPrecisionInfo(symbol) {
       confidence = "High";
     }
 
-        if (signalType) {
+        if (signalType && symbol) {
           const now = Date.now();
           const lastSignalTime = cooldowns[symbol] || 0;
           if (now - lastSignalTime < COOLDOWN_MINUTES * 60 * 1000) return null;
