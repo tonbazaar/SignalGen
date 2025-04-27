@@ -291,8 +291,8 @@ tp = signalType === "LONG"
   : (price - risk * rrRatio);
 
 // Format to 5 decimals (adjust if needed for token precision)
-sl = parseFloat(sl).toFixed(pricePrecision);
-tp = parseFloat(tp).toFixed(pricePrecision
+sl = sl.toFixed(5);
+tp = tp.toFixed(5);
 
           const telegramMessage = `
 <b>📊 Symbol:</b> <code>${symbol}</code>
