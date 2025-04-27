@@ -232,7 +232,7 @@ async function getPrecisionInfo(symbol) {
     const recentBearishCount = closes.slice(-3).filter((c, i) => c < opens[opens.length - 3 + i]).length;
     const recentBullishCount = closes.slice(-3).filter((c, i) => c > opens[opens.length - 3 + i]).length;
  
-    let signalType = null;
+let signalType = null;
 let confidence = "Normal";
 
 // --- Fetch 1H EMA trend ---
