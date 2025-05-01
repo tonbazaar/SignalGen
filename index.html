@@ -246,7 +246,7 @@ const ema21_1h = calculateEMA(closes1h, 21).at(-1);
 // --- 5M conditions ---
 const is5MLong =
   latestEma9 > latestEma21 &&
-  latestRsi > 78 &&
+  latestRsi > 52 &&
   macdHistogram > 0.0001 &&
   lastVol > avgVol * 1.3 &&
   candleStrength > 0.003 &&
@@ -255,7 +255,7 @@ const is5MLong =
 
 const is5MShort =
   latestEma9 < latestEma21 &&
-  latestRsi < 28 &&
+  latestRsi < 48 &&
   macdHistogram < -0.0001 &&
   lastVol > avgVol * 1.3 &&
   candleStrength < -0.003 &&
