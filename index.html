@@ -195,6 +195,7 @@ input[type="password"], input[type="text"] {
       const storedPassword = localStorage.getItem('password');
 
       if (password === storedPassword) {
+        localStorage.setItem('isLoggedIn', 'true');
         document.getElementById("loginForm").style.display = "none";
         document.getElementById("mainContent").style.display = "block";
         showError('Login successful!');
@@ -204,6 +205,16 @@ input[type="password"], input[type="text"] {
       }
     }
     
+window.onload = function () {
+  if (localStorage.getItem('isLoggedIn') === 'true') {
+    document.getElementById("loginForm").style.display = "none";
+    document.getElementById("mainContent").style.display = "block";
+  } else {
+    document.getElementById("loginForm").style.display = "block";
+    document.getElementById("mainContent").style.display = "none";
+  }
+};
+   
 let scanInterval = null;
 let autoScanActive = false;
     
