@@ -206,15 +206,17 @@ input[type="password"], input[type="text"] {
     }
     
 window.onload = function () {
-  if (localStorage.getItem('isLoggedIn') === 'true') {
+  const isLoggedIn = localStorage.getItem('isLoggedIn');
+  if (isLoggedIn === 'true') {
     document.getElementById("loginForm").style.display = "none";
+    document.getElementById("signupForm").style.display = "none";
     document.getElementById("mainContent").style.display = "block";
   } else {
     document.getElementById("loginForm").style.display = "block";
     document.getElementById("mainContent").style.display = "none";
   }
 };
-   
+ 
 let scanInterval = null;
 let autoScanActive = false;
     
