@@ -117,7 +117,7 @@ input[type="password"], input[type="text"] {
 </head>
 <body>
 
-  <div class="form-container" id="loginForm" style="display:block;">
+  <div class="form-container" id="loginForm">
     <h2>Login</h2>
     <input type="password" id="password" placeholder="Enter your password">
     <button onclick="login()">Login</button>
@@ -195,7 +195,6 @@ input[type="password"], input[type="text"] {
       const storedPassword = localStorage.getItem('password');
 
       if (password === storedPassword) {
-        localStorage.setItem('isLoggedIn', 'true');
         document.getElementById("loginForm").style.display = "none";
         document.getElementById("mainContent").style.display = "block";
         showError('Login successful!');
@@ -205,18 +204,6 @@ input[type="password"], input[type="text"] {
       }
     }
     
-window.onload = function () {
-  const isLoggedIn = localStorage.getItem('isLoggedIn');
-  if (isLoggedIn === 'true') {
-    document.getElementById("loginForm").style.display = "none";
-    document.getElementById("signupForm").style.display = "none";
-    document.getElementById("mainContent").style.display = "block";
-  } else {
-    document.getElementById("loginForm").style.display = "block";
-    document.getElementById("mainContent").style.display = "none";
-  }
-};
- 
 let scanInterval = null;
 let autoScanActive = false;
     
