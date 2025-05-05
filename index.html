@@ -5,19 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
 
-#passwordInput {
-  padding: 10px;
-  font-size: 16px;
-  width: 220px;
-  border-radius: 8px;
-  border: none;
-  outline: none;
-  background-color: #eeeeee;
-  color: #000000;
-  margin-bottom: 10px;
-  display: block;
-}
-
 button[type="submit"] {
   padding: 10px 20px;
   background-color: #22c55e;
@@ -103,15 +90,50 @@ button:hover {
   background-color: #0284c7;
   color: #ffffff;
 }
+    .form-container {
+  max-width: 400px;
+  margin: auto;
+  text-align: center;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  background-color: #fff; /* optional */
+}
 
+input[type="password"], input[type="text"] {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box; /* ensures padding doesn't overflow width */
+}
+    .error {
+      color: red;
+    }
+    
   </style>
 </head>
 <body>
-  <div id="login">
-    <h2>Enter Password to Access</h2>
-    <input type="password" id="passwordInput" placeholder="Enter Password" />
-    <button onclick="checkPassword()">Submit</button>
-    <p id="error" style="color:#FC032FFE;"></p>
+
+  <div class="form-container" id="loginForm">
+    <h2>Login</h2>
+    <input type="password" id="password" placeholder="Enter your password">
+    <button onclick="login()">Login</button>
+    <div class="error" id="loginError"></div>
+    <p>Don't have an account? <a href="#" onclick="showSignupForm()">Sign up</a></p>
+  </div>
+
+  <div class="form-container" id="signupForm" style="display:none;">
+    <h2>Sign Up</h2>
+    <input type="password" id="newPassword" placeholder="Enter a password">
+    <input type="text" id="chatId" placeholder="Enter Telegram Chat ID">
+    <input type="text" id="binanceApi" placeholder="Enter Binance API Key">
+    <input type="text" id="binanceSecret" placeholder="Enter Binance Secret Key">
+    <button onclick="signup()">Sign Up</button>
+    <div class="error" id="signupError"></div>
+    <p>Already have an account? <a href="#" onclick="showLoginForm()">Login</a></p>
   </div>
 
   <!-- Main Content (Hidden until password is correct) -->
@@ -132,23 +154,59 @@ button:hover {
   <script src="env.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/crypto-js.js"></script>
   <script> 
+// Function to show login form
+    function showLoginForm() {
+      document.getElementById('signupForm').style.display = 'none';
+      document.getElementById('loginForm').style.display = 'block';
+    }
+
+    // Function to show signup form
+    function showSignupForm() {
+      document.getElementById('loginForm').style.display = 'none';
+      document.getElementById('signupForm').style.display = 'block';
+    }
+
+    // Handle sign up
+    function signup() {
+      const password = document.getElementById('newPassword').value;
+      const chatId = document.getElementById('chatId').value;
+      const binanceApi = document.getElementById('binanceApi').value;
+      const binanceSecret = document.getElementById('binanceSecret').value;
+
+      if (!password || !chatId || !binanceApi || !binanceSecret) {
+        document.getElementById('signupError').textContent = 'All fields are required!';
+        return;
+      }
+
+      // Store user details in localStorage
+      localStorage.setItem('password', password);
+      localStorage.setItem('chatId', chatId);
+      localStorage.setItem('binanceApi', binanceApi);
+      localStorage.setItem('binanceSecret', binanceSecret);
+
+      // Redirect to login form
+      showLoginForm();
+      showError('Sign up successful! You can now login.');
+    }
+
+    // Handle login
+    function login() {
+      const password = document.getElementById('password').value;
+      const storedPassword = localStorage.getItem('password');
+
+      if (password === storedPassword) {
+        document.getElementById("loginForm").style.display = "none";
+        document.getElementById("mainContent").style.display = "block";
+        showError('Login successful!');
+        
+      } else {
+        document.getElementById('loginError').textContent = 'Incorrect password!';
+      }
+    }
     
 let scanInterval = null;
 let autoScanActive = false;
     
-      const correctPassword = window.env.PASS_WORD;
-      function checkPassword () {
-      const input = document.getElementById("passwordInput").value;
-      const error = document.getElementById("error");
-
-      if (input === correctPassword) {
-        document.getElementById("login").style.display = "none";
-        document.getElementById("mainContent").style.display = "block";
-      } else {
-        error.innerText = "Incorrect password.";
-      }
-    }
-
     const cooldowns = {};
     const COOLDOWN_MINUTES = 60;
     const output = document.getElementById("output");
@@ -382,10 +440,23 @@ tp = tp.toFixed(5);
       return atr;
     }
 
-    async function sendToTelegram(message) {
-      const botToken = window.env.BOT_TOKEN;
-      const chatId = window.env.CHAT_ID;
+function getBinanceCredentials() {
+  return {
+    apiKey: localStorage.getItem('binanceApi'),
+    secretKey: localStorage.getItem('binanceSecret')
+  };
+}
 
+function getTelegramCredentials() {
+  return {
+    chatId: localStorage.getItem('chatId')
+  };
+}
+  
+    async function sendToTelegram(message) {
+      const { chatId } = getTelegramCredentials();
+      const botToken = window.env.BOT_TOKEN;
+      
       await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -393,9 +464,8 @@ tp = tp.toFixed(5);
       });
     }
 
-    const binanceKey = window.env.BINANCE_KEY;
-    const binanceSecret = window.env.BINANCE_SECRET;
-
+const { apiKey: binanceKey, secretKey: binanceSecret } = getBinanceCredentials();
+ 
 async function placeTrade(symbol, side, entry, tp, sl) {
   try {
     const { pricePrecision, quantityPrecision } = await getPrecisionInfo(symbol);
@@ -677,4 +747,4 @@ window.onload = () => {
     
   </script>
 </body>
-</html>
+  </html>
