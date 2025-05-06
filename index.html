@@ -359,13 +359,12 @@ tp = tp.toFixed(5);
 <b>⚙️ Leverage:</b> <code>10–20x</code>
 <b>✅ Confidence:</b> <code>${confidence}</code> 
 
-<b>📈 RSI(6):</b> <code>${latestRsi}</code>
-<b>📉 EMA(9/21):</b> <code>${latestEma9} / ${latestEma21}</code>
-<b>📊 MACD Hist:</b> <code>${macdHistogram}</code>
-<b>🕯️ Candle Strength:</b> <code>${candleStrength}</code>
-<b>⚖️ Wick Ratio:</b> <code>${wickRatio}</code>
-<b>📊 Volume (last/avg):</b> <code>${lastVol} / ${avgVol}</code>
-<b>🟩 Recent Bullish Candles:</b> <code>${recentBullishCount}</code>`;
+<b>📈 RSI(6):</b> <code>${latestRsi.toFixed(5)}</code>
+<b>📉 EMA(9/21):</b> <code>${latestEma9.toFixed(5)} / ${latestEma21.toFixed(5)}</code>
+<b>📊 MACD Hist:</b> <code>${macdHistogram.toFixed(5)}</code>
+<b>🕯️ Candle Strength:</b> <code>${candleStrength.toFixed(5)}</code>
+<b>⚖️ Wick Ratio:</b> <code>${wickRatio.toFixed(5)}</code>
+<b>📊 Volume (last/avg):</b> <code>${lastVol} / ${avgVol}</code>`;
 
           await sendToTelegram(telegramMessage);
 
