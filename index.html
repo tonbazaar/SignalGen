@@ -324,7 +324,7 @@ let confidence = "Normal";
           
 const price = lastClose;
 const atrMultiplier = 2.0; // You can tune this
-const rrRatio = 1.5; // Risk:Reward
+const rrRatio = 1.2; // Risk:Reward
 const minSlPercent = 0.003; // 0.3%
 
 let sl, tp;
@@ -357,14 +357,7 @@ tp = tp.toFixed(5);
 <b>⭐ TP:</b> <code>${tp}</code>
 <b>⛔ SL:</b> <code>${sl}</code>
 <b>⚙️ Leverage:</b> <code>10–20x</code>
-<b>✅ Confidence:</b> <code>${confidence}</code> 
-
-<b>📈 RSI(6):</b> <code>${latestRsi.toFixed(2)}</code>
-<b>📉 EMA(9/21):</b> <code>${latestEma9.toFixed(5)} / ${latestEma21.toFixed(5)}</code>
-<b>📊 MACD Hist:</b> <code>${macdHistogram.toFixed(5)}</code>
-<b>🕯️ Candle Strength:</b> <code>${candleStrength.toFixed(5)}</code>
-<b>⚖️ Wick Ratio:</b> <code>${wickRatio.toFixed(5)}</code>
-<b>📊 Volume (last/avg):</b> <code>${lastVol43.toFixed(2)} / ${avgVol.toFixed(2)}</code>`;
+<b>✅ Confidence:</b> <code>${confidence}</code>`;
 
           await sendToTelegram(telegramMessage);
 
