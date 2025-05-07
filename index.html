@@ -351,13 +351,24 @@ sl = sl.toFixed(5);
 tp = tp.toFixed(5);
 
           const telegramMessage = `
-<b>📊 Symbol:</b> <code>${symbol}</code>
-<b>🚨 SIGNAL:</b> <b><code>${signalType}</code></b>
-<b>💰 Entry:</b> <code>${price.toFixed(5)}</code>
-<b>⭐ TP:</b> <code>${tp}</code>
-<b>⛔ SL:</b> <code>${sl}</code>
-<b>⚙️ Leverage:</b> <code>10–20x</code>
-<b>✅ Confidence:</b> <code>${confidence}</code>`;
+<b>🚨 FREE FUTURES SIGNAL</b>  
+━━━━━━━━━━━━━━━━━━━━━  
+<b>📊 Symbol:</b> <code>${symbol}</code>  
+<b>📈 Direction:</b> <b><code>${signalType}</code></b>  
+<b>💰 Entry Price:</b> <code>${price.toFixed(5)}</code>  
+<b>🎯 Take Profit:</b> <code>${tp}</code>  
+<b>🛑 Stop Loss:</b> <code>${sl}</code>  
+<b>⚙️ Leverage:</b> <code>10–20x</code>  
+<b>📈 Confidence Level:</b> <code>${confidence}</code>  
+━━━━━━━━━━━━━━━━━━━━━  
+<b>📌 Risk Management:</b>  
+<i>Use SL strictly. Adjust position size based on your strategy. Do not overleverage.</i>  
+
+<b>📣 Pro Tip:</b>  
+<i>This signal is generated based on high-confluence technical indicators and market conditions. Monitor closely.</i>  
+━━━━━━━━━━━━━━━━━━━━━  
+<b>🔗 Powered by:</b> <i>CryptoSignalGenerator Scanner™</i>
+`;
 
           await sendToTelegram(telegramMessage);
 
