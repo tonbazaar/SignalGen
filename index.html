@@ -7,111 +7,116 @@
 
 /* === Base Layout === */
 body {
-  background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-  color: #e0e0e0;
+  background-color: #f5f7fa;
+  color: #1e2022;
   font-family: 'Inter', 'Segoe UI', sans-serif;
-  padding: 20px;
   margin: 0;
+  padding: 20px;
+  line-height: 1.6;
 }
 
 /* === Headings === */
 h2 {
-  color: #00ffe7;
-  font-size: 28px;
+  color: #1e2022;
+  font-size: 24px;
   font-weight: 600;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
 }
 
 /* === Signal Card === */
 .signal-block {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border-radius: 16px;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
   padding: 20px;
   margin-bottom: 20px;
-  box-shadow: 0 4px 25px rgba(0, 0, 0, 0.4);
-  transition: transform 0.2s;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.05);
+  transition: box-shadow 0.2s ease;
 }
 
 .signal-block:hover {
-  transform: translateY(-3px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
 }
 
-/* === Color Indicators === */
-.profit, .long {
-  color: #00ffab;
+/* === Status Colors === */
+.long {
+  color: #16a34a; /* Green */
+  font-weight: 600;
 }
 
-.loss, .short {
-  color: #ff4d6d;
+.short {
+  color: #dc2626; /* Red */
+  font-weight: 600;
 }
 
 .neutral {
-  color: #93a3b1;
+  color: #6b7280;
+}
+
+.profit {
+  color: #059669;
+}
+
+.loss {
+  color: #ef4444;
 }
 
 /* === Buttons === */
 button,
 button[type="submit"],
 .trade-btn {
-  background: linear-gradient(145deg, #00c6ff, #0072ff);
-  color: #ffffff;
-  padding: 12px 24px;
-  font-size: 15px;
+  background-color: #fcd34d; /* Binance Yellow */
+  color: #000000;
   border: none;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 0 15px rgba(0, 198, 255, 0.5);
+  padding: 10px 20px;
+  font-size: 15px;
   font-weight: 500;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
 }
 
 button:hover,
 .trade-btn:hover {
-  background: linear-gradient(145deg, #00aaff, #0055ff);
-  box-shadow: 0 0 20px rgba(0, 198, 255, 0.9);
+  background-color: #fbbf24;
 }
 
-/* === Form Container === */
+/* === Form Styling === */
 .form-container {
   max-width: 420px;
-  margin: auto;
-  text-align: center;
+  margin: 30px auto;
   padding: 24px;
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(10px);
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  text-align: center;
 }
 
 /* === Inputs === */
-input[type="password"],
-input[type="text"] {
+input[type="text"],
+input[type="password"] {
   width: 100%;
-  padding: 14px;
+  padding: 12px;
   margin: 12px 0;
-  border: none;
+  border: 1px solid #d1d5db;
   border-radius: 8px;
-  background-color: rgba(255, 255, 255, 0.08);
-  color: #ffffff;
+  background-color: #f9fafb;
+  color: #111827;
   font-size: 15px;
   outline: none;
-  box-shadow: inset 0 0 5px rgba(0, 255, 255, 0.1);
+  transition: border-color 0.2s;
 }
 
-input::placeholder {
-  color: #9ca3af;
+input:focus {
+  border-color: #3b82f6;
 }
 
 /* === Error Text === */
 .error {
-  color: #ff6b6b;
+  color: #dc2626;
   font-size: 14px;
 }
-
 
   </style>
 </head>
