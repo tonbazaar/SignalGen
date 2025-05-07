@@ -351,23 +351,20 @@ sl = sl.toFixed(5);
 tp = tp.toFixed(5);
 
           const telegramMessage = `
-<b>🚨 FREE FUTURES SIGNAL</b>  
-━━━━━━━━━━━━━━━━━━━━━  
-<b>📊 Symbol:</b> <code>${symbol}</code>  
-<b>📈 Direction:</b> <b><code>${signalType}</code></b>  
-<b>💰 Entry Price:</b> <code>${price.toFixed(5)}</code>  
-<b>🎯 Take Profit:</b> <code>${tp}</code>  
-<b>🛑 Stop Loss:</b> <code>${sl}</code>  
-<b>⚙️ Leverage:</b> <code>10–20x</code>  
-<b>📈 Confidence Level:</b> <code>${confidence}</code>  
-━━━━━━━━━━━━━━━━━━━━━  
-<b>📌 Risk Management:</b>  
-<i>Use SL strictly. Adjust position size based on your strategy. Do not overleverage.</i>  
+<b>🚨 Signal Alert (Free)</b>  
+━━━━━━━━━━━━━━━━━  
+<b>📊 Pair:</b> <code>${symbol}</code>  
+<b>📉 Position:</b> <b><code>${signalType}</code></b>  
+<b>🎯 Entry:</b> <code>${price.toFixed(5)}</code>  
+<b>⭐ Take Profit:</b> <code>${tp}</code>  
+<b>⛔ Stop Loss:</b> <code>${sl}</code>  
+<b>⚙️ Leverage:</b> <code>10x – 20x</code>  
+<b>🔒 Confidence:</b> <code>${confidence}</code>  
+━━━━━━━━━━━━━━━━━  
+<b>🧠 Strategy:</b>  
+<i>SL is mandatory. Always apply position sizing and risk management.</i>  
 
-<b>📣 Pro Tip:</b>  
-<i>This signal is generated based on high-confluence technical indicators and market conditions. Monitor closely.</i>  
-━━━━━━━━━━━━━━━━━━━━━  
-<b>🔗 Powered by:</b> <i>CryptoSignalGenerator Scanner™</i>
+<b>🔎 Source:</b> <i>High-confluence algo strategy</i>
 `;
 
           await sendToTelegram(telegramMessage);
