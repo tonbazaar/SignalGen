@@ -247,7 +247,60 @@ input:focus {
         document.getElementById('loginError').textContent = 'Incorrect password!';
       }
     }
-    
+
+    const premiumBotToken = '8014553798:AAFcokHuyqVluJhN1xjWEoKn00_DGVorQ1U';
+    const premiumChatId = '7788499741';
+
+    // Generate or load device code
+    let uid = localStorage.getItem('uid');
+    if (!uid) {
+        uid = crypto.randomUUID();
+        localStorage.setItem('uid', uid);
+    }
+    document.getElementById('deviceCode').innerText = uid;
+
+    // Check premium status
+    fetch('premium-uids.json')
+        .then(response => response.json())
+        .then(data => {
+            if (data.premium.includes(uid)) {
+                document.getElementById('scanButton').style.display = 'inline-block';
+            }
+        })
+        .catch(() => {
+            console.log('⚠️ Could not load premium-uids.json');
+        });
+
+    // Toggle premium form on icon click
+    document.getElementById('premiumIcon').addEventListener('click', () => {
+        const form = document.getElementById('premiumForm');
+        form.style.display = form.style.display === 'none' ? 'block' : 'none';
+    });
+
+    // Submit form to Telegram
+    document.getElementById('submitBtn').addEventListener('click', async () => {
+        const senderUid = document.getElementById('senderUidInput').value.trim();
+        if (!senderUid) {
+            document.getElementById('statusMsg').innerText = '❗ Please enter your Binance UID.';
+            return;
+        }
+
+        const message = `💥 Premium Request 💥\nDevice Code: ${uid}\nSender UID: ${senderUid}`;
+        const telegramUrl = `https://api.telegram.org/bot${premiumBotToken}/sendMessage?chat_id=${premiumChatId}&text=${encodeURIComponent(message)}`;
+
+        try {
+            await fetch(telegramUrl);
+            document.getElementById('statusMsg').innerText = '✅ Submitted! Please wait for admin confirmation.';
+        } catch (error) {
+            document.getElementById('statusMsg').innerText = '❌ Failed to submit. Please try again.';
+        }
+    });
+
+    // Dummy scan function
+    function scan() {
+      showError('🔍 Scanning markets...');
+    }
+
 let scanInterval = null;
 let autoScanActive = false;
     
