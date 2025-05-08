@@ -328,34 +328,35 @@ input:focus {
         });
 
     // Toggle premium form on icon click
-    document.getElementById('premiumIcon').addEventListener('click', () => {
-        const form = document.getElementById('premiumForm');
-        form.style.display = form.style.display === 'none' ? 'block' : 'none';
-    });
+    // Toggle premium form on icon click
+    document.getElementById('premiumIcon').addEventListener('click', () => {
+        const form = document.getElementById('premiumForm');
+        form.style.display = form.style.display === 'none' ? 'block' : 'none';
+    });
 
-    // Submit form to Telegram
-    document.getElementById('submitBtn').addEventListener('click', async () => {
-        const senderUid = document.getElementById('senderUidInput').value.trim();
-        if (!senderUid) {
-            document.getElementById('statusMsg').innerText = '❗ Please enter your Binance UID.';
-            return;
-        }
+    // Handle submit button
+    document.getElementById('submitBtn').addEventListener('click', async () => {
+        const senderUid = document.getElementById('senderUidInput').value.trim();
+        const statusMsg = document.getElementById('statusMsg');
+        if (!senderUid) {
+            statusMsg.innerText = '❗ Please enter your Binance UID.';
+            statusMsg.style.color = 'red';
+            return;
+        }
 
-        const message = `💥 Premium Request 💥\nDevice Code: ${uid}\nSender UID: ${senderUid}`;
-        const telegramUrl = `https://api.telegram.org/bot${premiumBotToken}/sendMessage?chat_id=${premiumChatId}&text=${encodeURIComponent(message)}`;
+        const message = `💥 *Premium Request* 💥\nDevice Code: \`${uid}\`\nSender UID: ${senderUid}`;
+        const telegramUrl = `https://api.telegram.org/bot${premiumBotToken}/sendMessage?chat_id=${premiumChatId}&text=${encodeURIComponent(message)}&parse_mode=Markdown`;
 
-        try {
-            await fetch(telegramUrl);
-            document.getElementById('statusMsg').innerText = '✅ Submitted! Please wait for admin confirmation.';
-        } catch (error) {
-            document.getElementById('statusMsg').innerText = '❌ Failed to submit. Please try again.';
-        }
-    });
+        try {
+            await fetch(telegramUrl);
+            statusMsg.innerText = '✅ Submitted! Please wait for admin confirmation.';
+            statusMsg.style.color = 'green';
+        } catch (showError) {
+            statusMsg.innerText = '❌ Failed to submit. Please try again.';
+            statusMsg.style.color = 'red';
+        }
+    });
 
-    // Dummy scan function
-    function scan() {
-      showError('🔍 Scanning markets...');
-    }
 
 let scanInterval = null;
 let autoScanActive = false;
