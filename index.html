@@ -233,21 +233,34 @@ input:focus {
     <div id="output">Loading...</div>
   </div>
 
-  <!-- Premium Form -->
-<div id="premiumForm">
+  <div id="premiumForm" style="display: none;">
     <h3>🌟 Unlock Premium Access 🌟</h3>
-    <h3>30 Days</h3>
     <p>✅ High-confidence crypto signals</p>
     <p>✅ Auto-execute Binance trades</p>
     <p>✅ Priority support & updates</p>
+    <p>⏰ <b>Premium Validity:</b> 30 days</p>
     <p>💸 Send <b>$2</b> to Binance UID: <b>381708407</b></p>
     <p>🔑 Your Device Code:</p>
-    <p style="word-break: break-word; font-family: monospace;" id="deviceCode"></p>
-    <input type="text" id="senderUidInput" placeholder="Enter your Binance UID" />
-    <button id="submitBtn">Submit</button>
-    <div id="statusMsg"></div>
+    <p style="word-break: break-word; font-family: monospace; background-color: #f3f4f6; padding: 8px; border-radius: 6px;" id="deviceCode"></p>
+
+    <input type="text" id="senderUidInput" placeholder="Enter your Binance UID" 
+        style="width: 100%; padding: 10px; margin-top: 10px; border-radius: 8px; border: 1px solid #ccc;" />
+
+    <button id="submitBtn" 
+        style="margin-top: 10px; padding: 10px 20px; border: none; background-color: #facc15; border-radius: 8px; cursor: pointer;">
+        Submit
+    </button>
+
+    <p style="margin-top: 10px; font-size: 14px;">
+        💬 <a href="https://t.me/YOUR_TELEGRAM_USERNAME" target="_blank" 
+            style="text-decoration: none; color: #3b82f6;">
+            Premium lost? Contact admin
+        </a>
+    </p>
+
+    <div id="statusMsg" style="margin-top: 10px; font-size: 14px; color: green;"></div>
 </div>
-  
+
   <footer style="text-align:center; font-size:13px; color:#9ca3af; margin-top:40px;">
   © 2025 SignalGenerator.store — Built for Binance Futures Trading
 </footer>
