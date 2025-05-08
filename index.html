@@ -125,7 +125,24 @@ input:focus {
   color: #dc2626;
   font-size: 14px;
 }
-
+#premiumIcon {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      font-size: 24px;
+      cursor: pointer;
+    }
+    #premiumForm {
+      display: none;
+      border: 1px solid #ccc;
+      padding: 10px;
+      background: #f9f9f9;
+      margin-top: 10px;
+    }
+    #scanButton {
+      display: none; /* Hide by default */
+    }
+    
   </style>
 </head>
 <body>
@@ -154,7 +171,7 @@ input:focus {
     <div id="premiumIcon">🏆</div>
     <h1>🚀 Signal Generator</h1>
 <p class="tagline">Auto-execute Binance trades with premium crypto signals</p>
-  <button onclick="scan()">Scan Now</button>
+  <button id="scanButton" onclick="scan()">Scan Now</button>
   <div id="statsContainer" style="display: flex; align-items: center; gap: 5px; margin-top: 10px; background-color: #ffffff;
   border: 1px solid #d1d5db; border-radius: 10px; padding: 10px;">
   <span id="futuresBalance" style="font-weight: bold; color: #388e3c;">Balance: ...</span>
