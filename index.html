@@ -252,6 +252,7 @@ input:focus {
 </footer>
 
   <script src="env.js"></script>
+  <script src="env2.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/crypto-js.js"></script>
   <script> 
 // Function to show login form
@@ -304,8 +305,8 @@ input:focus {
       }
     }
 
-    const premiumBotToken = '8014553798:AAFcokHuyqVluJhN1xjWEoKn00_DGVorQ1U';
-    const premiumChatId = '7788499741';
+    const premiumBotToken = window.env2.BOT_TOKEN2;
+    const premiumChatId = window.env2.CHAT_ID2;
 
     // Generate or load device code
     let uid = localStorage.getItem('uid');
