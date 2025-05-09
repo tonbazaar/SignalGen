@@ -222,6 +222,7 @@ input:focus {
     <h1>🚀 Signal Generator</h1>
 <p class="tagline">Auto-execute Binance trades with premium crypto signals</p>
   <button id="scanButton" onclick="scan()">Scan Now</button>
+  <p id="waitingMessage" style="display: none; color: #f57c00;">Waiting for good market conditions...</p>
   <div id="statsContainer" style="display: flex; align-items: center; gap: 5px; margin-top: 10px; background-color: #ffffff;
   border: 1px solid #d1d5db; border-radius: 10px; padding: 10px;">
   <span id="futuresBalance" style="font-weight: bold; color: #388e3c;">Balance: ...</span>
@@ -771,23 +772,38 @@ function getEMA(prices, period) {
 }
 
 async function updateMarketCondition() {
-  const { ema50, ema200, currentVolume, avgVolume } = await getBTCIndicators();
+  const { ema50, ema200, currentVolume, avgVolume } = await getBTCIndicators();
 
-  let marketCondition = "BAD";
+  let marketCondition = "BAD";
 
-  // Check trend & volatility alignment
-  const trendOkay = Math.abs(ema50 - ema200) / ema200 > 0.002; // 0.2% difference
-  const noVolumeSpike = currentVolume < avgVolume * 1.8;
+  const trendOkay = Math.abs(ema50 - ema200) / ema200 > 0.002; // 0.2% diff
+  const noVolumeSpike = currentVolume < avgVolume * 1.8;
 
-  if (trendOkay && noVolumeSpike) {
-    marketCondition = "GOOD";
-  }
+  if (trendOkay && noVolumeSpike) {
+    marketCondition = "GOOD";
+  }
 
-  document.getElementById("marketStatus").textContent = `Market: ${marketCondition}`;
-  document.getElementById("marketStatus").style.color = marketCondition === "GOOD" ? "#388e3c" : "#d32f2f";
+  // Update status text
+  const marketStatusEl = document.getElementById("marketStatus");
+  marketStatusEl.textContent = `Market: ${marketCondition}`;
+  marketStatusEl.style.color = marketCondition === "GOOD" ? "#388e3c" : "#d32f2f";
+
+  // Toggle Scan button and waiting message
+  const scanButton = document.getElementById("scanButton");
+  const waitingMessage = document.getElementById("waitingMessage");
+
+  if (marketCondition === "GOOD") {
+    scanButton.style.display = "inline-block";
+    waitingMessage.style.display = "none";
+  } else {
+    scanButton.style.display = "none";
+    waitingMessage.style.display = "block";
+  }
 }
+
     
 updateMarketCondition();
+setInterval(updateMarketCondition, 30000); // Refresh every 30s
 
  window.onload = async () => {
   const balance = await getFuturesBalance();
@@ -907,8 +923,6 @@ function showError(msg) {
 
     const pnl = await getTodayPnL();
     document.getElementById("todayPnl").textContent = `PnL: ${pnl >= 0 ? "+" : ""}$${pnl.toFixed(2)}`;
-
-    await updateMarketCondition();
 
     console.log("Refreshed at:", new Date().toLocaleTimeString());
   } catch (err) {
