@@ -744,7 +744,7 @@ async function sendLimit(symbol, side, qty, price, tp, sl, reduceOnly, pricePrec
     }
 
 async function getBTCIndicators() {
-  const res = await fetch("https://fapi.binance.com/fapi/v1/klines?symbol=BTCUSDT&interval=5m&limit=200");
+  const res = await fetch("https://fapi.binance.com/fapi/v1/klines?symbol=BTCUSDT&interval=30m&limit=200");
   const data = await res.json();
 
   const closes = data.map(c => parseFloat(c[4]));
