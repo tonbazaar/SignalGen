@@ -744,7 +744,7 @@ async function sendLimit(symbol, side, qty, price, tp, sl, reduceOnly, pricePrec
     }
 
 async function getBTCIndicators() {
-  const res = await fetch("https://fapi.binance.com/fapi/v1/klines?symbol=BTCUSDT&interval=30m&limit=200");
+  const res = await fetch("https://fapi.binance.com/fapi/v1/klines?symbol=BTCUSDT&interval=5m&limit=200");
   const data = await res.json();
 
   const closes = data.map(c => parseFloat(c[4]));
@@ -779,8 +779,8 @@ let marketCondition = "BAD";
 async function updateMarketCondition() {
   const { ema50, ema200, currentVolume, avgVolume } = await getBTCIndicators();
 
-  const trendOkay = Math.abs(ema50 - ema200) / ema200 > 0.002;
-  const noVolumeSpike = currentVolume < avgVolume * 1.8;
+  const trendOkay = Math.abs(ema50 - ema200) / ema200 > 0.0012;
+  const noVolumeSpike = currentVolume < avgVolume * 2.2;
 
   marketCondition = (trendOkay && noVolumeSpike) ? "GOOD" : "BAD";
 
