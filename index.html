@@ -333,6 +333,12 @@ input:focus {
     }
     document.getElementById('deviceCode').innerText = uid;
 
+        // Toggle premium form on icon click
+    document.getElementById('premiumIcon').addEventListener('click', () => {
+        const form = document.getElementById('premiumForm');
+        form.style.display = form.style.display === 'none' ? 'block' : 'none';
+    });
+
     fetch('premium-uids.json')
   .then(response => response.json())
   .then(data => {
