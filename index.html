@@ -320,6 +320,8 @@ input:focus {
       }
     }
 
+    let isPremium = false;
+  
     const premiumBotToken = window.env2.BOT_TOKEN2;
     const premiumChatId = window.env2.CHAT_ID2;
 
@@ -331,23 +333,18 @@ input:focus {
     }
     document.getElementById('deviceCode').innerText = uid;
 
-    // Check premium status
     fetch('premium-uids.json')
-        .then(response => response.json())
-        .then(data => {
-            if (data.premium.includes(uid)) {
-                document.getElementById('scanButton').style.display = 'inline-block';
-            }
-        })
-        .catch(() => {
-            console.log('⚠️ Could not load premium-uids.json');
-        });
+  .then(response => response.json())
+  .then(data => {
+    if (data.premium.includes(uid)) {
+      isPremium = true;
+    }
+    toggleScanButton(); // Run after checking premium
+  })
+  .catch(() => {
+    console.log('⚠️ Could not load premium-uids.json');
+  });
 
-    // Toggle premium form on icon click
-    document.getElementById('premiumIcon').addEventListener('click', () => {
-        const form = document.getElementById('premiumForm');
-        form.style.display = form.style.display === 'none' ? 'block' : 'none';
-    });
 
     // Handle submit button
     document.getElementById('submitBtn').addEventListener('click', async () => {
@@ -771,39 +768,37 @@ function getEMA(prices, period) {
   return ema;
 }
 
+let marketCondition = "BAD";
+    
 async function updateMarketCondition() {
   const { ema50, ema200, currentVolume, avgVolume } = await getBTCIndicators();
 
-  let marketCondition = "BAD";
-
-  const trendOkay = Math.abs(ema50 - ema200) / ema200 > 0.002; // 0.2% diff
+  const trendOkay = Math.abs(ema50 - ema200) / ema200 > 0.002;
   const noVolumeSpike = currentVolume < avgVolume * 1.8;
 
-  if (trendOkay && noVolumeSpike) {
-    marketCondition = "GOOD";
-  }
+  marketCondition = (trendOkay && noVolumeSpike) ? "GOOD" : "BAD";
 
-  // Update status text
-  const marketStatusEl = document.getElementById("marketStatus");
-  marketStatusEl.textContent = `Market: ${marketCondition}`;
-  marketStatusEl.style.color = marketCondition === "GOOD" ? "#388e3c" : "#d32f2f";
+  document.getElementById("marketStatus").textContent = `Market: ${marketCondition}`;
+  document.getElementById("marketStatus").style.color = marketCondition === "GOOD" ? "#388e3c" : "#d32f2f";
 
-  // Toggle Scan button and waiting message
+  toggleScanButton(); // Run after checking market
+}
+ 
+updateMarketCondition();
+setInterval(updateMarketCondition, 30000); // Refresh every 30s
+
+    function toggleScanButton() {
   const scanButton = document.getElementById("scanButton");
   const waitingMessage = document.getElementById("waitingMessage");
 
-  if (marketCondition === "GOOD") {
+  if (isPremium && marketCondition === "GOOD") {
     scanButton.style.display = "inline-block";
     waitingMessage.style.display = "none";
   } else {
     scanButton.style.display = "none";
-    waitingMessage.style.display = "block";
+    waitingMessage.style.display = isPremium ? "block" : "none";
   }
 }
-
-    
-updateMarketCondition();
-setInterval(updateMarketCondition, 30000); // Refresh every 30s
 
  window.onload = async () => {
   const balance = await getFuturesBalance();
