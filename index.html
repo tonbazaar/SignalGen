@@ -467,7 +467,7 @@ let confidence = "Normal";
       lastVol > avgVol * 1.3 &&
       candleStrength > 0.003 &&
       wickRatio < 0.015 &&
-      recentBearishCount < 1
+      recentBearishCount <= 1
     ) {
       signalType = "LONG";
       confidence = "High";
@@ -478,7 +478,7 @@ let confidence = "Normal";
       lastVol > avgVol * 1.3 &&
       candleStrength < -0.003 &&
       wickRatio < 0.015 &&
-      recentBullishCount < 1
+      recentBullishCount <= 1
     ) {
       signalType = "SHORT";
       confidence = "High";
