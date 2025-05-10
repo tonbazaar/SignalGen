@@ -797,8 +797,8 @@ setInterval(updateMarketCondition, 30000); // Refresh every 30s
   const scanButton = document.getElementById("scanButton");
   const waitingMessage = document.getElementById("waitingMessage");
 
-      const openCount = await getOpenPositionsCount();
-  const tradeLimitReached = openCount >= 10;
+      const positionsCount = await getOpenPositionsCount();
+  const tradeLimitReached = positionsCount >= 10;
 
   if (tradeLimitReached) {
     scanButton.style.display = "none";
