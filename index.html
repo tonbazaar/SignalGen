@@ -797,6 +797,16 @@ setInterval(updateMarketCondition, 30000); // Refresh every 30s
   const scanButton = document.getElementById("scanButton");
   const waitingMessage = document.getElementById("waitingMessage");
 
+      const openCount = await getOpenPositionsCount();
+  const tradeLimitReached = openCount >= 10;
+
+  if (tradeLimitReached) {
+    scanButton.style.display = "none";
+    waitingMessage.style.display = "block";
+    waitingMessage.textContent = "Don't over trade";
+    return;
+  }
+
   if (isPremium && marketCondition === "GOOD") {
     scanButton.style.display = "inline-block";
     waitingMessage.style.display = "none";
