@@ -374,8 +374,24 @@ input:focus {
             statusMsg.style.color = 'red';
         }
     });
+    
+const openCount = await getOpenPositionsCount();
 
+if (openCount < 10) {
+  // Proceed with opening a new position
+  // Place order here
+} else {
+  // Skip entry — already at max positions
+  console.log("Max 10 positions reached");
+  document.getElementById("scanButton").textContent = "Don't Overtrade";
+  document.getElementById("scanButton").disabled = true;
+}
 
+if (openCount < 10) {
+  document.getElementById("scanButton").disabled = false;
+  document.getElementById("scanButton").textContent = "Scan";
+}
+    
 let scanInterval = null;
 let autoScanActive = false;
     
