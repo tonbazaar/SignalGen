@@ -375,23 +375,19 @@ input:focus {
         }
     });
     
-const openCount = await getOpenPositionsCount();
+async function checkAndToggleScanButton() {
+  const count = await getOpenPositionsCount();
 
-if (openCount < 10) {
-  // Proceed with opening a new position
-  // Place order here
-} else {
-  // Skip entry — already at max positions
-  console.log("Max 10 positions reached");
-  document.getElementById("scanButton").textContent = "Don't Overtrade";
-  document.getElementById("scanButton").disabled = true;
+  if (count >= 10) {
+    scanButton.innerText = "Don't Over Trade";
+    scanButton.disabled = true;
+  } else {
+    scanButton.innerText = "Scan";
+    scanButton.disabled = false;
+  }
 }
+setInterval(checkAndToggleScanButton, 15000); // every 15s
 
-if (openCount < 10) {
-  document.getElementById("scanButton").disabled = false;
-  document.getElementById("scanButton").textContent = "Scan";
-}
-    
 let scanInterval = null;
 let autoScanActive = false;
     
