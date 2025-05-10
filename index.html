@@ -779,8 +779,8 @@ let marketCondition = "BAD";
 async function updateMarketCondition() {
   const { ema50, ema200, currentVolume, avgVolume } = await getBTCIndicators();
 
-  const trendOkay = Math.abs(ema50 - ema200) / ema200 > 0.0012;
-  const noVolumeSpike = currentVolume < avgVolume * 2.2;
+  const trendOkay = Math.abs(ema50 - ema200) / ema200 > 0.002;
+  const noVolumeSpike = currentVolume < avgVolume * 1.8;
 
   marketCondition = (trendOkay && noVolumeSpike) ? "GOOD" : "BAD";
 
