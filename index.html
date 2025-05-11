@@ -861,7 +861,7 @@ async function getTodayPnL() {
   try {
     const incomeData = await sendSignedRequest("/fapi/v1/income", {
       incomeType: "REALIZED_PNL",
-      limit: 100
+      limit: 1000
     });
 
     const today = new Date().toISOString().split("T")[0];
