@@ -379,7 +379,7 @@ async function checkAndToggleScanButton() {
   const count = await getOpenPositionsCount();
 
   if (count >= 10) {
-    scanButton.showError = "Don't Over Trade";
+    showError = "Don't Over Trade";
     scanButton.disabled = true;
   } else {
     scanButton.disabled = false;
