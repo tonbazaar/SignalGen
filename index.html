@@ -223,6 +223,7 @@ input:focus {
 <p class="tagline">Auto-execute Binance trades with premium crypto signals</p>
   <button id="scanButton" onclick="scan()">Scan Now</button>
   <p id="waitingMessage" style="display: none; color: #f57c00;">Waiting for good market conditions...</p>
+  <div id="error-message"></div>
   <div id="statsContainer" style="display: flex; align-items: center; gap: 5px; margin-top: 10px; background-color: #ffffff;
   border: 1px solid #d1d5db; border-radius: 10px; padding: 10px;">
   <span id="futuresBalance" style="font-weight: bold; color: #388e3c;">Balance: ...</span>
@@ -375,17 +376,26 @@ input:focus {
         }
     });
     
+const errorDiv = document.getElementById("error-message");
+const scanButton = document.getElementById("scanButton");
+const tradeButton = document.getElementById("trade-btn");
+
 async function checkAndToggleScanButton() {
   const count = await getOpenPositionsCount();
 
   if (count >= 10) {
-    showError = "Don't Over Trade";
+    errorDiv.innerText = "Don't Over Trade";
     scanButton.disabled = true;
+    trade-btn.disabled = true;
   } else {
+    errorDiv.innerText = "";
     scanButton.disabled = false;
+    trade-btn.disabled = false;
   }
 }
+
 setInterval(checkAndToggleScanButton, 1500); // every 1.5s
+
 
 let scanInterval = null;
 let autoScanActive = false;
