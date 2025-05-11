@@ -377,16 +377,17 @@ input:focus {
     });
     
 const scanButton = document.getElementById("scanButton");
-const signalBlocks = document.querySelectorAll(".signal-block");
 
 async function checkAndToggleScanButton() {
   const count = await getOpenPositionsCount();
+  const signalBlocks = document.querySelectorAll(".signal-block"); // moved here
 
   if (count >= 10) {
     showError("Don't Over Trade");
     scanButton.disabled = true;
     signalBlocks.forEach(block => block.style.display = "none");
   } else {
+    showError("");
     scanButton.disabled = false;
     signalBlocks.forEach(block => block.style.display = "block");
   }
