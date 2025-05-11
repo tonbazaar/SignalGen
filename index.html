@@ -376,26 +376,24 @@ input:focus {
         }
     });
     
-const errorDiv = document.getElementById("error-message");
 const scanButton = document.getElementById("scanButton");
-const tradeButton = document.getElementById("trade-btn");
+const tradeButton = document.querySelector(".trade-btn"); // use class
 
 async function checkAndToggleScanButton() {
   const count = await getOpenPositionsCount();
 
   if (count >= 10) {
-    errorDiv.innerText = "Don't Over Trade";
+    showError("Don't Over Trade");
     scanButton.disabled = true;
-    trade-btn.disabled = true;
+    tradeButton.disabled = true;
   } else {
-    errorDiv.innerText = "";
+    showError(""); // Clear error
     scanButton.disabled = false;
-    trade-btn.disabled = false;
+    tradeButton.disabled = false;
   }
 }
 
-setInterval(checkAndToggleScanButton, 1500); // every 1.5s
-
+setInterval(checkAndToggleScanButton, 1500); // check every 1.5s
 
 let scanInterval = null;
 let autoScanActive = false;
