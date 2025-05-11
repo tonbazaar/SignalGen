@@ -383,7 +383,7 @@ async function checkAndToggleScanButton() {
   const signalBlocks = document.querySelectorAll(".signal-block"); // moved here
 
   if (count >= 10) {
-    showError("Don't Over Trade");
+    showError("Limit reached. Avoid overtrading.");
     scanButton.disabled = true;
     signalBlocks.forEach(block => block.style.display = "none");
   } else {
