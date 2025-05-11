@@ -880,10 +880,20 @@ async function getTodayPnL() {
   }
 }
 
-    async function sendSignedRequest(path, params = {}, method = "GET") {
-  // Add recvWindow and timestamp
-  params.recvWindow = 5000; // 5 seconds tolerance
-  params.timestamp = Date.now();
+    let timeOffset = 0;
+
+// Sync server time once when the page loads
+async function syncServerTime() {
+  const res = await fetch("https://fapi.binance.com/fapi/v1/time");
+  const data = await res.json();
+  timeOffset = data.serverTime - Date.now();
+}
+
+await syncServerTime(); // call this once before making signed requests
+
+async function sendSignedRequest(path, params = {}, method = "GET") {
+  params.timestamp = Date.now() + timeOffset;
+  params.recvWindow = 5000;
 
   const query = new URLSearchParams(params).toString();
   const signature = CryptoJS.HmacSHA256(query, binanceSecret).toString(CryptoJS.enc.Hex);
@@ -894,15 +904,15 @@ async function getTodayPnL() {
     headers: { 'X-MBX-APIKEY': binanceKey }
   };
 
-  // Handle both GET and POST requests
-  return fetch(fullUrl, options).then(async r => {
-    const data = await r.json();
-    if (!r.ok) {
-      console.error("Binance API error:", data);
-      showError(`Binance Error: ${data.msg || "Unknown error"}`);
-    }
-    return data;
-  });
+  const response = await fetch(fullUrl, options);
+  const data = await response.json();
+
+  if (!response.ok) {
+    showError(`Binance Error: ${data.msg || "Unknown error"}`);
+    console.error("Binance API error:", data);
+  }
+
+  return data;
 }
 
 function showError(msg) {
