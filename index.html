@@ -379,13 +379,13 @@ async function checkAndToggleScanButton() {
   const count = await getOpenPositionsCount();
 
   if (count >= 10) {
-    scanButton.innerText = "Don't Over Trade";
+    scanButton.showError = "Don't Over Trade";
     scanButton.disabled = true;
   } else {
     scanButton.disabled = false;
   }
 }
-setInterval(checkAndToggleScanButton, 15000); // every 15s
+setInterval(checkAndToggleScanButton, 1500); // every 1.5s
 
 let scanInterval = null;
 let autoScanActive = false;
