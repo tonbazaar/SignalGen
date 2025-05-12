@@ -848,36 +848,42 @@ async function getOpenPositionsCount() {
 }
 
 async function getTodayPnL() {
-  try {
-    const incomeData = await sendSignedRequest("/fapi/v1/income", {
-      incomeType: "REALIZED\_PNL",
-      limit: 1000
-    });
+  try {
+    // Get UTC midnight timestamp
+    const startOfToday = new Date();
+    startOfToday.setUTCHours(0, 0, 0, 0);
+    const startTimestamp = startOfToday.getTime();
 
-    const today = new Date().toISOString().split("T")\[0];
+    // Fetch realized PNL entries from Binance
+    const incomeData = await sendSignedRequest("/fapi/v1/income", {
+      incomeType: "REALIZED_PNL",
+      startTime: startTimestamp,
+      limit: 1000
+    });
 
-    const todayPnl = incomeData
-      .filter(entry => {
-        const entryDate = new Date(entry.time).toISOString().split("T")\[0];
-        return entry.incomeType === "REALIZED\_PNL" && entryDate === today;
-      })
-      .reduce((sum, entry) => sum + parseFloat(entry.income), 0);
+    // Filter for today's entries only (UTC)
+    const today = new Date().toISOString().split("T")[0];
+    const todayPnl = incomeData
+      .filter(entry => {
+        const entryDate = new Date(entry.time).toISOString().split("T")[0];
+        return entry.incomeType === "REALIZED_PNL" && entryDate === today;
+      })
+      .reduce((sum, entry) => sum + parseFloat(entry.income), 0);
 
-    const pnlElement = document.getElementById("pnlValue");
-    pnlElement.textContent = `PNL: ${todayPnl >= 0 ? '+' : ''}${todayPnl.toFixed(2)}`;
+    // Display
+    const pnlElement = document.getElementById("pnlValue");
+    pnlElement.textContent = `PNL: ${todayPnl >= 0 ? '+' : ''}${todayPnl.toFixed(2)}`;
 
-    if (todayPnl > 0) {
-      pnlElement.className = 'profit';
-    } else if (todayPnl < 0) {
-      pnlElement.className = 'loss';
-    } else {
-      pnlElement.className = 'neutral';
-    }
+    pnlElement.className =
+      todayPnl > 0 ? 'profit' :
+      todayPnl < 0 ? 'loss' :
+      'neutral';
 
-    return todayPnl;
-  } catch (error) {
-    console.error("Error fetching today's PnL:", error);
-  }
+    return todayPnl;
+  } catch (error) {
+    console.error("Error fetching today's PnL:", error);
+    showError("Failed to fetch PNL");
+  }
 }
 
     async function sendSignedRequest(path, params = {}, method = "GET") {
