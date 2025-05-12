@@ -479,7 +479,7 @@ async function getPrecisionInfo(symbol) {
 
     const recentBearishCount = closes.slice(-3).filter((c, i) => c < opens[opens.length - 3 + i]).length;
     const recentBullishCount = closes.slice(-3).filter((c, i) => c > opens[opens.length - 3 + i]).length;
-    const btcIsBullish = btc.ema50 > btc.ema200;
+    const btcIsBullish = ema50 > ema200;
 
 let signalType = null;
 let confidence = "Normal";
@@ -783,8 +783,6 @@ async function getBTCIndicators() {
     avgVolume
   };
 }
-    
-const btc = await getBTCIndicators();
 
 function getEMA(prices, period) {
   const k = 2 / (period + 1);
