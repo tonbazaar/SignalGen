@@ -513,39 +513,32 @@ let confidence = "Normal";
           cooldowns[symbol] = now;
           
 const price = lastClose; 
-const atrMultiplier = 1.5; // Tune based on backtest
-const rrRatio = 1.5; // Better R:R (at least 1.0)
-const minSlPercent = 0.005; // 0.5% minimum stop
-
-// Dynamic rounding based on asset (optional)
-const precision = 5; // Set per token
+const atrMultiplier = 2.0; // You can tune this
+const rrRatio = 1.2; // Risk\:Reward
+const minSlPercent = 0.005; // 0.5%
 
 let sl, tp;
 
-const minSl = price * minSlPercent;
-const atrSl = latestAtr * atrMultiplier;
-
 const rawSl = signalType === "LONG"
-  ? price - atrSl
-  : price + atrSl;
+  ? price - latestAtr * atrMultiplier
+  : price + latestAtr * atrMultiplier;
 
-// Ensure SL is not too tight or too loose
+const minSl = price * minSlPercent;
+
+// Ensure SL is not too tight
 sl = signalType === "LONG"
-  ? Math.max(rawSl, price - minSl)
-  : Math.min(rawSl, price + minSl);
+  ? Math.min(price - minSl, rawSl)
+  : Math.max(price + minSl, rawSl);
 
+// Calculate TP based on SL distance (risk-reward logic)
 const risk = Math.abs(price - sl);
-
-// Ensure reward matches defined R:R
 tp = signalType === "LONG"
-  ? price + (risk * rrRatio)
-  : price - (risk * rrRatio);
+  ? (price + risk * rrRatio)
+  : (price - risk * rrRatio);
 
-// Format output
-sl = Number(sl.toFixed(precision));
-tp = Number(tp.toFixed(precision));
-
-return { sl, tp };
+// Format to 5 decimals (adjust if needed for token precision)
+sl = sl.toFixed(5);
+tp = tp.toFixed(5);
 
           const telegramMessage = `
 <b>🚨 Signal Alert </b>  
