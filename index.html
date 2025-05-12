@@ -772,8 +772,8 @@ async function getBTCIndicators() {
   const closes = data.map(c => parseFloat(c[4]));
   const volumes = data.map(c => parseFloat(c[5]));
 
-  const ema50 = calculateEMA(closes, 50);
-  const ema200 = calculateEMA(closes, 200);
+  const ema50 = getEMA(closes, 50);
+  const ema200 = getEMA(closes, 200);
   const currentVolume = volumes[volumes.length - 1];
   const avgVolume = volumes.slice(-30).reduce((a, b) => a + b, 0) / 30;
 
