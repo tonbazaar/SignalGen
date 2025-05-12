@@ -514,27 +514,27 @@ let confidence = "Normal";
           
 const price = lastClose; 
 const atrMultiplier = 2.5; // You can tune this
-const rrRatio = 1.5; // Risk\:Reward
+const rrRatio = 0.96; // Risk:Reward
 const minSlPercent = 0.004; // 0.3%
 
 let sl, tp;
 
 const rawSl = signalType === "LONG"
-  ? price - latestAtr \* atrMultiplier
-  : price + latestAtr \* atrMultiplier;
+  ? price - latestAtr * atrMultiplier
+  : price + latestAtr * atrMultiplier;
 
-const minSl = price \* minSlPercent;
+const minSl = price * minSlPercent;
 
 // Ensure SL is not too tight
 sl = signalType === "LONG"
-  ? Math.min(price - minSl, rawSl)
-  : Math.max(price + minSl, rawSl);
+  ? Math.max(price - minSl, rawSl)
+  : Math.min(price + minSl, rawSl);
 
 // Calculate TP based on SL distance (risk-reward logic)
 const risk = Math.abs(price - sl);
 tp = signalType === "LONG"
-  ? (price + risk \* rrRatio)
-  : (price - risk \* rrRatio);
+  ? (price + risk * rrRatio)
+  : (price - risk * rrRatio);
 
 // Format to 5 decimals (adjust if needed for token precision)
 sl = sl.toFixed(5);
