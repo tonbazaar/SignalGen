@@ -479,6 +479,7 @@ async function getPrecisionInfo(symbol) {
 
     const recentBearishCount = closes.slice(-3).filter((c, i) => c < opens[opens.length - 3 + i]).length;
     const recentBullishCount = closes.slice(-3).filter((c, i) => c > opens[opens.length - 3 + i]).length;
+    const { ema50, ema200 } = await getBTCIndicators();
     const btcIsBullish = ema50 > ema200;
 
 let signalType = null;
@@ -771,8 +772,8 @@ async function getBTCIndicators() {
   const closes = data.map(c => parseFloat(c[4]));
   const volumes = data.map(c => parseFloat(c[5]));
 
-  const ema50 = getEMA(closes, 50);
-  const ema200 = getEMA(closes, 200);
+  const ema50 = calculateEMA(closes, 50);
+  const ema200 = calculateEMA(closes, 200);
   const currentVolume = volumes[volumes.length - 1];
   const avgVolume = volumes.slice(-30).reduce((a, b) => a + b, 0) / 30;
 
