@@ -881,41 +881,29 @@ async function getTodayPnL() {
 }
 
     async function sendSignedRequest(path, params = {}, method = "GET") {
-  params.timestamp = Date.now();
-  const query = new URLSearchParams(params).toString();
-  const signature = CryptoJS.HmacSHA256(query, binanceSecret).toString(CryptoJS.enc.Hex);
+  // Add recvWindow and timestamp
+  params.recvWindow = 5000; // 5 seconds tolerance
+  params.timestamp = Date.now();
 
-  const fullUrl = `https://fapi.binance.com${path}?${query}&signature=${signature}`;
-  const options = {
-    method,
-    headers: { 'X-MBX-APIKEY': binanceKey }
-  };
+  const query = new URLSearchParams(params).toString();
+  const signature = CryptoJS.HmacSHA256(query, binanceSecret).toString(CryptoJS.enc.Hex);
 
-  // For POST requests, use the body instead of query string
-  if (method === "POST") {
-    delete options.body;
-    return fetch(fullUrl, options)
-      .then(async r => {
-        const data = await r.json();
-        if (!r.ok) {
-          console.log("Binance response:", data);         
-          console.error("Binance API error:", data);
-          showError(`Binance Error: ${data.msg || "Unknown error"}`);
-        }
-        return data;
-      });
-  } else {
-    // GET request
-    return fetch(fullUrl, options)
-      .then(async r => {
-        const data = await r.json();
-        if (!r.ok) {
-          console.error("Binance API error:", data);
-          showError(`Binance Error: ${data.msg || "Unknown error"}`);
-        }
-        return data;
-      });
-  }
+  const fullUrl = `https://fapi.binance.com${path}?${query}&signature=${signature}`;
+  const options = {
+    method,
+    headers: { 'X-MBX-APIKEY': binanceKey }
+  };
+
+  // Handle both GET and POST requests
+  return fetch(fullUrl, options).then(async r => {
+    const data = await r.json();
+    if (!r.ok) {
+      console.error("Binance API error:", data);
+      showError(`Binance Error: ${data.msg || "Unknown error"}`);
+    }
+    return data;
+  });
+}
 
 function showError(msg) {
   const box = document.createElement('div');
