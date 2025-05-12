@@ -271,16 +271,8 @@ input:focus {
   <script src="env2.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/crypto-js.js"></script>
   <script> 
-    
-let timeOffset = 0;
-
-async function initBinanceTimeSync() {
-  const res = await fetch("https://fapi.binance.com/fapi/v1/time");
-  const data = await res.json();
-  timeOffset = data.serverTime - Date.now();
-}
 initBinanceTimeSync();
-
+    
 // Function to show login form
     function showLoginForm() {
       document.getElementById('signupForm').style.display = 'none';
@@ -889,7 +881,13 @@ async function getTodayPnL() {
     console.error("Error fetching today's PnL:", error);
   }
 }
+let timeOffset = 0;
 
+async function initBinanceTimeSync() {
+  const res = await fetch("https://fapi.binance.com/fapi/v1/time");
+  const data = await res.json();
+  timeOffset = data.serverTime - Date.now();
+}
     async function sendSignedRequest(path, params = {}, method = "GET") {
   params.timestamp = Date.now() + timeOffset;
   params.recvWindow = 5000;
