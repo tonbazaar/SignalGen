@@ -527,8 +527,8 @@ const minSl = price * minSlPercent;
 
 // Ensure SL is not too tight
 sl = signalType === "LONG"
-  ? Math.max(price - minSl, rawSl)
-  : Math.min(price + minSl, rawSl);
+  ? Math.min(price - minSl, rawSl)
+  : Math.max(price + minSl, rawSl);
 
 // Calculate TP based on SL distance (risk-reward logic)
 const risk = Math.abs(price - sl);
