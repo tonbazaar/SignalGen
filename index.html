@@ -270,9 +270,7 @@ input:focus {
   <script src="env.js"></script>
   <script src="env2.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/crypto-js.js"></script>
-  <script> 
-initBinanceTimeSync();
-    
+  <script>    
 // Function to show login form
     function showLoginForm() {
       document.getElementById('signupForm').style.display = 'none';
@@ -850,48 +848,40 @@ async function getOpenPositionsCount() {
 }
 
 async function getTodayPnL() {
-  try {
-    const incomeData = await sendSignedRequest("/fapi/v1/income", {
-      incomeType: "REALIZED_PNL",
-      limit: 1000
-    });
+  try {
+    const incomeData = await sendSignedRequest("/fapi/v1/income", {
+      incomeType: "REALIZED\_PNL",
+      limit: 1000
+    });
 
-    const today = new Date().toISOString().split("T")[0];
+    const today = new Date().toISOString().split("T")\[0];
 
-    const todayPnl = incomeData
-      .filter(entry => {
-        const entryDate = new Date(entry.time).toISOString().split("T")[0];
-        return entry.incomeType === "REALIZED_PNL" && entryDate === today;
-      })
-      .reduce((sum, entry) => sum + parseFloat(entry.income), 0);
+    const todayPnl = incomeData
+      .filter(entry => {
+        const entryDate = new Date(entry.time).toISOString().split("T")\[0];
+        return entry.incomeType === "REALIZED\_PNL" && entryDate === today;
+      })
+      .reduce((sum, entry) => sum + parseFloat(entry.income), 0);
 
-    const pnlElement = document.getElementById("pnlValue");
-    pnlElement.textContent = `PNL: ${todayPnl >= 0 ? '+' : ''}${todayPnl.toFixed(2)}`;
+    const pnlElement = document.getElementById("pnlValue");
+    pnlElement.textContent = `PNL: ${todayPnl >= 0 ? '+' : ''}${todayPnl.toFixed(2)}`;
 
-    if (todayPnl > 0) {
-      pnlElement.className = 'profit';
-    } else if (todayPnl < 0) {
-      pnlElement.className = 'loss';
-    } else {
-      pnlElement.className = 'neutral';
-    }
+    if (todayPnl > 0) {
+      pnlElement.className = 'profit';
+    } else if (todayPnl < 0) {
+      pnlElement.className = 'loss';
+    } else {
+      pnlElement.className = 'neutral';
+    }
 
-    return todayPnl;
-  } catch (error) {
-    console.error("Error fetching today's PnL:", error);
-  }
+    return todayPnl;
+  } catch (error) {
+    console.error("Error fetching today's PnL:", error);
+  }
 }
-let timeOffset = 0;
 
-async function initBinanceTimeSync() {
-  const res = await fetch("https://fapi.binance.com/fapi/v1/time");
-  const data = await res.json();
-  timeOffset = data.serverTime - Date.now();
-}
-    async function sendSignedRequest(path, params = {}, method = "GET") {
-  params.timestamp = Date.now() + timeOffset;
-  params.recvWindow = 5000;
-
+    async function sendSignedRequest(path, params = {}, method = "GET") {
+  params.timestamp = Date.now();
   const query = new URLSearchParams(params).toString();
   const signature = CryptoJS.HmacSHA256(query, binanceSecret).toString(CryptoJS.enc.Hex);
 
@@ -901,16 +891,31 @@ async function initBinanceTimeSync() {
     headers: { 'X-MBX-APIKEY': binanceKey }
   };
 
-  const response = await fetch(fullUrl, options);
-  const data = await response.json();
-
-  if (!response.ok) {
-    console.error("Binance API error:", data);
-    showError(`Binance Error: ${data.msg || "Unknown error"}`);
+  // For POST requests, use the body instead of query string
+  if (method === "POST") {
+    delete options.body;
+    return fetch(fullUrl, options)
+      .then(async r => {
+        const data = await r.json();
+        if (!r.ok) {
+          console.log("Binance response:", data);         
+          console.error("Binance API error:", data);
+          showError(`Binance Error: ${data.msg || "Unknown error"}`);
+        }
+        return data;
+      });
+  } else {
+    // GET request
+    return fetch(fullUrl, options)
+      .then(async r => {
+        const data = await r.json();
+        if (!r.ok) {
+          console.error("Binance API error:", data);
+          showError(`Binance Error: ${data.msg || "Unknown error"}`);
+        }
+        return data;
+      });
   }
-
-  return data;
-}
 
 function showError(msg) {
   const box = document.createElement('div');
