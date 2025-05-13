@@ -390,7 +390,7 @@ input:focus {
 
       if (!scanButton) return;
 
-      if (count >= 50) {
+      if (count >= 10) {
         showError("Limit reached. Avoid overtrading.");
         scanButton.disabled = true;
         signalBlocks.forEach(block => block.style.display = "none");
