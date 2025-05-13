@@ -382,7 +382,7 @@ async function checkAndToggleScanButton() {
   const count = await getOpenPositionsCount();
   const signalBlocks = document.querySelectorAll(".signal-block"); // moved here
 
-  if (count >= 15) {
+  if (count >= 50) {
     showError("Limit reached. Avoid overtrading.");
     scanButton.disabled = true;
     signalBlocks.forEach(block => block.style.display = "none");
@@ -392,7 +392,7 @@ async function checkAndToggleScanButton() {
   }
 }
 
-setInterval(checkAndToggleScanButton, 5000);
+setInterval(checkAndToggleScanButton, 10000);
 
 let scanInterval = null;
 let autoScanActive = false;
