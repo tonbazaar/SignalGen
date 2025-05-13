@@ -343,15 +343,31 @@ input:focus {
     fetch('premium-uids.json')
   .then(response => response.json())
   .then(data => {
-    if (data.premium.includes(uid)) {
-      isPremium = true;
+    const entry = data.premium.find(p => p.uid === uid);
+
+    if (!entry) {
+      console.log("❌ UID not found in premium list.");
+      isPremium = false;
+    } else {
+      const now = new Date();
+      const expiry = new Date(entry.expires);
+
+      if (now < expiry) {
+        isPremium = true;
+        console.log("✅ Premium access active.");
+      } else {
+        isPremium = false;
+        console.log(`⛔ Premium expired on ${expiry.toISOString().split("T")[0]}`);
+        showError("Your premium access has expired. Please renew to continue.");
+      }
     }
-    toggleScanButton(); // Run after checking premium
+
+    toggleScanButton();
   })
   .catch(() => {
     console.log('⚠️ Could not load premium-uids.json');
+    showError("Premium check failed. Please check your connection.");
   });
-
 
     document.addEventListener("DOMContentLoaded", () => {
   const scanButton = document.getElementById("scanButton");
