@@ -441,9 +441,109 @@ async function getPrecisionInfo(symbol) {
   return filtered.length > 0;
 }
 
-        
-    
+       async function analyzeSymbol(symbol) {
+  try {
+    const url = `https://fapi.binance.com/fapi/v1/klines?symbol=${symbol}&interval=5m&limit=100`;
+    const res = await fetch(url);
+    const data = await res.json();
 
+    const closes = data.map(c => parseFloat(c[4]));
+    const opens = data.map(c => parseFloat(c[1]));
+    const highs = data.map(c => parseFloat(c[2]));
+    const lows = data.map(c => parseFloat(c[3]));
+    const volumes = data.map(c => parseFloat(c[5]));
+
+    const ema9 = calculateEMA(closes, 9);
+    const ema21 = calculateEMA(closes, 21);
+    const rsi = calculateRSI(closes, 14);
+    const { macd, signal } = calculateMACD(closes);
+    const atr = calculateATR(highs, lows, closes, 14);
+
+    if (!ema9.length || !ema21.length || !rsi.length || !macd.length || !signal.length || !atr.length) {
+      throw new Error("Insufficient indicator data.");
+    }
+
+    const lastClose = closes.at(-1);
+    const lastOpen = opens.at(-1);
+    const lastHigh = highs.at(-1);
+    const lastLow = lows.at(-1);
+    const lastVol = volumes.at(-1);
+    const avgVol = volumes.slice(-20).reduce((a, b) => a + b, 0) / 20;
+
+    const latestEma9 = ema9.at(-1);
+    const latestEma21 = ema21.at(-1);
+    const latestRsi = rsi.at(-1);
+    const latestMacd = macd.at(-1);
+    const latestSignal = signal.at(-1);
+    const latestAtr = atr.at(-1) || 0;
+    const macdHistogram = latestMacd - latestSignal;
+
+    const candleStrength = (lastClose - lastOpen) / lastClose;
+    const wickRatio = (lastHigh - lastLow) / lastClose;
+
+    // Config
+    const THRESHOLDS = {
+      rsiLong: 55,
+      rsiShort: 45,
+      macdPositive: 0.0,
+      macdNegative: 0.0,
+      volMultiplier: 1.5,
+      candleStrengthMin: 0.002,
+      wickRatioMax: 0.02,
+      minConfirmCandles: 2
+    };
+
+    // Recent candles
+    const recentOpens = opens.slice(-3);
+    const recentCloses = closes.slice(-3);
+    const recentBullishCount = recentCloses.filter((c, i) => c > recentOpens[i]).length;
+    const recentBearishCount = recentCloses.filter((c, i) => c < recentOpens[i]).length;
+
+    const dynamicCandleStrength = Math.max(THRESHOLDS.candleStrengthMin, latestAtr * 0.0015);
+    const dynamicVolumeThreshold = avgVol * THRESHOLDS.volMultiplier;
+
+    let score = 0, shortScore = 0;
+
+    if (latestEma9 > latestEma21) score += 1;
+    if (latestRsi > THRESHOLDS.rsiLong) score += 1;
+    if (macdHistogram > THRESHOLDS.macdPositive) score += 1;
+    if (lastVol > dynamicVolumeThreshold) score += 1;
+    if (candleStrength > dynamicCandleStrength) score += 1;
+    if (wickRatio < THRESHOLDS.wickRatioMax) score += 1;
+    if (recentBullishCount >= THRESHOLDS.minConfirmCandles) score += 1;
+
+    if (latestEma9 < latestEma21) shortScore += 1;
+    if (latestRsi < THRESHOLDS.rsiShort) shortScore += 1;
+    if (macdHistogram < THRESHOLDS.macdNegative) shortScore += 1;
+    if (lastVol > dynamicVolumeThreshold) shortScore += 1;
+    if (candleStrength < -dynamicCandleStrength) shortScore += 1;
+    if (wickRatio < THRESHOLDS.wickRatioMax) shortScore += 1;
+    if (recentBearishCount >= THRESHOLDS.minConfirmCandles) shortScore += 1;
+
+    let signalType = null;
+    let confidence = "None";
+
+    if (score >= 6) {
+      signalType = "LONG";
+      confidence = score === 7 ? "Very High" : "High";
+    } else if (shortScore >= 6) {
+      signalType = "SHORT";
+      confidence = shortScore === 7 ? "Very High" : "High";
+    } else if (score === 5) {
+      signalType = "LONG";
+      confidence = "Medium";
+    } else if (shortScore === 5) {
+      signalType = "SHORT";
+      confidence = "Medium";
+    }
+
+    return { symbol, signalType, confidence, score, shortScore };
+  } catch (error) {
+    console.error(`Error analyzing ${symbol}:`, error.message);
+    return { symbol, signalType: null, confidence: "Error" };
+  }
+}
+    
         if (signalType && symbol) {
           const now = Date.now();
           const lastSignalTime = cooldowns[symbol] || 0;
