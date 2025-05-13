@@ -744,23 +744,7 @@ tp = tp.toFixed(5);
   return { macd, signal };
 }
 
-    function calculateATR(highs, lows, closes, period) {
-      let trs = [];
-      for (let i = 1; i < highs.length; i++) {
-        const tr = Math.max(
-          highs[i] - lows[i],
-          Math.abs(highs[i] - closes[i - 1]),
-          Math.abs(lows[i] - closes[i - 1])
-        );
-        trs.push(tr);
-      }
-      const atr = [trs.slice(0, period).reduce((a, b) => a + b, 0) / period];
-      for (let i = period; i < trs.length; i++) {
-        atr.push((atr[atr.length - 1] * (period - 1) + trs[i]) / period);
-      }
-      return atr;
-    }
-
+  
 function getBinanceCredentials() {
   return {
     apiKey: localStorage.getItem('binanceApi'),
