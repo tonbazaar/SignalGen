@@ -353,46 +353,56 @@ input:focus {
   });
 
 
-    // Handle submit button
-    document.getElementById('submitBtn').addEventListener('click', async () => {
-        const senderUid = document.getElementById('senderUidInput').value.trim();
-        const statusMsg = document.getElementById('statusMsg');
-        if (!senderUid) {
-            statusMsg.innerText = '❗ Please enter your Binance UID.';
-            statusMsg.style.color = 'red';
-            return;
-        }
+    document.addEventListener("DOMContentLoaded", () => {
+  const scanButton = document.getElementById("scanButton");
+  const submitBtn = document.getElementById("submitBtn");
+  const statusMsg = document.getElementById("statusMsg");
 
-        const message = `🌟 *Premium Request* 🌟\nDevice Code: \`${uid}\`\nSender UID: ${senderUid}`;
-        const telegramUrl = `https://api.telegram.org/bot${premiumBotToken}/sendMessage?chat_id=${premiumChatId}&text=${encodeURIComponent(message)}&parse_mode=Markdown`;
+  // Safe: Attach premium submit button handler
+  if (submitBtn) {
+    submitBtn.addEventListener("click", async () => {
+      const senderUid = document.getElementById('senderUidInput').value.trim();
+      if (!senderUid) {
+        statusMsg.innerText = '❗ Please enter your Binance UID.';
+        statusMsg.style.color = 'red';
+        return;
+      }
 
-        try {
-            await fetch(telegramUrl);
-            statusMsg.innerText = '✅ Submitted! Please wait for admin confirmation.';
-            statusMsg.style.color = 'green';
-        } catch (showError) {
-            statusMsg.innerText = '❌ Failed to submit. Please try again.';
-            statusMsg.style.color = 'red';
-        }
-    });
-    
-const scanButton = document.getElementById("scanButton");
+      const message = `🌟 *Premium Request* 🌟\nDevice Code: \`${uid}\`\nSender UID: ${senderUid}`;
+      const telegramUrl = `https://api.telegram.org/bot${premiumBotToken}/sendMessage?chat_id=${premiumChatId}&text=${encodeURIComponent(message)}&parse_mode=Markdown`;
 
-async function checkAndToggleScanButton() {
-  const count = await getOpenPositionsCount();
-  const signalBlocks = document.querySelectorAll(".signal-block"); // moved here
-
-  if (count >= 50) {
-    showError("Limit reached. Avoid overtrading.");
-    scanButton.disabled = true;
-    signalBlocks.forEach(block => block.style.display = "none");
-  } else {
-    scanButton.disabled = false;
-    signalBlocks.forEach(block => block.style.display = "block");
+      try {
+        await fetch(telegramUrl);
+        statusMsg.innerText = '✅ Submitted! Please wait for admin confirmation.';
+        statusMsg.style.color = 'green';
+      } catch (error) {
+        statusMsg.innerText = '❌ Failed to submit. Please try again.';
+        statusMsg.style.color = 'red';
+      }
+    });
   }
-}
 
-setInterval(checkAndToggleScanButton, 10000);
+  // Safe: Start interval after DOM is ready
+  setInterval(async () => {
+    try {
+      const count = await getOpenPositionsCount();
+      const signalBlocks = document.querySelectorAll(".signal-block");
+
+      if (!scanButton) return;
+
+      if (count >= 50) {
+        showError("Limit reached. Avoid overtrading.");
+        scanButton.disabled = true;
+        signalBlocks.forEach(block => block.style.display = "none");
+      } else {
+        scanButton.disabled = false;
+        signalBlocks.forEach(block => block.style.display = "block");
+      }
+    } catch (err) {
+      console.error("Error in scan button toggle:", err);
+    }
+  }, 10000);
+});
 
 let scanInterval = null;
 let autoScanActive = false;
