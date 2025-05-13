@@ -483,17 +483,6 @@ async function getPrecisionInfo(symbol) {
 let signalType = null;
 let confidence = "Normal";
     if (
-      latestEma9 > latestEma21 &&
-      latestRsi > 58 &&
-      macdHistogram > 0.0001 &&
-      lastVol > avgVol * 1.3 &&
-      candleStrength > 0.003 &&
-      wickRatio < 0.015 &&
-      recentBearishCount <= 1
-    ) {
-      signalType = "LONG";
-      confidence = "High";
-    } else if (
       latestEma9 < latestEma21 &&
       latestRsi < 42 &&
       macdHistogram < -0.0001 &&
@@ -501,6 +490,17 @@ let confidence = "Normal";
       candleStrength < -0.003 &&
       wickRatio < 0.015 &&
       recentBullishCount <= 1
+    ) {
+      signalType = "LONG";
+      confidence = "High";
+    } else if (
+      latestEma9 > latestEma21 &&
+      latestRsi > 58 &&
+      macdHistogram > 0.0001 &&
+      lastVol > avgVol * 1.3 &&
+      candleStrength > 0.003 &&
+      wickRatio < 0.015 &&
+      recentBearishCount <= 1
     ) {
       signalType = "SHORT";
       confidence = "High";
@@ -514,7 +514,7 @@ let confidence = "Normal";
           
 const price = lastClose; 
 const atrMultiplier = 1.0; // You can tune this
-const rrRatio = 2.4; // Risk\:Reward
+const rrRatio = 1.0; // Risk\:Reward
 const minSlPercent = 0.005; // 0.5%
 
 let sl, tp;
