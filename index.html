@@ -521,22 +521,16 @@ async function getPrecisionInfo(symbol) {
     if (recentBearishCount >= THRESHOLDS.minConfirmCandles) shortScore += 1;
 
     let signalType = null;
-    let confidence = "None";
+let confidence = "None";
 
-    if (score >= 6) {
-      signalType = "LONG";
-      confidence = score === 7 ? "Very High" : "High";
-    } else if (shortScore >= 6) {
-      signalType = "SHORT";
-      confidence = shortScore === 7 ? "Very High" : "High";
-    } else if (score === 5) {
-      signalType = "LONG";
-      confidence = "Medium";
-    } else if (shortScore === 5) {
-      signalType = "SHORT";
-      confidence = "Medium";
-    }
-    
+if (score >= 6) {
+  signalType = "LONG";
+  confidence = score === 7 ? "Very High" : "High";
+} else if (shortScore >= 6) {
+  signalType = "SHORT";
+  confidence = shortScore === 7 ? "Very High" : "High";
+}
+
         if (signalType && symbol) {
           const now = Date.now();
           const lastSignalTime = cooldowns[symbol] || 0;
