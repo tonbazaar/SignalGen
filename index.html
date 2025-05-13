@@ -477,34 +477,73 @@ async function getPrecisionInfo(symbol) {
     const candleStrength = (lastClose - lastOpen) / lastClose;
     const wickRatio = (lastHigh - lastLow) / lastClose;
 
-    const recentBearishCount = closes.slice(-3).filter((c, i) => c < opens[opens.length - 3 + i]).length;
-    const recentBullishCount = closes.slice(-3).filter((c, i) => c > opens[opens.length - 3 + i]).length;
+    // Config
+const THRESHOLDS = {
+  rsiLong: 55,
+  rsiShort: 45,
+  macdPositive: 0.0,
+  macdNegative: 0.0,
+  volMultiplier: 1.5,
+  candleStrengthMin: 0.002,
+  wickRatioMax: 0.02,
+  minConfirmCandles: 2
+};
 
+// Compute recent bullish/bearish candles
+const recentOpens = opens.slice(-3);
+const recentCloses = closes.slice(-3);
+
+const recentBullishCount = recentCloses.filter((c, i) => c > recentOpens[i]).length;
+const recentBearishCount = recentCloses.filter((c, i) => c < recentOpens[i]).length;
+
+// Dynamic volatility adjustment (e.g. ATR normalized thresholds)
+const atr = averageTrueRange.slice(-1)[0] || 0;
+const dynamicCandleStrength = Math.max(THRESHOLDS.candleStrengthMin, atr * 0.0015);
+const dynamicVolumeThreshold = avgVol * THRESHOLDS.volMultiplier;
+
+// Scoring system for signal strength
+let score = 0;
+
+// LONG Signal Scoring
+if (latestEma9 > latestEma21) score += 1;
+if (latestRsi > THRESHOLDS.rsiLong) score += 1;
+if (macdHistogram > THRESHOLDS.macdPositive) score += 1;
+if (lastVol > dynamicVolumeThreshold) score += 1;
+if (candleStrength > dynamicCandleStrength) score += 1;
+if (wickRatio < THRESHOLDS.wickRatioMax) score += 1;
+if (recentBullishCount >= THRESHOLDS.minConfirmCandles) score += 1;
+
+// SHORT Signal Scoring
+let shortScore = 0;
+if (latestEma9 < latestEma21) shortScore += 1;
+if (latestRsi < THRESHOLDS.rsiShort) shortScore += 1;
+if (macdHistogram < THRESHOLDS.macdNegative) shortScore += 1;
+if (lastVol > dynamicVolumeThreshold) shortScore += 1;
+if (candleStrength < -dynamicCandleStrength) shortScore += 1;
+if (wickRatio < THRESHOLDS.wickRatioMax) shortScore += 1;
+if (recentBearishCount >= THRESHOLDS.minConfirmCandles) shortScore += 1;
+
+// Final signal decision
 let signalType = null;
-let confidence = "Normal";
-    if (
-      latestEma9 < latestEma21 &&
-      latestRsi < 42 &&
-      macdHistogram < -0.0001 &&
-      lastVol > avgVol * 1.3 &&
-      candleStrength < -0.003 &&
-      wickRatio < 0.015 &&
-      recentBullishCount <= 1
-    ) {
-      signalType = "LONG";
-      confidence = "High";
-    } else if (
-      latestEma9 > latestEma21 &&
-      latestRsi > 58 &&
-      macdHistogram > 0.0001 &&
-      lastVol > avgVol * 1.3 &&
-      candleStrength > 0.003 &&
-      wickRatio < 0.015 &&
-      recentBearishCount <= 1
-    ) {
-      signalType = "SHORT";
-      confidence = "High";
-    }
+let confidence = "None";
+
+if (score >= 6) {
+  signalType = "LONG";
+  confidence = score === 7 ? "Very High" : "High";
+} else if (shortScore >= 6) {
+  signalType = "SHORT";
+  confidence = shortScore === 7 ? "Very High" : "High";
+} else if (score === 5) {
+  signalType = "LONG";
+  confidence = "Medium";
+} else if (shortScore === 5) {
+  signalType = "SHORT";
+  confidence = "Medium";
+}
+
+// Output signal
+console.log({ signalType, confidence, score, shortScore });
+
 
         if (signalType && symbol) {
           const now = Date.now();
