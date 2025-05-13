@@ -521,14 +521,14 @@ async function getPrecisionInfo(symbol) {
     if (recentBearishCount >= THRESHOLDS.minConfirmCandles) shortScore += 1;
 
     let signalType = null;
-let confidence = "None";
+    let confidence = "None";
 
-if (score === 7) {
+if (score >= 6) {
   signalType = "LONG";
-  confidence = "Very High";
-} else if (shortScore === 7) {
+  confidence = score === 7 ? "Very High" : "High";
+} else if (shortScore >= 6) {
   signalType = "SHORT";
-  confidence = "Very High";
+  confidence = shortScore === 7 ? "Very High" : "High";
 }
 
         if (signalType && symbol) {
@@ -538,8 +538,8 @@ if (score === 7) {
           cooldowns[symbol] = now;
           
 const price = lastClose; 
-const atrMultiplier = 2.0; // You can tune this
-const rrRatio = 1.2; // Risk\:Reward
+const atrMultiplier = 3.0; // You can tune this
+const rrRatio = 0.8; // Risk\:Reward
 const minSlPercent = 0.005; // 0.5%
 
 let sl, tp;
