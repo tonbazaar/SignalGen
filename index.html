@@ -737,51 +737,80 @@ async function placeTrade(symbol, side, entry, tp, sl) {
   }
 }
 
-async function sendLimit(symbol, side, qty, price, tp, sl, reduceOnly, pricePrecision, quantityPrecision) { 
-  const orderParams = { 
-    symbol: symbol, 
-    side: side, 
-    positionSide: side === 'BUY' ? 'LONG' : 'SHORT', 
-    type: 'MARKET', 
-    quantity: parseFloat(parseFloat(qty).toFixed(quantityPrecision)), 
-    timestamp: Date.now() 
-  };
+let isWindowActive = true;
+window.addEventListener("beforeunload", () => {
+  isWindowActive = false;
+});
 
-  if (reduceOnly) orderParams.reduceOnly = true;
-
-  const response = await sendSignedRequest('/fapi/v1/order', orderParams, "POST");
-  console.log("Order response:", response);
-
-  if (response && !response.code) {
-    const positionSide = side === 'BUY' ? 'LONG' : 'SHORT';
-    const oppositeSide = side === 'BUY' ? 'SELL' : 'BUY';
-
-    // TAKE PROFIT
-    await sendSignedRequest('/fapi/v1/order', {
-      symbol,
-      side: oppositeSide,
-      type: 'TAKE_PROFIT_MARKET',
-      stopPrice: parseFloat(tp).toFixed(pricePrecision),
-      closePosition: true,
-      positionSide,
-      priceProtect: true,
-      timestamp: Date.now()
-    }, "POST");
-
-    // STOP LOSS
-    await sendSignedRequest('/fapi/v1/order', {
-      symbol,
-      side: oppositeSide,
-      type: 'STOP_MARKET',
-      stopPrice: parseFloat(sl).toFixed(pricePrecision),
-      closePosition: true,
-      positionSide,
-      priceProtect: true,
-      timestamp: Date.now()
-    }, "POST");
+async function sendLimit(symbol, side, qty, price, tp, sl, reduceOnly, pricePrecision, quantityPrecision) {
+  if (!isWindowActive) {
+    console.warn("Window inactive. Order not sent.");
+    return;
   }
 
-  return response;
+  try {
+    const orderParams = {
+      symbol: symbol,
+      side: side,
+      positionSide: side === 'BUY' ? 'LONG' : 'SHORT',
+      type: 'MARKET',
+      quantity: parseFloat(parseFloat(qty).toFixed(quantityPrecision)),
+      timestamp: Date.now()
+    };
+
+    if (reduceOnly) orderParams.reduceOnly = true;
+
+    const response = await sendSignedRequest('/fapi/v1/order', orderParams, "POST");
+    console.log("Order response:", response);
+
+    if (response && !response.code) {
+      const positionSide = side === 'BUY' ? 'LONG' : 'SHORT';
+      const oppositeSide = side === 'BUY' ? 'SELL' : 'BUY';
+
+      // TAKE PROFIT
+      try {
+        await sendSignedRequest('/fapi/v1/order', {
+          symbol,
+          side: oppositeSide,
+          type: 'TAKE_PROFIT_MARKET',
+          stopPrice: parseFloat(tp).toFixed(pricePrecision),
+          closePosition: true,
+          positionSide,
+          priceProtect: true,
+          timestamp: Date.now()
+        }, "POST");
+        console.log("✅ TP set for", symbol);
+      } catch (tpErr) {
+        console.error("❌ TP error for", symbol, tpErr);
+        showError(`Failed to set TP for ${symbol}`);
+      }
+
+      // STOP LOSS
+      try {
+        await sendSignedRequest('/fapi/v1/order', {
+          symbol,
+          side: oppositeSide,
+          type: 'STOP_MARKET',
+          stopPrice: parseFloat(sl).toFixed(pricePrecision),
+          closePosition: true,
+          positionSide,
+          priceProtect: true,
+          timestamp: Date.now()
+        }, "POST");
+        console.log("✅ SL set for", symbol);
+      } catch (slErr) {
+        console.error("❌ SL error for", symbol, slErr);
+        showError(`Failed to set SL for ${symbol}`);
+      }
+    }
+
+    return response;
+
+  } catch (mainErr) {
+    console.error("❌ Order error:", mainErr);
+    showError(`Order failed for ${symbol}`);
+    return null;
+  }
 }
 
     async function setLeverage(symbol, lev) {
