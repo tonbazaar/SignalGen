@@ -549,12 +549,21 @@ async function getPrecisionInfo(symbol) {
     let signalType = null;
     let confidence = "None";
 
-if (score === 7) {
+let signalType = null;
+let confidence = "None";
+
+if (score >= 7) {
   signalType = "LONG";
   confidence = "Very High";
-} else if (shortScore === 7) {
+} else if (shortScore >= 7) {
   signalType = "SHORT";
   confidence = "Very High";
+} else if (score === 6) {
+  signalType = "LONG";
+  confidence = "High";
+} else if (shortScore === 6) {
+  signalType = "SHORT";
+  confidence = "High";
 }
 
         if (signalType && symbol) {
@@ -618,7 +627,7 @@ tp = tp.toFixed(5);
   <b>⭐ TP:</b> ${tp}<br>
   <b>⛔ SL:</b> ${sl}<br>
   <b>⚙️ Leverage:</b> ${confidence === "High" ? "20x (or max)" : "10–20x"}<br>
-  <b>✅ Confidence:</b> ${confidence}<br>
+  <b>✅ Confidence:</b> <code>${confidence} (score: ${score || shortScore})</code>
   <button class="trade-btn" onclick="placeTrade('${symbol}', '${signalType === "LONG" ? "BUY" : "SELL"}', '${price.toFixed(5)}', '${tp}', '${sl}')">Trade</button>
   </div>`;
         }
