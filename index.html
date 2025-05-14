@@ -549,12 +549,12 @@ async function getPrecisionInfo(symbol) {
     let signalType = null;
     let confidence = "None";
 
-if (score >= 6) {
+if (score === 7) {
   signalType = "LONG";
-  confidence = score === 7 ? "Very High" : "High";
-} else if (shortScore >= 6) {
+  confidence = "Very High";
+} else if (shortScore === 7) {
   signalType = "SHORT";
-  confidence = shortScore === 7 ? "Very High" : "High";
+  confidence = "Very High";
 }
 
         if (signalType && symbol) {
