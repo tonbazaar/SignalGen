@@ -529,41 +529,44 @@ async function getPrecisionInfo(symbol) {
     const dynamicVolumeThreshold = avgVol * THRESHOLDS.volMultiplier;
 
     let score = 0, shortScore = 0;
+    let scoreReasons = [], shortScoreReasons = [];
 
-    if (latestEma9 > latestEma21) score += 1;
-    if (latestRsi > THRESHOLDS.rsiLong) score += 1;
-    if (macdHistogram > THRESHOLDS.macdPositive) score += 1;
-    if (lastVol > dynamicVolumeThreshold) score += 1;
-    if (candleStrength > dynamicCandleStrength) score += 1;
-    if (wickRatio < THRESHOLDS.wickRatioMax) score += 1;
-    if (recentBullishCount >= THRESHOLDS.minConfirmCandles) score += 1;
+if (latestEma9 > latestEma21) { score += 1; scoreReasons.push("EMA9 > EMA21"); }
+if (latestRsi > THRESHOLDS.rsiLong) { score += 1; scoreReasons.push("RSI > 55"); }
+if (macdHistogram > THRESHOLDS.macdPositive) { score += 1; scoreReasons.push("MACD > 0"); }
+if (lastVol > dynamicVolumeThreshold) { score += 1; scoreReasons.push("Volume > Avg * 1.5"); }
+if (candleStrength > dynamicCandleStrength) { score += 1; scoreReasons.push("Candle Strength > Threshold"); }
+if (wickRatio < THRESHOLDS.wickRatioMax) { score += 1; scoreReasons.push("Wick Ratio < 0.02"); }
+if (recentBullishCount >= THRESHOLDS.minConfirmCandles) { score += 1; scoreReasons.push("2+ Bullish Candles"); }
 
-    if (latestEma9 < latestEma21) shortScore += 1;
-    if (latestRsi < THRESHOLDS.rsiShort) shortScore += 1;
-    if (macdHistogram < THRESHOLDS.macdNegative) shortScore += 1;
-    if (lastVol > dynamicVolumeThreshold) shortScore += 1;
-    if (candleStrength < -dynamicCandleStrength) shortScore += 1;
-    if (wickRatio < THRESHOLDS.wickRatioMax) shortScore += 1;
-    if (recentBearishCount >= THRESHOLDS.minConfirmCandles) shortScore += 1;
-
-    let signalType = null;
-    let confidence = "None";
+if (latestEma9 < latestEma21) { shortScore += 1; shortScoreReasons.push("EMA9 < EMA21"); }
+if (latestRsi < THRESHOLDS.rsiShort) { shortScore += 1; shortScoreReasons.push("RSI < 45"); }
+if (macdHistogram < THRESHOLDS.macdNegative) { shortScore += 1; shortScoreReasons.push("MACD < 0"); }
+if (lastVol > dynamicVolumeThreshold) { shortScore += 1; shortScoreReasons.push("Volume > Avg * 1.5"); }
+if (candleStrength < -dynamicCandleStrength) { shortScore += 1; shortScoreReasons.push("Candle Strength Negative"); }
+if (wickRatio < THRESHOLDS.wickRatioMax) { shortScore += 1; shortScoreReasons.push("Wick Ratio < 0.02"); }
+if (recentBearishCount >= THRESHOLDS.minConfirmCandles) { shortScore += 1; shortScoreReasons.push("2+ Bearish Candles"); }
 
 let signalType = null;
 let confidence = "None";
+let reasons = [];
 
 if (score >= 7) {
   signalType = "LONG";
   confidence = "Very High";
+  reasons = scoreReasons;
 } else if (shortScore >= 7) {
   signalType = "SHORT";
   confidence = "Very High";
+  reasons = shortScoreReasons;
 } else if (score === 6) {
   signalType = "LONG";
   confidence = "High";
+  reasons = scoreReasons;
 } else if (shortScore === 6) {
   signalType = "SHORT";
   confidence = "High";
+  reasons = shortScoreReasons;
 }
 
         if (signalType && symbol) {
@@ -610,6 +613,8 @@ tp = tp.toFixed(5);
 <b>⛔ Stop Loss:</b> <code>${sl}</code>  
 <b>⚙️ Leverage:</b> <code>10x – 20x</code>  
 <b>🔒 Confidence:</b> <code>${confidence}</code>  
+<b>🧪 Matched Rules:</b>  
+<code>${reasons.join('\n')}</code>
 ━━━━━━━━━━━━━━━━━  
 <b>🧠 Strategy:</b>  
 <i>SL is mandatory. Always apply position sizing and risk management.</i>  
