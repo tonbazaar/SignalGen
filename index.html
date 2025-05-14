@@ -630,7 +630,7 @@ const telegramMessage = `
   <b>⭐ TP:</b> ${tp}<br>
   <b>⛔ SL:</b> ${sl}<br>
   <b>⚙️ Leverage:</b> ${confidence === "High" ? "20x (or max)" : "10–20x"}<br>
-  <b>✅ Confidence:</b> <code>${confidence} (score: ${score || shortScore})</code>
+  <b>✅ Confidence:</b> <code>${confidence} (score: ${signalType === "LONG" ? score : shortScore})</code>
   <button class="trade-btn" onclick="placeTrade('${symbol}', '${signalType === "LONG" ? "BUY" : "SELL"}', '${price.toFixed(5)}', '${tp}', '${sl}')">Trade</button>
   </div>`;
         }
