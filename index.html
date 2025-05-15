@@ -873,7 +873,6 @@ async function sendLimit(symbol, side, qty, price, tp, sl, reduceOnly, pricePrec
   return parseFloat(qty).toFixed(quantityPrecision);
     }
 
-// ===================== BTC Indicators =====================
 async function getBTCIndicators() {
   const res = await fetch("https://fapi.binance.com/fapi/v1/klines?symbol=BTCUSDT&interval=5m&limit=200");
   const data = await res.json();
@@ -910,7 +909,6 @@ async function getBTCIndicators() {
   };
 }
 
-// ===================== EMA Calculation =====================
 function getEMA(prices, period) {
   const k = 2 / (period + 1);
   const ema = [prices.slice(0, period).reduce((a, b) => a + b, 0) / period];
@@ -922,7 +920,6 @@ function getEMA(prices, period) {
   return ema;
 }
 
-// ===================== Market Check =====================
 let marketCondition = "BAD";
 let btcTrend = "bearish";
 let nearPullback = false;
@@ -930,17 +927,16 @@ let nearPullback = false;
 async function updateMarketCondition() {
   const { ema50, ema200, currentVolume, avgVolume, trend } = await getBTCIndicators();
 
-  const trendOkay = Math.abs(ema50 - ema200) / ema200 > 0.002; // 0.2% spread
+  const emaGap = Math.abs(ema50 - ema200) / ema200;
+  const trendOkay = emaGap > 0.002; // 0.2% spread
   const noVolumeSpike = currentVolume < avgVolume * 1.8;
 
   marketCondition = (trendOkay && noVolumeSpike) ? "GOOD" : "BAD";
   btcTrend = trend;
 
-  // Pullback detection (e.g., price extended far from EMA200)
-  const priceGap = Math.abs(ema50 - ema200) / ema200;
-  nearPullback = (priceGap > 0.01); // e.g., over 1% from EMA200 suggests pullback zone
+  nearPullback = emaGap > 0.01; // >1% from EMA200 = pullback risk
+  console.log(`Near Pullback: ${nearPullback}`);
 
-  // Update DOM (if exists)
   const statusEl = document.getElementById("marketStatus");
   if (statusEl) {
     statusEl.textContent = `Market: ${marketCondition} (${btcTrend.toUpperCase()})`;
@@ -953,7 +949,7 @@ async function updateMarketCondition() {
 updateMarketCondition();
 setInterval(updateMarketCondition, 25000); // Update every 25s
 
-    function toggleScanButton() {
+function toggleScanButton() {
   const scanButton = document.getElementById("scanButton");
   const waitingMessage = document.getElementById("waitingMessage");
 
