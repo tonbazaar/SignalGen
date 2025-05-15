@@ -574,11 +574,14 @@ if (score >= 7) {
           if (now - lastSignalTime < COOLDOWN_MINUTES * 60 * 1000) return null;
           cooldowns[symbol] = now;
 
-          if (marketCondition !== "GOOD") return null; // Skip if market is bad
+          // Filter logic before placing a trade
+if (marketCondition !== "GOOD") return null; // Skip if market is bad
 
+// Enforce BTC trend alignment
 if ((btcTrend === "bullish" && signal.direction === "SHORT") ||
-    (btcTrend === "bearish" && signal.direction === "LONG")) {
-  return null; // Skip if signal goes against BTC trend
+    (btcTrend === "bearish" && signal.direction === "LONG")) {
+  console.log(`Signal skipped: BTC is ${btcTrend}, signal direction is ${signal.direction}`);
+  return null; // Skip if signal goes against BTC trend
 }
 
 const price = lastClose; 
@@ -868,69 +871,82 @@ async function sendLimit(symbol, side, qty, price, tp, sl, reduceOnly, pricePrec
   const usdt = window.env.TRADE_USDT; // USDT amount to use
   const qty = usdt / parseFloat(price);
   return parseFloat(qty).toFixed(quantityPrecision);
-    }  
-    
-  async function getBTCIndicators() {
-  const res = await fetch("https://fapi.binance.com/fapi/v1/klines?symbol=BTCUSDT&interval=5m&limit=200");
-  const data = await res.json();
+    }
 
-  const closes = data.map(c => parseFloat(c[4]));
-  const volumes = data.map(c => parseFloat(c[5]));
+// ===================== BTC Indicators =====================
+async function getBTCIndicators() {
+  const res = await fetch("https://fapi.binance.com/fapi/v1/klines?symbol=BTCUSDT&interval=5m&limit=200");
+  const data = await res.json();
 
-  const ema50 = getEMA(closes, 50);
-  const ema200 = getEMA(closes, 200);
-  const currentVolume = volumes[volumes.length - 1];
-  const avgVolume = volumes.slice(-30).reduce((a, b) => a + b, 0) / 30;
+  const closes = data.map(c => parseFloat(c[4]));
+  const volumes = data.map(c => parseFloat(c[5]));
 
-  const priceNow = closes[closes.length - 1];
-  const priceBefore = closes[closes.length - 6]; // 5 candles ago (~25min earlier)
-  const priceRising = priceNow > priceBefore;
+  const ema50 = getEMA(closes, 50);
+  const ema200 = getEMA(closes, 200);
+  const currentVolume = volumes[volumes.length - 1];
+  const avgVolume = volumes.slice(-30).reduce((a, b) => a + b, 0) / 30;
 
-  let trend = "bearish";
-  if (ema50[ema50.length - 1] > ema200[ema200.length - 1] || priceRising) {
-    trend = "bullish";
-  }
+  const priceNow = closes[closes.length - 1];
+  const priceBefore = closes[closes.length - 6]; // ~25 minutes ago
+  const priceRising = priceNow > priceBefore;
 
-  return {
-    ema50: ema50[ema50.length - 1],
-    ema200: ema200[ema200.length - 1],
-    currentVolume,
-    avgVolume,
-    trend
-  };
+  let trend = "bearish";
+  if (ema50[ema50.length - 1] > ema200[ema200.length - 1] && priceRising) {
+    trend = "bullish";
+  }
+
+  // Debug output
+  console.log(`BTC Trend: ${trend}`);
+  console.log(`EMA50: ${ema50[ema50.length - 1].toFixed(2)} | EMA200: ${ema200[ema200.length - 1].toFixed(2)}`);
+  console.log(`Price Now: ${priceNow} | Price 25min ago: ${priceBefore}`);
+  console.log(`Volume: ${currentVolume} | AvgVolume(30): ${avgVolume}`);
+
+  return {
+    ema50: ema50[ema50.length - 1],
+    ema200: ema200[ema200.length - 1],
+    currentVolume,
+    avgVolume,
+    trend
+  };
 }
 
+// ===================== EMA Calculation =====================
 function getEMA(prices, period) {
-  const k = 2 / (period + 1);
-  const ema = [prices.slice(0, period).reduce((a, b) => a + b) / period];
+  const k = 2 / (period + 1);
+  const ema = [prices.slice(0, period).reduce((a, b) => a + b, 0) / period];
 
-  for (let i = period; i < prices.length; i++) {
-    ema.push(prices[i] * k + ema[ema.length - 1] * (1 - k));
-  }
+  for (let i = period; i < prices.length; i++) {
+    ema.push(prices[i] * k + ema[ema.length - 1] * (1 - k));
+  }
 
-  return ema;
+  return ema;
 }
 
+// ===================== Market Check =====================
 let marketCondition = "BAD";
 let btcTrend = "bearish";
 
 async function updateMarketCondition() {
-  const { ema50, ema200, currentVolume, avgVolume, trend } = await getBTCIndicators();
+  const { ema50, ema200, currentVolume, avgVolume, trend } = await getBTCIndicators();
 
-  const trendOkay = Math.abs(ema50 - ema200) / ema200 > 0.002;
-  const noVolumeSpike = currentVolume < avgVolume * 1.8;
+  const trendOkay = Math.abs(ema50 - ema200) / ema200 > 0.002; // 0.2% spread
+  const noVolumeSpike = currentVolume < avgVolume * 1.8;
 
-  marketCondition = (trendOkay && noVolumeSpike) ? "GOOD" : "BAD";
-  btcTrend = trend;
+  marketCondition = (trendOkay && noVolumeSpike) ? "GOOD" : "BAD";
+  btcTrend = trend;
 
-  document.getElementById("marketStatus").textContent = `Market: ${marketCondition} (${btcTrend.toUpperCase()})`;
-  document.getElementById("marketStatus").style.color = marketCondition === "GOOD" ? "#388e3c" : "#d32f2f";
+  // Update DOM (if exists)
+  const statusEl = document.getElementById("marketStatus");
+  if (statusEl) {
+    statusEl.textContent = `Market: ${marketCondition} (${btcTrend.toUpperCase()})`;
+    statusEl.style.color = marketCondition === "GOOD" ? "#388e3c" : "#d32f2f";
+  }
 
-  toggleScanButton();
+  toggleScanButton(); // If you have a button toggle logic
 }
 
 updateMarketCondition();
-setInterval(updateMarketCondition, 30000); // Refresh every 30s
+setInterval(updateMarketCondition, 30000); // Update every 30s
 
     function toggleScanButton() {
   const scanButton = document.getElementById("scanButton");
