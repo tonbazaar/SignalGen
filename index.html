@@ -885,12 +885,13 @@ async function getBTCIndicators() {
   const avgVolume = volumes.slice(-30).reduce((a, b) => a + b, 0) / 30;
 
   return {
-  ema50: ema50[ema50.length - 1],
-  ema200: ema200[ema200.length - 1],
-  currentVolume,
-  avgVolume,
-  trend: ema50[ema50.length - 1] > ema200[ema200.length - 1] ? "bullish" : "bearish"
-};
+    ema50: ema50[ema50.length - 1],
+    ema200: ema200[ema200.length - 1],
+    currentVolume,
+    avgVolume,
+    trend: ema50[ema50.length - 1] > ema200[ema200.length - 1] ? "bullish" : "bearish"
+  };
+}
 
 function getEMA(prices, period) {
   const k = 2 / (period + 1);
