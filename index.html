@@ -574,7 +574,15 @@ if (score >= 7) {
           const lastSignalTime = cooldowns[symbol] || 0;
           if (now - lastSignalTime < COOLDOWN_MINUTES * 60 * 1000) return null;
           cooldowns[symbol] = now;
-          
+
+          if (marketCondition !== "GOOD") return null; // Skip if market is bad
+
+// Now enforce BTC trend alignment
+if ((btcTrend === "bullish" && signal.direction === "SHORT") ||
+    (btcTrend === "bearish" && signal.direction === "LONG")) {
+  return null; // Skip if signal goes against BTC trend
+}
+
 const price = lastClose; 
 const atrMultiplier = 2.0; // You can tune this
 const rrRatio = 1.2; // Risk\:Reward
@@ -877,12 +885,12 @@ async function getBTCIndicators() {
   const avgVolume = volumes.slice(-30).reduce((a, b) => a + b, 0) / 30;
 
   return {
-    ema50: ema50[ema50.length - 1],
-    ema200: ema200[ema200.length - 1],
-    currentVolume,
-    avgVolume
-  };
-}
+  ema50: ema50[ema50.length - 1],
+  ema200: ema200[ema200.length - 1],
+  currentVolume,
+  avgVolume,
+  trend: ema50[ema50.length - 1] > ema200[ema200.length - 1] ? "bullish" : "bearish"
+};
 
 function getEMA(prices, period) {
   const k = 2 / (period + 1);
@@ -896,21 +904,23 @@ function getEMA(prices, period) {
 }
 
 let marketCondition = "BAD";
-    
+let btcTrend = "bearish";
+
 async function updateMarketCondition() {
-  const { ema50, ema200, currentVolume, avgVolume } = await getBTCIndicators();
+  const { ema50, ema200, currentVolume, avgVolume, trend } = await getBTCIndicators();
 
-  const trendOkay = Math.abs(ema50 - ema200) / ema200 > 0.002;
-  const noVolumeSpike = currentVolume < avgVolume * 1.8;
+  const trendOkay = Math.abs(ema50 - ema200) / ema200 > 0.002;
+  const noVolumeSpike = currentVolume < avgVolume * 1.8;
 
-  marketCondition = (trendOkay && noVolumeSpike) ? "GOOD" : "BAD";
+  marketCondition = (trendOkay && noVolumeSpike) ? "GOOD" : "BAD";
+  btcTrend = trend;
 
-  document.getElementById("marketStatus").textContent = `Market: ${marketCondition}`;
-  document.getElementById("marketStatus").style.color = marketCondition === "GOOD" ? "#388e3c" : "#d32f2f";
+  document.getElementById("marketStatus").textContent = `Market: ${marketCondition} (${btcTrend.toUpperCase()})`;
+  document.getElementById("marketStatus").style.color = marketCondition === "GOOD" ? "#388e3c" : "#d32f2f";
 
-  toggleScanButton(); // Run after checking market
+  toggleScanButton();
 }
- 
+
 updateMarketCondition();
 setInterval(updateMarketCondition, 30000); // Refresh every 30s
 
