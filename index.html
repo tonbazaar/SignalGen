@@ -925,6 +925,7 @@ function getEMA(prices, period) {
 // ===================== Market Check =====================
 let marketCondition = "BAD";
 let btcTrend = "bearish";
+let nearPullback = false;
 
 async function updateMarketCondition() {
   const { ema50, ema200, currentVolume, avgVolume, trend } = await getBTCIndicators();
@@ -935,6 +936,10 @@ async function updateMarketCondition() {
   marketCondition = (trendOkay && noVolumeSpike) ? "GOOD" : "BAD";
   btcTrend = trend;
 
+  // Pullback detection (e.g., price extended far from EMA200)
+  const priceGap = Math.abs(ema50 - ema200) / ema200;
+  nearPullback = (priceGap > 0.01); // e.g., over 1% from EMA200 suggests pullback zone
+
   // Update DOM (if exists)
   const statusEl = document.getElementById("marketStatus");
   if (statusEl) {
@@ -942,7 +947,7 @@ async function updateMarketCondition() {
     statusEl.style.color = marketCondition === "GOOD" ? "#388e3c" : "#d32f2f";
   }
 
-  toggleScanButton(); // If you have a button toggle logic
+  toggleScanButton();
 }
 
 updateMarketCondition();
@@ -953,11 +958,12 @@ setInterval(updateMarketCondition, 25000); // Update every 25s
   const waitingMessage = document.getElementById("waitingMessage");
 
   if (isPremium && marketCondition === "GOOD" && !nearPullback) {
-  scanButton.style.display = "inline-block";
-  waitingMessage.style.display = "none";
-} else {
-  scanButton.style.display = "none";
-  waitingMessage.style.display = isPremium ? "block" : "none";
+    scanButton.style.display = "inline-block";
+    waitingMessage.style.display = "none";
+  } else {
+    scanButton.style.display = "none";
+    waitingMessage.style.display = isPremium ? "block" : "none";
+  }
 }
 
  window.onload = async () => {
