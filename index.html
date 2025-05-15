@@ -952,13 +952,12 @@ setInterval(updateMarketCondition, 25000); // Update every 25s
   const scanButton = document.getElementById("scanButton");
   const waitingMessage = document.getElementById("waitingMessage");
 
-  if (isPremium && marketCondition === "GOOD") {
-    scanButton.style.display = "inline-block";
-    waitingMessage.style.display = "none";
-  } else {
-    scanButton.style.display = "none";
-    waitingMessage.style.display = isPremium ? "block" : "none";
-  }
+  if (isPremium && marketCondition === "GOOD" && !nearPullback) {
+  scanButton.style.display = "inline-block";
+  waitingMessage.style.display = "none";
+} else {
+  scanButton.style.display = "none";
+  waitingMessage.style.display = isPremium ? "block" : "none";
 }
 
  window.onload = async () => {
