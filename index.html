@@ -441,8 +441,10 @@ async function updateTradeStats() {
     let sl = 0;
 
     trades.forEach(t => {
-      if (t.orderType === "TAKE_PROFIT_MARKET") tp++;
-      else if (t.orderType === "STOP_MARKET") sl++;
+      const pnl = parseFloat(t.realizedPnl);
+      if (pnl > 0) tp++;
+      else if (pnl < 0) sl++;
+      // Neutral trades (pnl = 0) are ignored
     });
 
     const total = tp + sl;
@@ -457,8 +459,8 @@ async function updateTradeStats() {
 }
 
 updateTradeStats();
-setInterval(updateTradeStats, 60000); // refresh every 60 sec
-   
+setInterval(updateTradeStats, 60000);
+
 let scanInterval = null;
 let autoScanActive = false;
     
