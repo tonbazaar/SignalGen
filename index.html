@@ -934,31 +934,34 @@ async function updateMarketCondition() {
   const { ema50, ema200, currentVolume, avgVolume, trend } = await getBTCIndicators();
 
   const emaGap = Math.abs(ema50 - ema200) / ema200;
-  const trendOkay = emaGap > 0.002; // 0.2% spread
+  const trendOkay = emaGap > 0.002;
   const noVolumeSpike = currentVolume < avgVolume * 1.8;
 
   marketCondition = (trendOkay && noVolumeSpike) ? "GOOD" : "BAD";
   btcTrend = trend;
 
-  nearPullback = emaGap > 0.01; // >1% from EMA200 = pullback risk
+  nearPullback = emaGap > 0.01;
   console.log(`Near Pullback: ${nearPullback}`);
 
   const statusEl = document.getElementById("marketStatus");
   if (statusEl) {
-    statusEl.textContent = `Market: ${marketCondition} (${btcTrend.toUpperCase()})`;
+    
+    if ((marketCondition === "GOOD" && btcTrend === "bearish") || (marketCondition === "BAD" && btcTrend === "bullish")) {
+      const marketColor = marketCondition === "GOOD" ? "#388e3c" : "#d32f2f";
+      const trendColor = btcTrend === "bullish" ? "#388e3c" : "#d32f2f";
 
-    if (btcTrend === "bullish") {
-      statusEl.style.color = "#388e3c"; // Green
-    } else if (btcTrend === "bearish") {
-      statusEl.style.color = "#d32f2f"; // Red
+      statusEl.innerHTML = `Market: <span style="color:${marketColor}">${marketCondition}</span> (<span style="color:${trendColor}">${btcTrend.toUpperCase()}</span>)`;
     } else {
-      statusEl.style.color = "#666"; // Neutral/unknown
+      
+      const color = (marketCondition === "GOOD" && btcTrend === "bullish") ? "#388e3c" : "#d32f2f";
+      statusEl.textContent = `Market: ${marketCondition} (${btcTrend.toUpperCase()})`;
+      statusEl.style.color = color;
     }
   }
 
-  toggleScanButton(); 
+  toggleScanButton();
 }
-  
+
 updateMarketCondition();
 setInterval(updateMarketCondition, 25000); // Update every 25s
 
