@@ -931,7 +931,6 @@ let btcTrend = "bearish";
 let nearPullback = false;
 
 async function updateMarketCondition() {
-async function updateMarketCondition() {
   const { ema50, ema200, currentVolume, avgVolume, trend } = await getBTCIndicators();
 
   const emaGap = Math.abs(ema50 - ema200) / ema200;
