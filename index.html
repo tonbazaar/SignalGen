@@ -946,8 +946,14 @@ async function updateMarketCondition() {
   const statusEl = document.getElementById("marketStatus");
   if (statusEl) {
     statusEl.textContent = `Market: ${marketCondition} (${btcTrend.toUpperCase()})`;
-    statusEl.style.color = marketCondition === "GOOD" ? "#388e3c" : "#d32f2f";
-  }
+
+if (btcTrend === "bullish") {
+  statusEl.style.color = "#388e3c"; // Green
+} else if (btcTrend === "bearish") {
+  statusEl.style.color = "#d32f2f"; // Red
+} else {
+  statusEl.style.color = "#666"; // Neutral/unknown
+}
 
   toggleScanButton();
 }
