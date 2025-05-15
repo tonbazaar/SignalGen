@@ -856,7 +856,13 @@ async function sendLimit(symbol, side, qty, price, tp, sl, reduceOnly, pricePrec
   const maxLeverage = pair.brackets[0].initialLeverage;
   return Math.min(maxLeverage, 20);
 }
-
+    
+  async function getQuantity(symbol, price, quantityPrecision) {
+  const usdt = window.env.TRADE_USDT; // USDT amount to use
+  const qty = usdt / parseFloat(price);
+  return parseFloat(qty).toFixed(quantityPrecision);
+    }  
+    
   async function getBTCIndicators() {
   const res = await fetch("https://fapi.binance.com/fapi/v1/klines?symbol=BTCUSDT&interval=5m&limit=200");
   const data = await res.json();
