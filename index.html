@@ -603,6 +603,12 @@ tp = signalType === "LONG"
 sl = sl.toFixed(5);
 tp = tp.toFixed(5);
 
+const escapedReasons = reasons.map(r =>
+  r.replace(/&/g, '&amp;')
+   .replace(/</g, '&lt;')
+   .replace(/>/g, '&gt;')
+).join('\n');
+
 const telegramMessage = `
 <b>🚨 Signal Alert </b>  
 ━━━━━━━━━━━━━━━━━  
@@ -614,8 +620,8 @@ const telegramMessage = `
 <b>⚙️ Leverage:</b> <code>10x – 20x</code>  
 <b>🔒 Confidence:</b> <code>${confidence}</code>  
 ━━━━━━━━━━━━━━━━━  
-<b>🧪 Matched Rules:</b>  
-<pre>${reasons.join('\n')}</pre>
+<b>🧪 Matched Rules:</b>  
+<pre>${escapedReasons}</pre>
 
 <b>🧠 Strategy:</b>  
 <i>SL is mandatory. Always apply position sizing and risk management.</i>  
@@ -623,7 +629,8 @@ const telegramMessage = `
 <b>🔎 Source:</b> <i>High-confluence algo strategy</i>
 `;
 
-   await sendToTelegram(telegramMessage);
+await sendToTelegram(telegramMessage);
+
 
           return `
 <div class="signal-block">
