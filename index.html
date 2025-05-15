@@ -931,6 +931,7 @@ let btcTrend = "bearish";
 let nearPullback = false;
 
 async function updateMarketCondition() {
+async function updateMarketCondition() {
   const { ema50, ema200, currentVolume, avgVolume, trend } = await getBTCIndicators();
 
   const emaGap = Math.abs(ema50 - ema200) / ema200;
@@ -947,17 +948,18 @@ async function updateMarketCondition() {
   if (statusEl) {
     statusEl.textContent = `Market: ${marketCondition} (${btcTrend.toUpperCase()})`;
 
-if (btcTrend === "bullish") {
-  statusEl.style.color = "#388e3c"; // Green
-} else if (btcTrend === "bearish") {
-  statusEl.style.color = "#d32f2f"; // Red
-} else {
-  statusEl.style.color = "#666"; // Neutral/unknown
-}
+    if (btcTrend === "bullish") {
+      statusEl.style.color = "#388e3c"; // Green
+    } else if (btcTrend === "bearish") {
+      statusEl.style.color = "#d32f2f"; // Red
+    } else {
+      statusEl.style.color = "#666"; // Neutral/unknown
+    }
+  }
 
-  toggleScanButton();
+  toggleScanButton(); 
 }
-
+  
 updateMarketCondition();
 setInterval(updateMarketCondition, 25000); // Update every 25s
 
