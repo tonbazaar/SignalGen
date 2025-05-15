@@ -574,14 +574,20 @@ if (score >= 7) {
           if (now - lastSignalTime < COOLDOWN_MINUTES * 60 * 1000) return null;
           cooldowns[symbol] = now;
 
-          // Filter logic before placing a trade
-if (marketCondition !== "GOOD") return null; // Skip if market is bad
+if (marketCondition !== "GOOD") {
+  console.log("Signal skipped: Market condition is not GOOD.");
+  return null;
+}
 
-// Enforce BTC trend alignment
+if (nearPullback) {
+  console.log("Signal skipped: BTC is near a potential pullback zone.");
+  return null;
+}
+
 if ((btcTrend === "bullish" && signal.direction === "SHORT") ||
     (btcTrend === "bearish" && signal.direction === "LONG")) {
   console.log(`Signal skipped: BTC is ${btcTrend}, signal direction is ${signal.direction}`);
-  return null; // Skip if signal goes against BTC trend
+  return null;
 }
 
 const price = lastClose; 
