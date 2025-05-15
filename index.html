@@ -234,13 +234,6 @@ input:focus {
    <div id="lastTime" style="margin-bottom:10px; margin-top:10px;"></div>
     <div id="output">Loading...</div>
   </div>
-  
-<div id="tradeStats" style="margin-top: 10px; font-size: 14px;">
-  <strong>Today's Trade Stats</strong><br>
-  TP Hit: <span id="tpHit">0</span><br>
-  SL Hit: <span id="slHit">0</span><br>
-  Win Rate: <span id="winRate">0%</span>
-</div>
 
   <div id="premiumForm" style="display: none;">
     <h3>🌟 Unlock Premium Access 🌟</h3>
@@ -426,40 +419,6 @@ input:focus {
     }
   }, 10000);
 });
-
-async function updateTradeStats() {
-  const now = new Date();
-  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-
-  try {
-    const trades = await sendSignedRequest("/fapi/v1/userTrades", {
-      startTime: startOfDay,
-      timestamp: Date.now()
-    });
-
-    let tp = 0;
-    let sl = 0;
-
-    trades.forEach(t => {
-      const pnl = parseFloat(t.realizedPnl);
-      if (pnl > 0) tp++;
-      else if (pnl < 0) sl++;
-      // Neutral trades (pnl = 0) are ignored
-    });
-
-    const total = tp + sl;
-    const winRate = total ? ((tp / total) * 100).toFixed(1) : 0;
-
-    document.getElementById("tpHit").innerText = tp;
-    document.getElementById("slHit").innerText = sl;
-    document.getElementById("winRate").innerText = `${winRate}%`;
-  } catch (err) {
-    console.error("Trade stat error:", err);
-  }
-}
-
-updateTradeStats();
-setInterval(updateTradeStats, 60000);
 
 let scanInterval = null;
 let autoScanActive = false;
