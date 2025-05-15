@@ -235,9 +235,8 @@ input:focus {
     <div id="output">Loading...</div>
   </div>
   
-<div id="tradeStats" style="margin-top: 20px; padding: 10px; border: 1px solid #ccc; background: #f9f9f9; border-radius: 8px;">
-  <strong style="font-size: 16px;">Today’s Trade Stats</strong><br>
-  Total Trades: <span id="totalTrades">0</span><br>
+<div id="tradeStats" style="margin-top: 10px; font-size: 14px;">
+  <strong>Today's Trade Stats</strong><br>
   TP Hit: <span id="tpHit">0</span><br>
   SL Hit: <span id="slHit">0</span><br>
   Win Rate: <span id="winRate">0%</span>
@@ -428,47 +427,38 @@ input:focus {
   }, 10000);
 });
 
-  let tradeStats = {
-    total: 0,
-    tpHit: 0,
-    slHit: 0,
-    date: new Date().toDateString()
-  };
+async function updateTradeStats() {
+  const now = new Date();
+  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
 
-  function logTradeResult(result) {
-    const today = new Date().toDateString();
+  try {
+    const trades = await sendSignedRequest("/fapi/v1/userTrades", {
+      startTime: startOfDay,
+      timestamp: Date.now()
+    });
 
-    // Reset daily
-    if (tradeStats.date !== today) {
-      tradeStats = {
-        total: 0,
-        tpHit: 0,
-        slHit: 0,
-        date: today
-      };
-    }
+    let tp = 0;
+    let sl = 0;
 
-    tradeStats.total++;
-    if (result === 'tp') tradeStats.tpHit++;
-    if (result === 'sl') tradeStats.slHit++;
+    trades.forEach(t => {
+      if (t.orderType === "TAKE_PROFIT_MARKET") tp++;
+      else if (t.orderType === "STOP_MARKET") sl++;
+    });
 
-    updateTradeStatsUI();
+    const total = tp + sl;
+    const winRate = total ? ((tp / total) * 100).toFixed(1) : 0;
+
+    document.getElementById("tpHit").innerText = tp;
+    document.getElementById("slHit").innerText = sl;
+    document.getElementById("winRate").innerText = `${winRate}%`;
+  } catch (err) {
+    console.error("Trade stat error:", err);
   }
+}
 
-  function updateTradeStatsUI() {
-    const winRate = tradeStats.total
-      ? ((tradeStats.tpHit / tradeStats.total) * 100).toFixed(1)
-      : 0;
-
-    document.getElementById('totalTrades').innerText = tradeStats.total;
-    document.getElementById('tpHit').innerText = tradeStats.tpHit;
-    document.getElementById('slHit').innerText = tradeStats.slHit;
-    document.getElementById('winRate').innerText = `${winRate}%`;
-  }
-
-  logTradeResult('tp');
-  logTradeResult('sl');
-    
+updateTradeStats();
+setInterval(updateTradeStats, 60000); // refresh every 60 sec
+   
 let scanInterval = null;
 let autoScanActive = false;
     
