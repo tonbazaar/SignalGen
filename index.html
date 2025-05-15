@@ -234,6 +234,14 @@ input:focus {
    <div id="lastTime" style="margin-bottom:10px; margin-top:10px;"></div>
     <div id="output">Loading...</div>
   </div>
+  
+<div id="tradeStats" style="margin-top: 20px; padding: 10px; border: 1px solid #ccc; background: #f9f9f9; border-radius: 8px;">
+  <strong style="font-size: 16px;">Today’s Trade Stats</strong><br>
+  Total Trades: <span id="totalTrades">0</span><br>
+  TP Hit: <span id="tpHit">0</span><br>
+  SL Hit: <span id="slHit">0</span><br>
+  Win Rate: <span id="winRate">0%</span>
+</div>
 
   <div id="premiumForm" style="display: none;">
     <h3>🌟 Unlock Premium Access 🌟</h3>
@@ -420,6 +428,47 @@ input:focus {
   }, 10000);
 });
 
+  let tradeStats = {
+    total: 0,
+    tpHit: 0,
+    slHit: 0,
+    date: new Date().toDateString()
+  };
+
+  function logTradeResult(result) {
+    const today = new Date().toDateString();
+
+    // Reset daily
+    if (tradeStats.date !== today) {
+      tradeStats = {
+        total: 0,
+        tpHit: 0,
+        slHit: 0,
+        date: today
+      };
+    }
+
+    tradeStats.total++;
+    if (result === 'tp') tradeStats.tpHit++;
+    if (result === 'sl') tradeStats.slHit++;
+
+    updateTradeStatsUI();
+  }
+
+  function updateTradeStatsUI() {
+    const winRate = tradeStats.total
+      ? ((tradeStats.tpHit / tradeStats.total) * 100).toFixed(1)
+      : 0;
+
+    document.getElementById('totalTrades').innerText = tradeStats.total;
+    document.getElementById('tpHit').innerText = tradeStats.tpHit;
+    document.getElementById('slHit').innerText = tradeStats.slHit;
+    document.getElementById('winRate').innerText = `${winRate}%`;
+  }
+
+  logTradeResult('tp');
+  logTradeResult('sl');
+    
 let scanInterval = null;
 let autoScanActive = false;
     
