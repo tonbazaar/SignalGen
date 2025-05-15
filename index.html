@@ -866,13 +866,7 @@ async function sendLimit(symbol, side, qty, price, tp, sl, reduceOnly, pricePrec
   return Math.min(maxLeverage, 20);
 }
 
-  async function getQuantity(symbol, price, quantityPrecision) {
-  const usdt = window.env.TRADE_USDT; // USDT amount to use
-  const qty = usdt / parseFloat(price);
-  return parseFloat(qty).toFixed(quantityPrecision);
-    }
-
-async function getBTCIndicators() {
+  async function getBTCIndicators() {
   const res = await fetch("https://fapi.binance.com/fapi/v1/klines?symbol=BTCUSDT&interval=5m&limit=200");
   const data = await res.json();
 
@@ -884,12 +878,21 @@ async function getBTCIndicators() {
   const currentVolume = volumes[volumes.length - 1];
   const avgVolume = volumes.slice(-30).reduce((a, b) => a + b, 0) / 30;
 
+  const priceNow = closes[closes.length - 1];
+  const priceBefore = closes[closes.length - 6]; // 5 candles ago (~25min earlier)
+  const priceRising = priceNow > priceBefore;
+
+  let trend = "bearish";
+  if (ema50[ema50.length - 1] > ema200[ema200.length - 1] || priceRising) {
+    trend = "bullish";
+  }
+
   return {
     ema50: ema50[ema50.length - 1],
     ema200: ema200[ema200.length - 1],
     currentVolume,
     avgVolume,
-    trend: ema50[ema50.length - 1] > ema200[ema200.length - 1] ? "bullish" : "bearish"
+    trend
   };
 }
 
