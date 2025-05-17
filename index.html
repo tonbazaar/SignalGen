@@ -1040,11 +1040,29 @@ async function getTodayPnL() {
     showError("Failed to fetch PNL");
   }
 }
+    
+let timeOffset = 0;
 
+// Sync local time with Binance server
+async function syncServerTime() {
+  try {
+    const res = await fetch("https://fapi.binance.com/fapi/v1/time");
+    const data = await res.json();
+    const localTime = Date.now();
+    timeOffset = data.serverTime - localTime;
+    console.log("Time offset (ms):", timeOffset);
+  } catch (err) {
+    console.warn("Failed to sync Binance time.");
+  }
+}
+
+syncServerTime(); // Call once at load
+setInterval(syncServerTime, 10 * 60 * 1000); // Re-sync every 10 mins
+  
     async function sendSignedRequest(path, params = {}, method = "GET") {
   // Add recvWindow and timestamp
-  params.recvWindow = 5000; // 5 seconds tolerance
-  params.timestamp = Date.now();
+  params.recvWindow = 10000; // 5 seconds tolerance
+  params.timestamp = Date.now() + timeOffset;
 
   const query = new URLSearchParams(params).toString();
   const signature = CryptoJS.HmacSHA256(query, binanceSecret).toString(CryptoJS.enc.Hex);
