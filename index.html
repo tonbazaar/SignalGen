@@ -41,12 +41,12 @@ h2 {
 
 /* === Status Colors === */
 .long {
-  color: #16a34a; /* Green */
+  color: #22c55e; /* Green */
   font-weight: 600;
 }
 
 .short {
-  color: #dc2626; /* Red */
+  color: #ef4444; /* Red */
   font-weight: 600;
 }
 
@@ -55,11 +55,11 @@ h2 {
 }
 
 .profit {
-  color: #059669;
+  color: #10b981;
 }
 
 .loss {
-  color: #ef4444;
+  color: #f87171;
 }
 
 /* === Buttons === */
@@ -264,12 +264,12 @@ input:focus {
     <h1 id="rocketIcon"><span class="flying">🚀</span> Signal Generator</h1>
   <p class="tagline">Auto-execute Binance trades with premium crypto signals</p>
   <button id="scanButton" onclick="scan()">Scan Now</button>
-  <p id="waitingMessage" style="display: none; color: #f57c00;">Waiting for good market conditions...</p>
+  <p id="waitingMessage" style="display: none; color: #f59e0b;">Waiting for good market conditions...</p>
   <div id="error-message"></div>
   <div id="statsContainer" style="display: flex; align-items: center; gap: 5px; margin-top: 10px; background-color: #161b22;
   border: 1px solid #d1d5db; border-radius: 10px; padding: 10px;">
-  <span id="futuresBalance" style="font-weight: bold; color: #388e3c;">Balance: ...</span>
-  <span id="positionsCount" style="font-weight: bold; color: #4f46e5;">Open: ...</span>
+  <span id="futuresBalance" style="font-weight: bold; color: #16a34a;">Balance: ...</span>
+  <span id="positionsCount" style="font-weight: bold; color: #6366f1;">Open: ...</span>
   <span class="pnlh2" id="pnlValue" style="font-weight: bold;">PNL: ...</span>
   <span class="marketh2" id="marketStatus" style="font-weight: bold;">Market: ...</span>
    </div>
@@ -1058,13 +1058,13 @@ async function updateMarketCondition() {
   if (statusEl) {
     
     if ((marketCondition === "GOOD" && btcTrend === "bearish") || (marketCondition === "BAD" && btcTrend === "bullish")) {
-      const marketColor = marketCondition === "GOOD" ? "#388e3c" : "#d32f2f";
-      const trendColor = btcTrend === "bullish" ? "#388e3c" : "#d32f2f";
+      const marketColor = marketCondition === "GOOD" ? "#16a34a" : "#dc2626";
+      const trendColor = btcTrend === "bullish" ? "#16a34a" : "#dc2626";
 
       statusEl.innerHTML = `Market: <span style="color:${marketColor}">${marketCondition}</span> (<span style="color:${trendColor}">${btcTrend.toUpperCase()}</span>)`;
     } else {
       
-      const color = (marketCondition === "GOOD" && btcTrend === "bullish") ? "#388e3c" : "#d32f2f";
+      const color = (marketCondition === "GOOD" && btcTrend === "bullish") ? "#16a34a" : "#dc2626";
       statusEl.textContent = `Market: ${marketCondition} (${btcTrend.toUpperCase()})`;
       statusEl.style.color = color;
     }
