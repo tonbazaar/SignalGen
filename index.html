@@ -365,7 +365,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const count = await getOpenPositionsCount();
       const blocks = document.querySelectorAll(".signal-block");
 
-      if (count >= 20) {
+      if (count >= 10) {
         showError("Limit reached. Avoid overtrading.");
         scanButton.disabled = true;
         blocks.forEach((b) => (b.style.display = "none"));
