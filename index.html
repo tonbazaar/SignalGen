@@ -332,43 +332,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const box = document.getElementById("todayStatsBox");
     box.style.display = box.style.display === "none" ? "block" : "none";
   });
-
-  async function updateTradeStats() {
-    const startOfToday = new Date();
-    startOfToday.setUTCHours(0, 0, 0, 0);
-    const startTimestamp = startOfToday.getTime();
-
-    try {
-      const trades = await sendSignedRequest("/fapi/v1/userTrades", {
-        startTime: startTimestamp,
-        timestamp: Date.now() + timeOffset
-      });
-
-      let tp = 0;
-      let sl = 0;
-
-      trades.forEach(t => {
-        const pnl = parseFloat(t.realizedPnl);
-        if (pnl > 0.01) tp++;
-        else if (pnl < -0.01) sl++;
-      });
-
-      const total = tp + sl;
-      const winRate = total ? ((tp / total) * 100).toFixed(1) : 0;
-
-      document.getElementById("tpHit").innerText = tp;
-      document.getElementById("slHit").innerText = sl;
-      document.getElementById("winRate").innerText = `${winRate}%`;
-      document.getElementById("totalTrades").innerText = total;
-
-    } catch (err) {
-      console.error("Error updating trade stats:", err);
-    }
-  }
-
-  // Update every minute
-  updateTradeStats();
-  setInterval(updateTradeStats, 60000);
   
   // Premium Submission to Telegram
   if (submitBtn) {
@@ -1104,6 +1067,43 @@ async function getTodayPnL() {
     showError("Failed to fetch PNL");
   }
 }
+
+   async function updateTradeStats() {
+    const startOfToday = new Date();
+    startOfToday.setUTCHours(0, 0, 0, 0);
+    const startTimestamp = startOfToday.getTime();
+
+    try {
+      const trades = await sendSignedRequest("/fapi/v1/userTrades", {
+        startTime: startTimestamp,
+        timestamp: Date.now() + timeOffset
+      });
+
+      let tp = 0;
+      let sl = 0;
+
+      trades.forEach(t => {
+        const pnl = parseFloat(t.realizedPnl);
+        if (pnl > 0.01) tp++;
+        else if (pnl < -0.01) sl++;
+      });
+
+      const total = tp + sl;
+      const winRate = total ? ((tp / total) * 100).toFixed(1) : 0;
+
+      document.getElementById("tpHit").innerText = tp;
+      document.getElementById("slHit").innerText = sl;
+      document.getElementById("winRate").innerText = `${winRate}%`;
+      document.getElementById("totalTrades").innerText = total;
+
+    } catch (err) {
+      console.error("Error updating trade stats:", err);
+    }
+  }
+
+  // Update every minute
+  updateTradeStats();
+  setInterval(updateTradeStats, 60000); 
     
 let timeOffset = 0;
 
