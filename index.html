@@ -5,6 +5,7 @@
   <link rel="icon" type="image/png" href="/favicon_512x512.png">
   <meta name="description" content="Generate high-confidence crypto futures signals and auto-execute trades on Binance using our premium Signal Generator.">
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
 /* === Base Layout === */
 body {
@@ -152,31 +153,32 @@ input:focus {
   color: #dc2626;
   font-size: 14px;
 }
-   @keyframes shake {
-        0% { transform: rotate(0deg); }
-        25% { transform: rotate(10deg); }
-        50% { transform: rotate(-10deg); }
-        75% { transform: rotate(10deg); }
-        100% { transform: rotate(0deg); }
-    }
+   #premiumIcon,
+#statsIcon {
+  position: absolute;
+  top: 10px;
+  font-size: 22px;
+  padding: 10px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.2s ease, background-color 0.3s ease;
+}
 
-    #premiumIcon {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        font-size: 28px;
-        cursor: pointer;
-        animation: shake 1.5s infinite;
-    }
+#premiumIcon {
+  right: 10px;
+  color: #facc15; /* gold/yellow */
+}
 
-    #statsIcon {
-        position: absolute;
-        top: 10px;
-        right: 50px;
-        font-size: 28px;
-        cursor: pointer;
-        animation: shake 1.5s infinite;
-    }
+#statsIcon {
+  right: 50px;
+  color: #60a5fa; /* blue */
+}
+
+#premiumIcon:hover,
+#statsIcon:hover {
+  transform: scale(1.2);
+  background-color: rgba(255, 255, 255, 0.1); /* subtle glow on dark */
+}
 
     #premiumForm {
         display: none;
@@ -259,9 +261,9 @@ input:focus {
 
   <!-- Main Content (Hidden until password is correct) -->
   <div id="mainContent" style="display:none;">
-    <div id="premiumIcon">🏆</div>
-    <div id="statsIcon">📊</div>
-    <h1 id="rocketIcon"><span class="flying">🚀</span> Signal Generator</h1>
+  <i id="premiumIcon" class="fas fa-crown" title="Unlock Premium"></i>
+  <i id="statsIcon" class="fas fa-chart-bar" title="View Stats"></i>
+  <h1 id="rocketIcon"><span class="flying">🚀</span> Signal Generator</h1>
   <p class="tagline">Auto-execute Binance trades with premium crypto signals</p>
   <button id="scanButton" onclick="scan()">Scan Now</button>
   <p id="waitingMessage" style="display: none; color: #f59e0b;">Waiting for good market conditions...</p>
