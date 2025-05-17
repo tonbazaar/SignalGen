@@ -271,19 +271,28 @@ input:focus {
   <script src="env2.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/crypto-js.js"></script>
   <script>    
-// Function to show login form
+const sessionValidUntil = localStorage.getItem("sessionValidUntil");
+  const now = Date.now();
+
+  if (sessionValidUntil && now < parseInt(sessionValidUntil)) {
+    document.getElementById("loginForm").style.display = "none";
+    document.getElementById("mainContent").style.display = "block";
+    showError("Welcome back! You're still logged in.");
+  } else if (sessionValidUntil && now > parseInt(sessionValidUntil)) {
+    localStorage.removeItem("sessionValidUntil");
+    showError("Session expired. Please login again.");
+  }
+    
     function showLoginForm() {
       document.getElementById('signupForm').style.display = 'none';
       document.getElementById('loginForm').style.display = 'block';
     }
 
-    // Function to show signup form
     function showSignupForm() {
       document.getElementById('loginForm').style.display = 'none';
       document.getElementById('signupForm').style.display = 'block';
     }
 
-    // Handle sign up
     function signup() {
       const password = document.getElementById('newPassword').value;
       const chatId = document.getElementById('chatId').value;
@@ -295,18 +304,15 @@ input:focus {
         return;
       }
 
-      // Store user details in localStorage
       localStorage.setItem('password', password);
       localStorage.setItem('chatId', chatId);
       localStorage.setItem('binanceApi', binanceApi);
       localStorage.setItem('binanceSecret', binanceSecret);
 
-      // Redirect to login form
       showLoginForm();
       showError('Sign up successful! You can now login.');
     }
 
-    // Handle login
     function login() {
       const password = document.getElementById('password').value;
       const storedPassword = localStorage.getItem('password');
@@ -324,17 +330,6 @@ input:focus {
         document.getElementById('loginError').textContent = 'Incorrect password!';
       }
     }
-
-window.addEventListener("DOMContentLoaded", () => {
-  const sessionValidUntil = localStorage.getItem("sessionValidUntil");
-  const now = Date.now();
-
-  if (sessionValidUntil && now < parseInt(sessionValidUntil)) {
-    document.getElementById("loginForm").style.display = "none";
-    document.getElementById("mainContent").style.display = "block";
-    showError("Welcome back! You're still logged in.");
-  }
-});
 
     if (sessionValidUntil && now > parseInt(sessionValidUntil)) {
   localStorage.removeItem("sessionValidUntil");
