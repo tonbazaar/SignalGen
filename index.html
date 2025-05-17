@@ -8,8 +8,8 @@
   <style>
 /* === Base Layout === */
 body {
-  background-color: #0d1117;
-  color: #c9d1d9;
+  background-color: #f5f7fa;
+  color: #1e2022;
   font-family: 'Inter', 'Segoe UI', sans-serif;
   margin: 0;
   padding: 20px;
@@ -18,7 +18,7 @@ body {
 
 /* === Headings === */
 h2 {
-  color: #f0f6fc;
+  color: #1e2022;
   font-size: 24px;
   font-weight: 600;
   margin-bottom: 15px;
@@ -26,47 +26,47 @@ h2 {
 
 /* === Signal Card === */
 .signal-block {
-  background-color: #161b22;
-  border: 1px solid #30363d;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
   border-radius: 12px;
   padding: 20px;
   margin-bottom: 20px;
-  box-shadow: 0 1px 6px rgba(255, 255, 255, 0.05);
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.05);
   transition: box-shadow 0.2s ease;
 }
 
 .signal-block:hover {
-  box-shadow: 0 4px 16px rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
 }
 
 /* === Status Colors === */
 .long {
-  color: #22c55e; /* Green */
+  color: #16a34a; /* Green */
   font-weight: 600;
 }
 
 .short {
-  color: #ef4444; /* Red */
+  color: #dc2626; /* Red */
   font-weight: 600;
 }
 
 .neutral {
-  color: #9ca3af;
+  color: #6b7280;
 }
 
 .profit {
-  color: #10b981;
+  color: #059669;
 }
 
 .loss {
-  color: #f87171;
+  color: #ef4444;
 }
 
 /* === Buttons === */
 button,
 button[type="submit"],
 .trade-btn {
-  background-color: #facc15; /* Binance Yellow */
+  background-color: #fcd34d; /* Binance Yellow */
   color: #000000;
   border: none;
   padding: 10px 20px;
@@ -79,25 +79,23 @@ button[type="submit"],
 
 button:hover,
 .trade-btn:hover {
-  background-color: #eab308;
+  background-color: #fbbf24;
 }
-
-/* === Tagline === */
-.tagline {
+  .tagline {
   font-size: 15px;
-  color: #9ca3af;
+  color: #6b7280;
   margin-bottom: 20px;
 }
-
+ 
 /* === Form Styling === */
 .form-container {
   max-width: 420px;
   margin: 30px auto;
   padding: 24px;
-  background-color: #161b22;
-  border: 1px solid #30363d;
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(255, 255, 255, 0.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   text-align: center;
 }
 
@@ -107,10 +105,11 @@ input[type="password"] {
   width: 100%;
   padding: 12px;
   margin: 12px 0;
-  border: 1px solid #30363d;
+  border: 1px solid #d1d5db;
   border-radius: 8px;
-  background-color: #0d1117;
-  color: #f0f6fc;
+  box-sizing: border-box;
+  background-color: #f9fafb;
+  color: #111827;
   font-size: 15px;
   outline: none;
   transition: border-color 0.2s;
@@ -122,85 +121,76 @@ input:focus {
 
 /* === Error Text === */
 .error {
-  color: #ef4444;
+  color: #dc2626;
   font-size: 14px;
 }
+   @keyframes shake {
+        0% { transform: rotate(0deg); }
+        25% { transform: rotate(10deg); }
+        50% { transform: rotate(-10deg); }
+        75% { transform: rotate(10deg); }
+        100% { transform: rotate(0deg); }
+    }
 
-/* === Premium Icon Animation === */
-@keyframes shake {
-  0% { transform: rotate(0deg); }
-  25% { transform: rotate(10deg); }
-  50% { transform: rotate(-10deg); }
-  75% { transform: rotate(10deg); }
-  100% { transform: rotate(0deg); }
-}
+    #premiumIcon {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        font-size: 28px;
+        cursor: pointer;
+        animation: shake 1.5s infinite;
+    }
 
-#premiumIcon {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  font-size: 28px;
-  cursor: pointer;
-  animation: shake 1.5s infinite;
-  color: #facc15;
-}
+    #premiumForm {
+        display: none;
+        border: 2px solid #ffd700;
+        border-radius: 12px;
+        padding: 15px;
+        background-color: #fffbea;
+        margin-top: 20px;
+        text-align: center;
+        max-width: 300px;
+        margin-left: auto;
+        margin-right: auto;
+    }
 
-/* === Premium Form === */
-#premiumForm {
-  display: none;
-  border: 2px solid #facc15;
-  border-radius: 12px;
-  padding: 15px;
-  background-color: #1f2937;
-  margin-top: 20px;
-  text-align: center;
-  max-width: 300px;
-  margin-left: auto;
-  margin-right: auto;
-  color: #f9fafb;
-}
+    #premiumForm h3 {
+        margin-bottom: 10px;
+    }
 
-#premiumForm h3 {
-  margin-bottom: 10px;
-}
+    #premiumForm p {
+        margin: 5px 0;
+    }
 
-#premiumForm p {
-  margin: 5px 0;
-}
+    #premiumForm input {
+        width: 90%;
+        padding: 10px;
+        margin-top: 10px;
+        margin-bottom: 10px;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        font-size: 1em;
+    }
 
-#premiumForm input {
-  width: 90%;
-  padding: 10px;
-  margin-top: 10px;
-  margin-bottom: 10px;
-  border-radius: 8px;
-  border: 1px solid #374151;
-  background-color: #111827;
-  color: #f0f6fc;
-  font-size: 1em;
-}
+    #submitBtn {
+        background-color: #ffcc00;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: bold;
+        font-size: 1em;
+    }
 
-#submitBtn {
-  background-color: #facc15;
-  padding: 10px 20px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: bold;
-  font-size: 1em;
-  color: #000;
-}
+    #statusMsg {
+        margin-top: 10px;
+        font-size: 0.9em;
+        color: green;
+    }
 
-#statusMsg {
-  margin-top: 10px;
-  font-size: 0.9em;
-  color: #10b981;
-}
-
-/* === Hidden Scan Button === */
 #scanButton {
   display: none;
-}
+      }
 
   </style>
 </head>
