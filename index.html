@@ -307,12 +307,28 @@ input:focus {
     <div id="statusMsg" style="margin-top: 10px; font-size: 14px; color: green;"></div>
   </div>
   
-<div id="todayStatsBox" style="display: none; margin-top: 10px; border: 1px solid #ccc; border-radius: 8px; padding: 10px; background-color: #1f2937;">
-  <strong>📊 Today’s Trade Stats</strong><br>
-  Total Trades: <span id="totalTrades">0</span><br>
-  TP Hits: <span id="tpHit">0</span><br>
-  SL Hits: <span id="slHit">0</span><br>
-  Win Rate: <span id="winRate">0%</span>
+<div id="todayStatsBox" style="
+  display: none;
+  margin-top: 16px;
+  padding: 16px 20px;
+  border-radius: 12px;
+  background-color: #161b22;
+  border: 1px solid #30363d;
+  color: #e6edf3;
+  font-size: 15px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+  max-width: 320px;
+  margin-left: auto;
+  margin-right: auto;
+">
+  <div style="font-weight: 600; font-size: 16px; margin-bottom: 10px;">
+    <i class="fas fa-chart-line" style="color: #60a5fa; margin-right: 6px;"></i>
+    Today’s Trade Stats
+  </div>
+  <div>Total Trades: <strong id="totalTrades">0</strong></div>
+  <div>TP Hits: <strong id="tpHit">0</strong></div>
+  <div>SL Hits: <strong id="slHit">0</strong></div>
+  <div>Win Rate: <strong id="winRate">0%</strong></div>
 </div>
 
   <footer style="text-align:center; font-size:13px; color:#8b949e; margin-top:40px;">
