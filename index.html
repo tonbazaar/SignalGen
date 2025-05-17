@@ -270,14 +270,19 @@ input:focus {
   <script src="env.js"></script>
   <script src="env2.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/crypto-js.js"></script>
-  <script>    
+  <script>
 document.addEventListener("DOMContentLoaded", () => {
-  const sessionValidUntil = localStorage.getItem("sessionValidUntil");
-  const now = Date.now();
-
   const loginForm = document.getElementById("loginForm");
   const mainContent = document.getElementById("mainContent");
+  const sessionValidUntil = localStorage.getItem("sessionValidUntil");
+  const now = Date.now();
+  const premiumForm = document.getElementById("premiumForm");
+  const premiumIcon = document.getElementById("premiumIcon");
+  const scanButton = document.getElementById("scanButton");
+  const submitBtn = document.getElementById("submitBtn");
+  const statusMsg = document.getElementById("statusMsg");
 
+  // Session Login Logic
   if (sessionValidUntil && now < parseInt(sessionValidUntil)) {
     loginForm.style.display = "none";
     mainContent.style.display = "block";
@@ -288,87 +293,92 @@ document.addEventListener("DOMContentLoaded", () => {
     mainContent.style.display = "none";
   }
 
-  // Premium icon toggle
-  document.getElementById('premiumIcon').addEventListener('click', () => {
-    const form = document.getElementById('premiumForm');
-    form.style.display = form.style.display === 'none' ? 'block' : 'none';
+  // UID Logic
+  let uid = localStorage.getItem("uid");
+  if (!uid) {
+    uid = crypto.randomUUID();
+    localStorage.setItem("uid", uid);
+  }
+  document.getElementById("deviceCode").innerText = uid;
+
+  // Toggle Premium Form
+  premiumIcon.addEventListener("click", () => {
+    premiumForm.style.display = premiumForm.style.display === "none" ? "block" : "none";
   });
 
-  // Premium check
-  fetch('premium-uids.json')
-    .then(response => response.json())
-    .then(data => {
-      const uid = localStorage.getItem('uid');
-      const entry = data.premium.find(p => p.uid === uid);
+  // Premium Submission to Telegram
+  if (submitBtn) {
+    submitBtn.addEventListener("click", async () => {
+      const senderUid = document.getElementById("senderUidInput").value.trim();
+      if (!senderUid) {
+        statusMsg.innerText = "❗ Please enter your Binance UID.";
+        statusMsg.style.color = "red";
+        return;
+      }
+
+      const message = `🌟 *Premium Request* 🌟\nDevice Code: \`${uid}\`\nSender UID: ${senderUid}`;
+      const telegramUrl = `https://api.telegram.org/bot${window.env2.BOT_TOKEN2}/sendMessage?chat_id=${window.env2.CHAT_ID2}&text=${encodeURIComponent(message)}&parse_mode=Markdown`;
+
+      try {
+        await fetch(telegramUrl);
+        statusMsg.innerText = "✅ Submitted! Please wait for admin confirmation.";
+        statusMsg.style.color = "green";
+      } catch {
+        statusMsg.innerText = "❌ Submission failed. Please try again.";
+        statusMsg.style.color = "red";
+      }
+    });
+  }
+
+  // Premium Check
+  fetch("premium-uids.json")
+    .then((res) => res.json())
+    .then((data) => {
+      const entry = data.premium.find((p) => p.uid === uid);
+      let isPremium = false;
+
       if (entry) {
-        const now = new Date();
         const expiry = new Date(entry.expires);
-        isPremium = now < expiry;
+        isPremium = now < expiry.getTime();
+
         if (!isPremium) {
           showError("Your premium access has expired.");
         }
       } else {
-        isPremium = false;
-        console.log("UID not in premium list.");
+        showError("Premium access not found.");
       }
+
+      window.isPremium = isPremium;
       toggleScanButton();
     })
     .catch(() => {
       showError("Premium check failed.");
     });
 
-  // UID logic
-  let uid = localStorage.getItem('uid');
-  if (!uid) {
-    uid = crypto.randomUUID();
-    localStorage.setItem('uid', uid);
-  }
-  document.getElementById('deviceCode').innerText = uid;
-
-  // Premium submit
-  const submitBtn = document.getElementById("submitBtn");
-  if (submitBtn) {
-    submitBtn.addEventListener("click", async () => {
-      const senderUid = document.getElementById('senderUidInput').value.trim();
-      if (!senderUid) {
-        statusMsg.innerText = '❗ Please enter your Binance UID.';
-        statusMsg.style.color = 'red';
-        return;
-      }
-      const message = `🌟 *Premium Request* 🌟\nDevice Code: \`${uid}\`\nSender UID: ${senderUid}`;
-      const url = `https://api.telegram.org/bot${window.env2.BOT_TOKEN2}/sendMessage?chat_id=${window.env2.CHAT_ID2}&text=${encodeURIComponent(message)}&parse_mode=Markdown`;
-      try {
-        await fetch(url);
-        statusMsg.innerText = '✅ Submitted!';
-        statusMsg.style.color = 'green';
-      } catch {
-        statusMsg.innerText = '❌ Submission failed.';
-        statusMsg.style.color = 'red';
-      }
-    });
-  }
-
-  // Auto-disable scan if too many open positions
+  // Trade Count Watcher
   setInterval(async () => {
-    const count = await getOpenPositionsCount();
-    const scanBtn = document.getElementById("scanButton");
-    const blocks = document.querySelectorAll(".signal-block");
+    try {
+      const count = await getOpenPositionsCount();
+      const blocks = document.querySelectorAll(".signal-block");
 
-    if (count >= 20) {
-      scanBtn.disabled = true;
-      showError("Limit reached. Avoid overtrading.");
-      blocks.forEach(b => b.style.display = "none");
-    } else {
-      scanBtn.disabled = false;
-      blocks.forEach(b => b.style.display = "block");
+      if (count >= 20) {
+        showError("Limit reached. Avoid overtrading.");
+        scanButton.disabled = true;
+        blocks.forEach((b) => (b.style.display = "none"));
+      } else {
+        scanButton.disabled = false;
+        blocks.forEach((b) => (b.style.display = "block"));
+      }
+    } catch (err) {
+      console.error("Error checking positions:", err);
     }
   }, 10000);
 });
 
 // Login
 function login() {
-  const password = document.getElementById('password').value;
-  const storedPassword = localStorage.getItem('password');
+  const password = document.getElementById("password").value;
+  const storedPassword = localStorage.getItem("password");
   if (password === storedPassword) {
     const expiresAt = Date.now() + 2 * 60 * 60 * 1000;
     localStorage.setItem("sessionValidUntil", expiresAt);
@@ -382,120 +392,33 @@ function login() {
 
 // Signup
 function signup() {
-  const pw = document.getElementById('newPassword').value;
-  const chatId = document.getElementById('chatId').value;
-  const api = document.getElementById('binanceApi').value;
-  const secret = document.getElementById('binanceSecret').value;
+  const pw = document.getElementById("newPassword").value;
+  const chatId = document.getElementById("chatId").value;
+  const api = document.getElementById("binanceApi").value;
+  const secret = document.getElementById("binanceSecret").value;
+
   if (!pw || !chatId || !api || !secret) {
-    document.getElementById('signupError').textContent = 'All fields are required!';
+    document.getElementById("signupError").textContent = "All fields are required!";
     return;
   }
-  localStorage.setItem('password', pw);
-  localStorage.setItem('chatId', chatId);
-  localStorage.setItem('binanceApi', api);
-  localStorage.setItem('binanceSecret', secret);
+
+  localStorage.setItem("password", pw);
+  localStorage.setItem("chatId", chatId);
+  localStorage.setItem("binanceApi", api);
+  localStorage.setItem("binanceSecret", secret);
   showLoginForm();
   showError("Signup complete. Please login.");
 }
 
-    let isPremium = false;
-  
-    const premiumBotToken = window.env2.BOT_TOKEN2;
-    const premiumChatId = window.env2.CHAT_ID2;
-
-    // Generate or load device code
-    let uid = localStorage.getItem('uid');
-    if (!uid) {
-        uid = crypto.randomUUID();
-        localStorage.setItem('uid', uid);
-    }
-    document.getElementById('deviceCode').innerText = uid;
-
-        // Toggle premium form on icon click
-    document.getElementById('premiumIcon').addEventListener('click', () => {
-        const form = document.getElementById('premiumForm');
-        form.style.display = form.style.display === 'none' ? 'block' : 'none';
-    });
-
-    fetch('premium-uids.json')
-  .then(response => response.json())
-  .then(data => {
-    const entry = data.premium.find(p => p.uid === uid);
-
-    if (!entry) {
-      console.log("❌ UID not found in premium list.");
-      isPremium = false;
-    } else {
-      const now = new Date();
-      const expiry = new Date(entry.expires);
-
-      if (now < expiry) {
-        isPremium = true;
-        console.log("✅ Premium access active.");
-      } else {
-        isPremium = false;
-        console.log(`⛔ Premium expired on ${expiry.toISOString().split("T")[0]}`);
-        showError("Your premium access has expired. Please renew to continue.");
-      }
-    }
-
-    toggleScanButton();
-  })
-  .catch(() => {
-    console.log('⚠️ Could not load premium-uids.json');
-    showError("Premium check failed. Please check your connection.");
-  });
-
-    document.addEventListener("DOMContentLoaded", () => {
-  const scanButton = document.getElementById("scanButton");
-  const submitBtn = document.getElementById("submitBtn");
-  const statusMsg = document.getElementById("statusMsg");
-
-  // Safe: Attach premium submit button handler
-  if (submitBtn) {
-    submitBtn.addEventListener("click", async () => {
-      const senderUid = document.getElementById('senderUidInput').value.trim();
-      if (!senderUid) {
-        statusMsg.innerText = '❗ Please enter your Binance UID.';
-        statusMsg.style.color = 'red';
-        return;
-      }
-
-      const message = `🌟 *Premium Request* 🌟\nDevice Code: \`${uid}\`\nSender UID: ${senderUid}`;
-      const telegramUrl = `https://api.telegram.org/bot${premiumBotToken}/sendMessage?chat_id=${premiumChatId}&text=${encodeURIComponent(message)}&parse_mode=Markdown`;
-
-      try {
-        await fetch(telegramUrl);
-        statusMsg.innerText = '✅ Submitted! Please wait for admin confirmation.';
-        statusMsg.style.color = 'green';
-      } catch (error) {
-        statusMsg.innerText = '❌ Failed to submit. Please try again.';
-        statusMsg.style.color = 'red';
-      }
-    });
-  }
-
-  // Safe: Start interval after DOM is ready
-  setInterval(async () => {
-    try {
-      const count = await getOpenPositionsCount();
-      const signalBlocks = document.querySelectorAll(".signal-block");
-
-      if (!scanButton) return;
-
-      if (count >= 20) {
-        showError("Limit reached. Avoid overtrading.");
-        scanButton.disabled = true;
-        signalBlocks.forEach(block => block.style.display = "none");
-      } else {
-        scanButton.disabled = false;
-        signalBlocks.forEach(block => block.style.display = "block");
-      }
-    } catch (err) {
-      console.error("Error in scan button toggle:", err);
-    }
-  }, 10000);
-});
+// UI Toggling
+function showLoginForm() {
+  document.getElementById("signupForm").style.display = "none";
+  document.getElementById("loginForm").style.display = "block";
+}
+function showSignupForm() {
+  document.getElementById("loginForm").style.display = "none";
+  document.getElementById("signupForm").style.display = "block";
+}
 
 let scanInterval = null;
 let autoScanActive = false;
