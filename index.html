@@ -380,7 +380,7 @@ function login() {
   const password = document.getElementById("password").value;
   const storedPassword = localStorage.getItem("password");
   if (password === storedPassword) {
-    const expiresAt = Date.now() + 2 * 60 * 60 * 1000;
+    const expiresAt = Date.now() + 72 * 60 * 60 * 1000;
     localStorage.setItem("sessionValidUntil", expiresAt);
     document.getElementById("loginForm").style.display = "none";
     document.getElementById("mainContent").style.display = "block";
