@@ -141,6 +141,15 @@ input:focus {
         animation: shake 1.5s infinite;
     }
 
+    #statsIcon {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        font-size: 28px;
+        cursor: pointer;
+        animation: shake 1.5s infinite;
+    }
+
     #premiumForm {
         display: none;
         border: 2px solid #ffd700;
@@ -223,6 +232,7 @@ input:focus {
   <!-- Main Content (Hidden until password is correct) -->
   <div id="mainContent" style="display:none;">
     <div id="premiumIcon">🏆</div>
+    <div id="statsIcon">📊</div>
     <h1>🚀 Signal Generator</h1>
 <p class="tagline">Auto-execute Binance trades with premium crypto signals</p>
   <button id="scanButton" onclick="scan()">Scan Now</button>
@@ -310,6 +320,48 @@ document.addEventListener("DOMContentLoaded", () => {
     premiumForm.style.display = premiumForm.style.display === "none" ? "block" : "none";
   });
 
+  document.getElementById("statsIcon").addEventListener("click", () => {
+    const box = document.getElementById("todayStatsBox");
+    box.style.display = box.style.display === "none" ? "block" : "none";
+  });
+
+  async function updateTradeStats() {
+    const startOfToday = new Date();
+    startOfToday.setUTCHours(0, 0, 0, 0);
+    const startTimestamp = startOfToday.getTime();
+
+    try {
+      const trades = await sendSignedRequest("/fapi/v1/userTrades", {
+        startTime: startTimestamp,
+        timestamp: Date.now() + timeOffset
+      });
+
+      let tp = 0;
+      let sl = 0;
+
+      trades.forEach(t => {
+        const pnl = parseFloat(t.realizedPnl);
+        if (pnl > 0.01) tp++;
+        else if (pnl < -0.01) sl++;
+      });
+
+      const total = tp + sl;
+      const winRate = total ? ((tp / total) * 100).toFixed(1) : 0;
+
+      document.getElementById("tpHit").innerText = tp;
+      document.getElementById("slHit").innerText = sl;
+      document.getElementById("winRate").innerText = `${winRate}%`;
+      document.getElementById("totalTrades").innerText = total;
+
+    } catch (err) {
+      console.error("Error updating trade stats:", err);
+    }
+  }
+
+  // Update every minute
+  updateTradeStats();
+  setInterval(updateTradeStats, 60000);
+  
   // Premium Submission to Telegram
   if (submitBtn) {
     submitBtn.addEventListener("click", async () => {
