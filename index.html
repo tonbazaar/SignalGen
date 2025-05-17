@@ -311,16 +311,36 @@ input:focus {
       const password = document.getElementById('password').value;
       const storedPassword = localStorage.getItem('password');
 
-      if (password === storedPassword) {
-        document.getElementById("loginForm").style.display = "none";
-        document.getElementById("mainContent").style.display = "block";
-        showError('Login successful!');
-        
-      } else {
+        if (password === storedPassword) {
+  const twoHours = 2 * 60 * 60 * 1000;
+  const expiresAt = Date.now() + twoHours;
+  localStorage.setItem("sessionValidUntil", expiresAt); // <- Store expiry timestamp
+
+  document.getElementById("loginForm").style.display = "none";
+  document.getElementById("mainContent").style.display = "block";
+  showError('Login successful!');
+}
+     } else {
         document.getElementById('loginError').textContent = 'Incorrect password!';
       }
     }
 
+window.addEventListener("DOMContentLoaded", () => {
+  const sessionValidUntil = localStorage.getItem("sessionValidUntil");
+  const now = Date.now();
+
+  if (sessionValidUntil && now < parseInt(sessionValidUntil)) {
+    document.getElementById("loginForm").style.display = "none";
+    document.getElementById("mainContent").style.display = "block";
+    showError("Welcome back! You're still logged in.");
+  }
+});
+
+    if (sessionValidUntil && now > parseInt(sessionValidUntil)) {
+  localStorage.removeItem("sessionValidUntil");
+  showError("Session expired. Please login again.");
+}
+ 
     let isPremium = false;
   
     const premiumBotToken = window.env2.BOT_TOKEN2;
