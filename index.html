@@ -180,53 +180,6 @@ input:focus {
   background-color: rgba(255, 255, 255, 0.1); /* subtle glow on dark */
 }
 
-    #premiumForm {
-        display: none;
-        border: 2px solid #facc15;
-        border-radius: 12px;
-        padding: 15px;
-        background-color: #1f2937;
-        margin-top: 20px;
-        text-align: center;
-        max-width: 300px;
-        margin-left: auto;
-        margin-right: auto;
-    }
-
-    #premiumForm h3 {
-        margin-bottom: 10px;
-    }
-
-    #premiumForm p {
-        margin: 5px 0;
-    }
-
-    #premiumForm input {
-        width: 90%;
-        padding: 10px;
-        margin-top: 10px;
-        margin-bottom: 10px;
-        border-radius: 8px;
-        border: 1px solid #30363d;
-        font-size: 1em;
-    }
-
-    #submitBtn {
-        background-color: #facc15;
-        padding: 10px 20px;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-        font-weight: bold;
-        font-size: 1em;
-    }
-
-    #statusMsg {
-        margin-top: 10px;
-        font-size: 0.9em;
-        color: green;
-    }
-
 #scanButton {
   display: none;
       }
@@ -279,34 +232,64 @@ input:focus {
     <div id="output">Loading...</div>
   </div>
 
-  <div id="premiumForm" style="display: none;">
-    <h3>🌟 Unlock Premium Access 🌟</h3>
+  <div id="premiumForm" style="
+  display: none;
+  background-color: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 12px;
+  padding: 20px;
+  color: #e6edf3;
+  max-width: 360px;
+  margin: 24px auto;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
+  text-align: center;
+">
+
+  <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 16px;">
+    <i class="fas fa-crown" style="color: #facc15; margin-right: 6px;"></i> Unlock Premium Access
+  </h3>
+
+  <div style="text-align: left; font-size: 15px; margin-bottom: 16px; line-height: 1.6;">
     <p>✅ High-confidence crypto signals</p>
     <p>✅ Auto-execute Binance trades</p>
     <p>✅ Priority support & updates</p>
-    <p>⏰ <b>Premium Validity:</b> 30 days</p>
-    <p>💸 Send <b>$2</b> to Binance UID: <b>381708407</b></p>
-    <p>🔑 Your Premium Code:</p>
-    <p style="word-break: break-word; font-family: monospace; background-color: #1f2937; padding: 8px; border-radius: 6px;" id="deviceCode"></p>
-
-    <input type="text" id="senderUidInput" placeholder="Enter your Binance UID" 
-        style="width: 100%; padding: 10px; margin-top: 10px; border-radius: 8px; border: 1px solid #30363d;" />
-
-    <button id="submitBtn" 
-        style="margin-top: 10px; padding: 10px 20px; border: none; background-color: #facc15; border-radius: 8px; cursor: pointer;">
-        Submit
-    </button>
-
-    <p style="margin-top: 10px; font-size: 14px;">
-        💬 <a href="https://t.me/SUAIB235" target="_blank" 
-            style="text-decoration: none; color: #60a5fa;">
-            Premium lost? Contact admin
-        </a>
-    </p>
-
-    <div id="statusMsg" style="margin-top: 10px; font-size: 14px; color: green;"></div>
+    <p>⏰ <strong>Premium Validity:</strong> 30 days</p>
+    <p>💸 Send <strong>$2</strong> to Binance UID: <strong>381708407</strong></p>
+    <p>🔑 <strong>Your Premium Code:</strong></p>
+    <p id="deviceCode" style="
+      word-break: break-word;
+      font-family: monospace;
+      background-color: #1f2937;
+      border: 1px solid #30363d;
+      padding: 8px 12px;
+      border-radius: 6px;
+      color: #facc15;
+      font-size: 14px;
+    "></p>
   </div>
-  
+
+  <input type="text" id="senderUidInput" placeholder="Enter your Binance UID"
+    style="width: 100%; padding: 10px; margin-top: 4px; margin-bottom: 10px;
+           border-radius: 8px; border: 1px solid #30363d;
+           background-color: #0d1117; color: #e6edf3; font-size: 14px;" />
+
+  <button id="submitBtn"
+    style="margin-top: 8px; padding: 10px 20px; border: none;
+           background-color: #facc15; color: #0d1117;
+           border-radius: 8px; font-weight: 600; cursor: pointer;">
+    Submit
+  </button>
+
+  <p style="margin-top: 12px; font-size: 14px;">
+    💬 <a href="https://t.me/SUAIB235" target="_blank"
+         style="color: #60a5fa; text-decoration: none;">
+      Premium lost? Contact admin
+    </a>
+  </p>
+
+  <div id="statusMsg" style="margin-top: 10px; font-size: 14px; color: #22c55e;"></div>
+</div>
+
 <div id="todayStatsBox" style="
   display: none;
   margin-top: 16px;
