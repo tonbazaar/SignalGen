@@ -584,9 +584,9 @@ if (nearPullback) {
   return null;
 }
 
-if ((btcTrend === "bullish" && signal.direction === "SHORT") ||
-    (btcTrend === "bearish" && signal.direction === "LONG")) {
-  console.log(`Signal skipped: BTC is ${btcTrend}, signal direction is ${signal.direction}`);
+if ((btcTrend === "bullish" && signalType === "SHORT") ||
+    (btcTrend === "bearish" && signalType === "LONG")) {
+  console.log(`Signal skipped: BTC is ${btcTrend}, signal direction is ${signalType}`);
   return null;
 }
 
