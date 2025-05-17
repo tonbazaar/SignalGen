@@ -575,10 +575,10 @@ if (score >= 7) {
 }
 
 if (signalType && symbol) {
-        const now = Date.now();
-        const lastSignalTime = cooldowns[symbol] || 0;
-        if (now - lastSignalTime < COOLDOWN_MINUTES * 60 * 1000) return null;
-        cooldowns[symbol] = now;
+          const now = Date.now();
+          const lastSignalTime = cooldowns[symbol] || 0;
+          if (now - lastSignalTime < COOLDOWN_MINUTES * 60 * 1000) return null;
+          cooldowns[symbol] = now;
   
 if (marketCondition !== "GOOD") {
   console.log("Signal skipped: Market condition is not GOOD.");
