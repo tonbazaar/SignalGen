@@ -126,11 +126,10 @@ input:focus {
   border-color: #3b82f6;
 }
 
-#rocketIcon {
-  font-size: 48px;
-  animation: flyUp 2s infinite ease-in-out;
+.flying {
   display: inline-block;
   position: relative;
+  animation: flyUp 1.5s infinite ease-in-out;
 }
 
 @keyframes flyUp {
@@ -139,8 +138,8 @@ input:focus {
     opacity: 1;
   }
   50% {
-    top: -20px;
-    opacity: 0.7;
+    top: -10px;
+    opacity: 0.8;
   }
   100% {
     top: 0;
@@ -262,8 +261,8 @@ input:focus {
   <div id="mainContent" style="display:none;">
     <div id="premiumIcon">🏆</div>
     <div id="statsIcon">📊</div>
-    <h1 id="rocketIcon">🚀 Signal Generator</h1>
-<p class="tagline">Auto-execute Binance trades with premium crypto signals</p>
+    <h1 id="rocketIcon"><span class="flying">🚀</span> Signal Generator</h1>
+  <p class="tagline">Auto-execute Binance trades with premium crypto signals</p>
   <button id="scanButton" onclick="scan()">Scan Now</button>
   <p id="waitingMessage" style="display: none; color: #f57c00;">Waiting for good market conditions...</p>
   <div id="error-message"></div>
