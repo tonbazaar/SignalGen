@@ -423,7 +423,7 @@ input:focus {
 let scanInterval = null;
 let autoScanActive = false;
     
-    const cooldowns = {};
+    let cooldowns = JSON.parse(localStorage.getItem("cooldowns") || "{}");
     const COOLDOWN_MINUTES = 60;
     const output = document.getElementById("output");
     const lastTime = document.getElementById("lastTime");
@@ -568,11 +568,19 @@ if (score >= 7) {
   confidence = "High";
   reasons = shortScoreReasons;
 }
-        if (signalType && symbol) {
-          const now = Date.now();
-          const lastSignalTime = cooldowns[symbol] || 0;
-          if (now - lastSignalTime < COOLDOWN_MINUTES * 60 * 1000) return null;
-          cooldowns[symbol] = now;
+        
+if (signalType && symbol) {
+  const now = Date.now();
+  const lastSignalTime = cooldowns[symbol] || 0;
+
+  if (now - lastSignalTime < COOLDOWN_MINUTES * 60 * 1000) {
+    console.log(`Signal skipped due to cooldown for ${symbol}`);
+    return null;
+  }
+
+  cooldowns[symbol] = now;
+  localStorage.setItem("cooldowns", JSON.stringify(cooldowns));
+}
 
 if (marketCondition !== "GOOD") {
   console.log("Signal skipped: Market condition is not GOOD.");
