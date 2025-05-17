@@ -275,64 +275,129 @@ document.addEventListener("DOMContentLoaded", () => {
   const sessionValidUntil = localStorage.getItem("sessionValidUntil");
   const now = Date.now();
 
+  const loginForm = document.getElementById("loginForm");
+  const mainContent = document.getElementById("mainContent");
+
   if (sessionValidUntil && now < parseInt(sessionValidUntil)) {
-    document.getElementById("loginForm").style.display = "none";
-    document.getElementById("mainContent").style.display = "block";
+    loginForm.style.display = "none";
+    mainContent.style.display = "block";
     showError("Welcome back! You're still logged in.");
-  } else if (sessionValidUntil && now > parseInt(sessionValidUntil)) {
+  } else {
     localStorage.removeItem("sessionValidUntil");
-    showError("Session expired. Please login again.");
+    loginForm.style.display = "block";
+    mainContent.style.display = "none";
   }
-});
 
-    function showLoginForm() {
-      document.getElementById('signupForm').style.display = 'none';
-      document.getElementById('loginForm').style.display = 'block';
-    }
+  // Premium icon toggle
+  document.getElementById('premiumIcon').addEventListener('click', () => {
+    const form = document.getElementById('premiumForm');
+    form.style.display = form.style.display === 'none' ? 'block' : 'none';
+  });
 
-    function showSignupForm() {
-      document.getElementById('loginForm').style.display = 'none';
-      document.getElementById('signupForm').style.display = 'block';
-    }
+  // Premium check
+  fetch('premium-uids.json')
+    .then(response => response.json())
+    .then(data => {
+      const uid = localStorage.getItem('uid');
+      const entry = data.premium.find(p => p.uid === uid);
+      if (entry) {
+        const now = new Date();
+        const expiry = new Date(entry.expires);
+        isPremium = now < expiry;
+        if (!isPremium) {
+          showError("Your premium access has expired.");
+        }
+      } else {
+        isPremium = false;
+        console.log("UID not in premium list.");
+      }
+      toggleScanButton();
+    })
+    .catch(() => {
+      showError("Premium check failed.");
+    });
 
-    function signup() {
-      const password = document.getElementById('newPassword').value;
-      const chatId = document.getElementById('chatId').value;
-      const binanceApi = document.getElementById('binanceApi').value;
-      const binanceSecret = document.getElementById('binanceSecret').value;
+  // UID logic
+  let uid = localStorage.getItem('uid');
+  if (!uid) {
+    uid = crypto.randomUUID();
+    localStorage.setItem('uid', uid);
+  }
+  document.getElementById('deviceCode').innerText = uid;
 
-      if (!password || !chatId || !binanceApi || !binanceSecret) {
-        document.getElementById('signupError').textContent = 'All fields are required!';
+  // Premium submit
+  const submitBtn = document.getElementById("submitBtn");
+  if (submitBtn) {
+    submitBtn.addEventListener("click", async () => {
+      const senderUid = document.getElementById('senderUidInput').value.trim();
+      if (!senderUid) {
+        statusMsg.innerText = '❗ Please enter your Binance UID.';
+        statusMsg.style.color = 'red';
         return;
       }
-
-      localStorage.setItem('password', password);
-      localStorage.setItem('chatId', chatId);
-      localStorage.setItem('binanceApi', binanceApi);
-      localStorage.setItem('binanceSecret', binanceSecret);
-
-      showLoginForm();
-      showError('Sign up successful! You can now login.');
-    }
-
-    function login() {
-      const password = document.getElementById('password').value;
-      const storedPassword = localStorage.getItem('password');
-
-        if (password === storedPassword) {
-  const twoHours = 2 * 60 * 60 * 1000;
-  const expiresAt = Date.now() + twoHours;
-  localStorage.setItem("sessionValidUntil", expiresAt); // <- Store expiry timestamp
-
-  document.getElementById("loginForm").style.display = "none";
-  document.getElementById("mainContent").style.display = "block";
-  showError('Login successful!');
-}
-     } else {
-        document.getElementById('loginError').textContent = 'Incorrect password!';
+      const message = `🌟 *Premium Request* 🌟\nDevice Code: \`${uid}\`\nSender UID: ${senderUid}`;
+      const url = `https://api.telegram.org/bot${window.env2.BOT_TOKEN2}/sendMessage?chat_id=${window.env2.CHAT_ID2}&text=${encodeURIComponent(message)}&parse_mode=Markdown`;
+      try {
+        await fetch(url);
+        statusMsg.innerText = '✅ Submitted!';
+        statusMsg.style.color = 'green';
+      } catch {
+        statusMsg.innerText = '❌ Submission failed.';
+        statusMsg.style.color = 'red';
       }
+    });
+  }
+
+  // Auto-disable scan if too many open positions
+  setInterval(async () => {
+    const count = await getOpenPositionsCount();
+    const scanBtn = document.getElementById("scanButton");
+    const blocks = document.querySelectorAll(".signal-block");
+
+    if (count >= 20) {
+      scanBtn.disabled = true;
+      showError("Limit reached. Avoid overtrading.");
+      blocks.forEach(b => b.style.display = "none");
+    } else {
+      scanBtn.disabled = false;
+      blocks.forEach(b => b.style.display = "block");
     }
- 
+  }, 10000);
+});
+
+// Login
+function login() {
+  const password = document.getElementById('password').value;
+  const storedPassword = localStorage.getItem('password');
+  if (password === storedPassword) {
+    const expiresAt = Date.now() + 2 * 60 * 60 * 1000;
+    localStorage.setItem("sessionValidUntil", expiresAt);
+    document.getElementById("loginForm").style.display = "none";
+    document.getElementById("mainContent").style.display = "block";
+    showError("Login successful!");
+  } else {
+    document.getElementById("loginError").textContent = "Incorrect password!";
+  }
+}
+
+// Signup
+function signup() {
+  const pw = document.getElementById('newPassword').value;
+  const chatId = document.getElementById('chatId').value;
+  const api = document.getElementById('binanceApi').value;
+  const secret = document.getElementById('binanceSecret').value;
+  if (!pw || !chatId || !api || !secret) {
+    document.getElementById('signupError').textContent = 'All fields are required!';
+    return;
+  }
+  localStorage.setItem('password', pw);
+  localStorage.setItem('chatId', chatId);
+  localStorage.setItem('binanceApi', api);
+  localStorage.setItem('binanceSecret', secret);
+  showLoginForm();
+  showError("Signup complete. Please login.");
+}
+
     let isPremium = false;
   
     const premiumBotToken = window.env2.BOT_TOKEN2;
