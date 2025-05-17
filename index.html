@@ -324,14 +324,69 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("deviceCode").innerText = uid;
 
   // Toggle Premium Form
-  premiumIcon.addEventListener("click", () => {
-    premiumForm.style.display = premiumForm.style.display === "none" ? "block" : "none";
-  });
+premiumIcon.addEventListener("click", () => {
+  const premiumForm = document.getElementById("premiumForm");
+  const statsBox = document.getElementById("todayStatsBox");
 
-  document.getElementById("statsIcon").addEventListener("click", () => {
-    const box = document.getElementById("todayStatsBox");
-    box.style.display = box.style.display === "none" ? "block" : "none";
-  });
+  // Close stats box if it's open
+  if (statsBox && statsBox.style.display === "block") {
+    statsBox.style.display = "none";
+  }
+
+  // Toggle premium form
+  premiumForm.style.display = premiumForm.style.display === "none" ? "block" : "none";
+});
+
+// Toggle Stats Box
+statsIcon.addEventListener("click", () => {
+  const statsBox = document.getElementById("todayStatsBox");
+  const premiumForm = document.getElementById("premiumForm");
+
+  // Close premium form if it's open
+  if (premiumForm && premiumForm.style.display === "block") {
+    premiumForm.style.display = "none";
+  }
+
+  // Toggle stats box
+  statsBox.style.display = statsBox.style.display === "none" ? "block" : "none";
+});
+
+async function updateTradeStats() {
+    const startOfToday = new Date();
+    startOfToday.setUTCHours(0, 0, 0, 0);
+    const startTimestamp = startOfToday.getTime();
+
+    try {
+      const trades = await sendSignedRequest("/fapi/v1/userTrades", {
+        startTime: startTimestamp,
+        timestamp: Date.now() + timeOffset
+      });
+
+      let tp = 0;
+      let sl = 0;
+
+      trades.forEach(t => {
+        const pnl = parseFloat(t.realizedPnl);
+        if (pnl > 0.01) tp++;
+        else if (pnl < -0.01) sl++;
+      });
+
+      const total = tp + sl;
+      const winRate = total ? ((tp / total) * 100).toFixed(1) : 0;
+
+      document.getElementById("tpHit").innerText = tp;
+      document.getElementById("slHit").innerText = sl;
+      document.getElementById("winRate").innerText = `${winRate}%`;
+      document.getElementById("totalTrades").innerText = total;
+
+    } catch (err) {
+      console.error("Error updating trade stats:", err);
+    }
+  }
+
+  // Update every minute
+  updateTradeStats();
+  setInterval(updateTradeStats, 60000);
   
   // Premium Submission to Telegram
   if (submitBtn) {
@@ -1066,44 +1121,7 @@ async function getTodayPnL() {
     console.error("Error fetching today's PnL:", error);
     showError("Failed to fetch PNL");
   }
-}
-
-   async function updateTradeStats() {
-    const startOfToday = new Date();
-    startOfToday.setUTCHours(0, 0, 0, 0);
-    const startTimestamp = startOfToday.getTime();
-
-    try {
-      const trades = await sendSignedRequest("/fapi/v1/userTrades", {
-        startTime: startTimestamp,
-        timestamp: Date.now() + timeOffset
-      });
-
-      let tp = 0;
-      let sl = 0;
-
-      trades.forEach(t => {
-        const pnl = parseFloat(t.realizedPnl);
-        if (pnl > 0.01) tp++;
-        else if (pnl < -0.01) sl++;
-      });
-
-      const total = tp + sl;
-      const winRate = total ? ((tp / total) * 100).toFixed(1) : 0;
-
-      document.getElementById("tpHit").innerText = tp;
-      document.getElementById("slHit").innerText = sl;
-      document.getElementById("winRate").innerText = `${winRate}%`;
-      document.getElementById("totalTrades").innerText = total;
-
-    } catch (err) {
-      console.error("Error updating trade stats:", err);
-    }
-  }
-
-  // Update every minute
-  updateTradeStats();
-  setInterval(updateTradeStats, 60000); 
+} 
     
 let timeOffset = 0;
 
