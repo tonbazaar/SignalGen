@@ -1143,10 +1143,12 @@ async function updateMarketCondition() {
   console.log(`Near Pullback: ${nearPullback}`);
 
   const pullbackEl = document.getElementById("pullbackStatus");
-if (pullbackEl) {
+  if (pullbackEl) {
   const valueEl = pullbackEl.querySelector(".value");
-  valueEl.textContent = nearPullback ? "true" : "false";
-  pullbackEl.style.color = nearPullback ? "#f97316" : "#9ca3af"; // Orange for true, Gray for false
+  const isRisky = nearPullback;
+
+  valueEl.textContent = isRisky ? "true" : "false";
+  pullbackEl.style.color = isRisky ? "#f97316" : "#22c55e"; // Orange for risky, Green for normal
 }
 
   const statusEl = document.getElementById("marketStatus");
