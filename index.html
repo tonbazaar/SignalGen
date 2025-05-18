@@ -495,10 +495,16 @@ async function updateTradeStats() {
         const expiry = new Date(entry.expires);
         isPremium = now < expiry.getTime();
 
-        if (!isPremium) {
-          showError("Your premium access has expired.");
-        }
-      } else {
+          if (isPremium) {
+    const nowDate = new Date();
+    const daysLeft = Math.max(0, Math.ceil((expiry - nowDate) / (1000 * 60 * 60 * 24)));
+    window.premiumStatus = {
+      uid: entry.uid,
+      daysLeft,
+      expiresOn: expiry.toDateString()
+    };
+  }
+    } else {
         showError("Premium access not found.");
       }
 
