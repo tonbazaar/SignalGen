@@ -1169,7 +1169,7 @@ function toggleScanButton() {
 
  window.onload = async () => {
   const balance = await getFuturesBalance();
-  document.getElementById("futuresBalance").textContent = `Balance: $${balance}`;
+  document.getElementById("futuresBalance").textContent = ` $${balance}`;
 
   const positionCount = await getOpenPositionsCount();
   document.getElementById("positionsCount").textContent = `Open: ${positionCount}`;
@@ -1288,7 +1288,7 @@ function showError(msg) {
     async function refreshStatsAndMarket() {
   try {
     const balance = await getFuturesBalance();
-    document.getElementById("futuresBalance").textContent = `Balance: $${balance}`;
+    document.getElementById("futuresBalance").textContent = ` $${balance}`;
 
     const positionCount = await getOpenPositionsCount();
     document.getElementById("positionsCount").textContent = `Open: ${positionCount}`;
