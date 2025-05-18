@@ -355,6 +355,22 @@ a:hover {
   <div>Win Rate: <strong id="winRate">0%</strong></div>
 </div>
 
+<div id="alertBox" style="
+  display: none;
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background-color: #facc15; /* yellow */
+  color: #1c1917;
+  padding: 10px 16px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  font-weight: bold;
+  z-index: 9999;
+">
+  Near Pullback Detected
+</div>
+ 
   <footer style="text-align:center; font-size:13px; color:#8b949e; margin-top:40px;">
   © 2025 SignalGenerator.store — Built for Binance Futures Trading
 </footer>
@@ -1134,8 +1150,18 @@ async function updateMarketCondition() {
   marketCondition = (trendOkay && noVolumeSpike) ? "GOOD" : "BAD";
   btcTrend = trend;
 
-  nearPullback = emaGap > 0.01;
-  console.log(`Near Pullback: ${nearPullback}`);
+  let nearPullback = emaGap > 0.01;
+console.log(`Near Pullback: ${nearPullback}`);
+
+if (nearPullback) {
+  const alertBox = document.getElementById("alertBox");
+  alertBox.style.display = "block";
+
+  // Auto-hide after 3 seconds
+  setTimeout(() => {
+    alertBox.style.display = "none";
+  }, 3000);
+}
 
   const statusEl = document.getElementById("marketStatus");
   if (statusEl) {
