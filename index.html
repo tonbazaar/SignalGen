@@ -380,29 +380,35 @@ document.addEventListener("DOMContentLoaded", () => {
   // Toggle Premium Form
 premiumIcon.addEventListener("click", () => {
   const premiumForm = document.getElementById("premiumForm");
+  const premiumBox = document.getElementById("premiumStatusBox");
   const statsBox = document.getElementById("todayStatsBox");
 
-  // Close stats box if it's open
+  // Close other box
   if (statsBox && statsBox.style.display === "block") {
     statsBox.style.display = "none";
   }
 
-  // Toggle premium form
-  premiumForm.style.display = premiumForm.style.display === "none" ? "block" : "none";
-});
-
-// Toggle Stats Box
-statsIcon.addEventListener("click", () => {
-  const statsBox = document.getElementById("todayStatsBox");
-  const premiumForm = document.getElementById("premiumForm");
-
-  // Close premium form if it's open
-  if (premiumForm && premiumForm.style.display === "block") {
+  // Toggle UI based on premium status
+  if (window.isPremium && window.premiumStatus) {
+    // Show premium info box
+    const { daysLeft, expiresOn } = window.premiumStatus;
+    premiumBox.innerHTML = `
+      <div style="margin-bottom: 8px;"><strong style="color: #22c55e;">✅ Premium Access</strong></div>
+      <div>🗓️ <strong>${daysLeft} days</strong> remaining</div>
+      <div>📅 Expires: ${expiresOn}</div>
+    `;
+    premiumBox.style.display = "block";
     premiumForm.style.display = "none";
-  }
 
-  // Toggle stats box
-  statsBox.style.display = statsBox.style.display === "none" ? "block" : "none";
+    // Auto-hide after 5 seconds
+    setTimeout(() => {
+      premiumBox.style.display = "none";
+    }, 5000);
+  } else {
+    // Show form for non-premium
+    premiumForm.style.display = "block";
+    premiumBox.style.display = "none";
+  }
 });
 
 async function updateTradeStats() {
