@@ -230,24 +230,35 @@ a:hover {
   <button id="scanButton" onclick="scan()">Scan Now</button>
   <p id="waitingMessage" style="display: none; color: #f59e0b;">Waiting for good market conditions...</p>
   <div id="error-message"></div>
-  <div id="statsContainer" style="display: flex; align-items: center; gap: 5px; margin-top: 10px; background-color: #161b22;
-  border: 1px solid #30363d; border-radius: 10px; padding: 10px;">
-<span id="futuresBalance" style="font-weight: bold; color: #16a34a;">
-  <i class="fas fa-wallet"></i> ...
-</span>
+  <div id="statsContainer" style="
+  display: flex; 
+  flex-wrap: wrap;
+  justify-content: space-between; 
+  gap: 10px; 
+  margin-top: 15px; 
+  background-color: #161b22;
+  border: 1px solid #30363d; 
+  border-radius: 12px; 
+  padding: 12px;
+  font-size: 16px;
+">
+  <span id="futuresBalance" style="font-weight: bold; color: #16a34a; display: flex; align-items: center; gap: 6px;">
+    <i class="fas fa-wallet"></i> <span class="value">...</span>
+  </span>
 
-<span id="positionsCount" style="font-weight: bold; color: #6366f1;">
-  <i class="fas fa-chart-line"></i> ...
-</span>
+  <span id="positionsCount" style="font-weight: bold; color: #6366f1; display: flex; align-items: center; gap: 6px;">
+    <i class="fas fa-chart-line"></i> <span class="value">...</span>
+  </span>
 
-<span class="pnlh2" id="pnlValue" style="font-weight: bold;">
-  <i class="fas fa-dollar-sign"></i> ...
-</span>
+  <span id="pnlValue" style="font-weight: bold; color: #f87171; display: flex; align-items: center; gap: 6px;">
+    <i class="fas fa-dollar-sign"></i> <span class="value">...</span>
+  </span>
 
-<span class="marketh2" id="marketStatus" style="font-weight: bold;">
-  <i class="fas fa-signal"></i> ...
-</span>
-   </div>
+  <span id="marketStatus" style="font-weight: bold; color: #10b981; display: flex; align-items: center; gap: 6px;">
+    <i class="fas fa-signal"></i> <span class="value">...</span>
+  </span>
+</div>
+
    <div id="lastTime" style="margin-bottom:10px; margin-top:10px;"></div>
     <div id="output">Loading...</div>
   </div>
