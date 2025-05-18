@@ -560,7 +560,6 @@ async function updateTradeStats() {
       const blocks = document.querySelectorAll(".signal-block");
 
       if (count >= 10) {
-        console.log("Limit reached. Avoid overtrading.");
         scanButton.disabled = true;
         blocks.forEach((b) => (b.style.display = "none"));
       } else {
