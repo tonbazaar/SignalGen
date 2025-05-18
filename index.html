@@ -1139,17 +1139,16 @@ async function updateMarketCondition() {
   marketCondition = (trendOkay && noVolumeSpike) ? "GOOD" : "BAD";
   btcTrend = trend;
 
-  nearPullback = emaGap < 0.01;
+  nearPullback = emaGap > 0.01;
   console.log(`Near Pullback: ${nearPullback}`);
 
   const pullbackEl = document.getElementById("pullbackStatus");
 if (pullbackEl) {
   const valueEl = pullbackEl.querySelector(".value");
-  const label = nearPullback ? "Pullback Detected" : "No Pullback";
-  const color = nearPullback ? "#f97316" : "#22c55e";
+  const isRisky = nearPullback;
 
-  valueEl.textContent = label;
-  pullbackEl.style.color = color;
+  valueEl.textContent = isRisky ? "true" : "false";
+  pullbackEl.style.color = isRisky ? "#f97316" : "#22c55e"; // Orange for risky, Green for normal
 }
 
   const statusEl = document.getElementById("marketStatus");
