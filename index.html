@@ -1148,7 +1148,7 @@ async function updateMarketCondition() {
       } else {
       
       const color = (marketCondition === "GOOD" && btcTrend === "bullish") ? "#16a34a" : "#dc2626";
-      statusEl.innerHTML = `<i class="fas fa-signal"></i> ${marketCondition} (${btcTrend.toUpperCase()})`;
+      statusEl.innerHTML = `<i class="fas fa-signal"></i> ${marketCondition} ${btcTrend.toUpperCase()}`;
       statusEl.style.color = color;
     }
   }
