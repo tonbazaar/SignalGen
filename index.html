@@ -778,8 +778,8 @@ if (nearPullback) {
   return null;
 }
 
-if ((btcTrend === "bullish" && signalType === "SHORT") ||
-    (btcTrend === "bearish" && signalType === "LONG")) {
+if ((btcTrend === "Uptrend" && signalType === "SHORT") ||
+    (btcTrend === "Downtrend" && signalType === "LONG")) {
   console.log(`Signal skipped: BTC is ${btcTrend}, signal direction is ${signalType}`);
   return null;
 }
@@ -1089,9 +1089,9 @@ async function getBTCIndicators() {
   const priceBefore = closes[closes.length - 6]; // ~25 minutes ago
   const priceRising = priceNow > priceBefore;
 
-  let trend = "bearish";
+  let trend = "Downtrend";
   if (ema50[ema50.length - 1] > ema200[ema200.length - 1] && priceRising) {
-    trend = "bullish";
+    trend = "Uptrend";
   }
 
   // Debug output
@@ -1121,7 +1121,7 @@ function getEMA(prices, period) {
 }
 
 let marketCondition = "Volatile";
-let btcTrend = "bearish";
+let btcTrend = "Downtrend";
 let nearPullback = false;
 
 async function updateMarketCondition() {
@@ -1140,14 +1140,14 @@ async function updateMarketCondition() {
   const statusEl = document.getElementById("marketStatus");
   if (statusEl) {
     
-    if ((marketCondition === "Healthy" && btcTrend === "bearish") || (marketCondition === "Volatile" && btcTrend === "bullish")) {
+    if ((marketCondition === "Healthy" && btcTrend === "Downtrend") || (marketCondition === "Volatile" && btcTrend === "Uptrend")) {
       const marketColor = marketCondition === "Healthy" ? "#22c55e" : "#dc2626";
-      const trendColor = btcTrend === "bullish" ? "#22c55e" : "#dc2626";
+      const trendColor = btcTrend === "Uptrend" ? "#22c55e" : "#dc2626";
 
       statusEl.innerHTML = `<i class="fas fa-signal"></i> <span style="color:${marketColor}">${marketCondition}</span> <span style="color:${trendColor}">${btcTrend.toUpperCase()}</span>`;
       } else {
       
-      const color = (marketCondition === "Healthy" && btcTrend === "bullish") ? "#22c55e" : "#dc2626";
+      const color = (marketCondition === "Healthy" && btcTrend === "Uptrend") ? "#22c55e" : "#dc2626";
       statusEl.innerHTML = `<i class="fas fa-signal"></i> ${marketCondition} ${btcTrend.toUpperCase()}`;
       statusEl.style.color = color;
     }
