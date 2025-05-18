@@ -56,11 +56,11 @@ h2 {
 }
 
 .profit {
-  color: #10b981;
+  color: #16a34a;
 }
 
 .loss {
-  color: #f87171;
+  color: #dc2626;
 }
 
 /* === Buttons === */
@@ -1219,15 +1219,19 @@ async function getTodayPnL() {
       .reduce((sum, entry) => sum + parseFloat(entry.income), 0);
 
     // Display
-    const pnlElement = document.getElementById("pnlValue");
-    const valueSpan = pnlElement.querySelector('.value');
-    pnlElement.innerHTML = `<i class="fas fa-dollar-sign"></i> ${todayPnl >= 0 ? '+' : ''}${todayPnl.toFixed(2)}`;
+const pnlElement = document.getElementById("pnlValue");
+const valueSpan = pnlElement.querySelector(".value");
 
-    pnlElement.className =
-      todayPnl > 0 ? 'profit' :
-      todayPnl < 0 ? 'loss' :
-      'neutral';
+// Update value
+valueSpan.textContent = `${todayPnl >= 0 ? '+' : ''}${todayPnl.toFixed(2)}`;
 
+// Remove old class and apply new one
+valueSpan.classList.remove("profit", "loss", "neutral");
+valueSpan.classList.add(
+  todayPnl > 0 ? "profit" :
+  todayPnl < 0 ? "loss" :
+  "neutral"
+);
     return todayPnl;
   } catch (error) {
     console.error("Error fetching today's PnL:", error);
