@@ -1215,7 +1215,7 @@ async function getTodayPnL() {
 
     // Display
     const pnlElement = document.getElementById("pnlValue");
-    pnlElement.textContent = `PNL: ${todayPnl >= 0 ? '+' : ''}${todayPnl.toFixed(2)}`;
+    pnlElement.innerHTML = `<i class="fas fa-dollar-sign"></i> ${todayPnl >= 0 ? '+' : ''}${todayPnl.toFixed(2)}`;
 
     pnlElement.className =
       todayPnl > 0 ? 'profit' :
