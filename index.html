@@ -215,24 +215,6 @@ a:hover {
     <p>Already have an account? <a href="#" onclick="showLoginForm()">Login</a></p>
   </div>
 
-  <div id="pullbackAlert" style="
-  display: none;
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  background-color: #f87171;
-  color: white;
-  padding: 12px 20px;
-  border-radius: 12px;
-  font-weight: 500;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-  z-index: 9999;
-  animation: fadeIn 0.4s ease-in-out;
-">
-  <i class="fas fa-exclamation-triangle" style="margin-right: 8px;"></i>
-  Near Pullback Detected!
-</div>
-
   <!-- Main Content (Hidden until password is correct) -->
   <div id="mainContent" style="display:none;">
   <i id="premiumIcon" class="fas fa-crown" title="Unlock Premium"></i>
@@ -1152,19 +1134,8 @@ async function updateMarketCondition() {
   marketCondition = (trendOkay && noVolumeSpike) ? "GOOD" : "BAD";
   btcTrend = trend;
 
-const nearPullback = emaGap > 0.01;
-console.log(`Near Pullback: ${nearPullback}`);
-
-const alertBox = document.getElementById("pullbackAlert");
-
-if (emaGap > 0.01) {
-  alertBox.style.display = "block";
-
-  // Auto-hide after 4 seconds
-  setTimeout(() => {
-    alertBox.style.display = "none";
-  }, 4000);
-}
+  nearPullback = emaGap > 0.01;
+  console.log(`Near Pullback: ${nearPullback}`);
 
   const statusEl = document.getElementById("marketStatus");
   if (statusEl) {
