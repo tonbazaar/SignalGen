@@ -390,37 +390,48 @@ statsIcon.addEventListener("click", () => {
 });
 
 async function updateTradeStats() {
-    const startOfToday = new Date();
-    startOfToday.setUTCHours(0, 0, 0, 0);
-    const startTimestamp = startOfToday.getTime();
+  const startOfToday = new Date();
+  startOfToday.setUTCHours(0, 0, 0, 0);
+  const startTimestamp = startOfToday.getTime();
 
-    try {
-      const trades = await sendSignedRequest("/fapi/v1/userTrades", {
-        startTime: startTimestamp,
-        timestamp: Date.now() + timeOffset
-      });
+  try {
+    const trades = await sendSignedRequest("/fapi/v1/userTrades", {
+      startTime: startTimestamp,
+      timestamp: Date.now() + timeOffset
+    });
 
-      let tp = 0;
-      let sl = 0;
+    const orderPnls = {};
 
-      trades.forEach(t => {
-        const pnl = parseFloat(t.realizedPnl);
-        if (pnl > 0.01) tp++;
-        else if (pnl < -0.01) sl++;
-      });
+    trades.forEach(t => {
+      const orderId = t.orderId;
+      const pnl = parseFloat(t.realizedPnl);
 
-      const total = tp + sl;
-      const winRate = total ? ((tp / total) * 100).toFixed(1) : 0;
+      if (!orderPnls[orderId]) {
+        orderPnls[orderId] = 0;
+      }
+      orderPnls[orderId] += pnl;
+    });
 
-      document.getElementById("tpHit").innerText = tp;
-      document.getElementById("slHit").innerText = sl;
-      document.getElementById("winRate").innerText = `${winRate}%`;
-      document.getElementById("totalTrades").innerText = total;
+    let tp = 0;
+    let sl = 0;
 
-    } catch (err) {
-      console.error("Error updating trade stats:", err);
-    }
+    Object.values(orderPnls).forEach(pnl => {
+      if (pnl > 0.5) tp++; // Adjust this threshold as needed
+      else if (pnl < -0.5) sl++;
+    });
+
+    const total = tp + sl;
+    const winRate = total ? ((tp / total) * 100).toFixed(1) : 0;
+
+    document.getElementById("tpHit").innerText = tp;
+    document.getElementById("slHit").innerText = sl;
+    document.getElementById("winRate").innerText = `${winRate}%`;
+    document.getElementById("totalTrades").innerText = total;
+
+  } catch (err) {
+    console.error("Error updating trade stats:", err);
   }
+}
 
   // Update every minute
   updateTradeStats();
