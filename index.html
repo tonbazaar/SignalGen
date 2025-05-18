@@ -559,7 +559,7 @@ async function updateTradeStats() {
       const count = await getOpenPositionsCount();
       const blocks = document.querySelectorAll(".signal-block");
 
-      if (count >= 10) {
+      if (count >= 3) {
         scanButton.disabled = true;
         blocks.forEach((b) => (b.style.display = "none"));
       } else {
