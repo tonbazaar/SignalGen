@@ -1220,6 +1220,7 @@ async function getTodayPnL() {
 
     // Display
     const pnlElement = document.getElementById("pnlValue");
+    const valueSpan = pnlElement.querySelector('.value');
     pnlElement.innerHTML = `<i class="fas fa-dollar-sign"></i> ${todayPnl >= 0 ? '+' : ''}${todayPnl.toFixed(2)}`;
 
     pnlElement.className =
