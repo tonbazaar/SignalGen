@@ -560,6 +560,7 @@ async function updateTradeStats() {
       const blocks = document.querySelectorAll(".signal-block");
 
       if (count >= 3) {
+        showError("Limit reached. Avoid overtrading.");
         scanButton.disabled = true;
         blocks.forEach((b) => (b.style.display = "none"));
       } else {
@@ -1190,7 +1191,7 @@ function toggleScanButton() {
   document.getElementById("futuresBalance").innerHTML = `<i class="fas fa-wallet"></i> ${balance}`;
 
   const positionCount = await getOpenPositionsCount();
-  document.getElementById("positionsCount").innerHTML = `<i class="fas fa-chart-line"></i> ${positionCount}/10`;
+  document.getElementById("positionsCount").innerHTML = `<i class="fas fa-chart-line"></i> ${positionCount}`;
 
   const pnl = await getTodayPnL();
   document.getElementById("todayPnl").innerHTML = `<i class="fas fa-dollar-sign"></i> ${pnl >= 0 ? "+" : ""}$${pnl.toFixed(2)}`;
@@ -1314,7 +1315,7 @@ function showError(msg) {
     document.getElementById("futuresBalance").innerHTML = `<i class="fas fa-wallet"></i> ${balance}`;
 
     const positionCount = await getOpenPositionsCount();
-    document.getElementById("positionsCount").innerHTML = `<i class="fas fa-chart-line"></i> ${positionCount}/10`;
+    document.getElementById("positionsCount").innerHTML = `<i class="fas fa-chart-line"></i> ${positionCount}`;
 
     const pnl = await getTodayPnL();
     document.getElementById("todayPnl").innerHTML = `<i class="fas fa-dollar-sign"></i> ${pnl >= 0 ? "+" : ""}$${pnl.toFixed(2)}`;
