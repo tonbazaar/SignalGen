@@ -1134,8 +1134,8 @@ async function updateMarketCondition() {
   marketCondition = (trendOkay && noVolumeSpike) ? "GOOD" : "BAD";
   btcTrend = trend;
 
- if nearPullback = emaGap > 0.01;
-  showError(`Near Pullback: ${nearPullback}`);
+  nearPullback = emaGap > 0.01;
+  console.log(`Near Pullback: ${nearPullback}`);
 
   const statusEl = document.getElementById("marketStatus");
   if (statusEl) {
