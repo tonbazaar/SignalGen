@@ -1138,7 +1138,6 @@ function getEMA(prices, period) {
 
 let marketCondition = "BAD";
 let btcTrend = "bearish";
-let nearPullback = false;
 
 async function updateMarketCondition() {
   const { ema50, ema200, currentVolume, avgVolume, trend } = await getBTCIndicators();
