@@ -360,19 +360,6 @@ a:hover {
   <div>Win Rate: <strong id="winRate">0%</strong></div>
 </div>
 
-  <div id="customLimitAlert" style="
-  display: none;
-  background-color: #f97316;
-  color: white;
-  padding: 12px;
-  border-radius: 8px;
-  margin-top: 10px;
-  text-align: center;
-  font-weight: bold;
-">
-  Limit reached. Avoid overtrading.
-</div>
-
   <footer style="text-align:center; font-size:13px; color:#8b949e; margin-top:40px;">
   © 2025 SignalGenerator.store — Built for Binance Futures Trading
 </footer>
@@ -567,39 +554,25 @@ async function updateTradeStats() {
     });
 
   // Trade Count Watcher
+  // Trade Count Watcher
   setInterval(async () => {
-  try {
-    const count = await getOpenPositionsCount();
-    const blocks = document.querySelectorAll(".signal-block");
+    try {
+      const count = await getOpenPositionsCount();
+      const blocks = document.querySelectorAll(".signal-block");
 
-    if (count >= 10) {
-      scanButton.disabled = true;
-      blocks.forEach(b => b.style.display = "none");
-
-      // Show custom alert only once
-      if (!limitAlertActive) {
-        showCustomLimitAlert(); // this shows the alert
-        limitAlertActive = true;
-
-        // Reset after 15s to allow next alert when count drops and returns to 10+
-        setTimeout(() => {
-          limitAlertActive = false;
-        }, 15000);
+      if (count >= 10) {
+        showError("Limit reached. Avoid overtrading.");
+        scanButton.disabled = true;
+        blocks.forEach((b) => (b.style.display = "none"));
+      } else {
+        scanButton.disabled = false;
+        blocks.forEach((b) => (b.style.display = "block"));
       }
-
-    } else {
-      scanButton.disabled = false;
-      blocks.forEach(b => b.style.display = "block");
-
-      // Reset alert state so it can trigger again next time count hits 10+
-      limitAlertActive = false;
+    } catch (err) {
+      console.error("Error checking positions:", err);
     }
-
-  } catch (err) {
-    console.error("Error checking positions:", err);
-  }
-}, 10000);
-  });
+  }, 10000);
+});
 
 // Login
 function login() {
@@ -1324,17 +1297,6 @@ setInterval(syncServerTime, 10 * 60 * 1000); // Re-sync every 10 mins
   });
 }
   
-function showCustomLimitAlert() {
-  const alertBox = document.getElementById("customLimitAlert");
-  if (!alertBox) return;
-
-  alertBox.style.display = "block";
-
-  setTimeout(() => {
-    alertBox.style.display = "none";
-  }, 15000); // Show for 15 seconds
-}
-  
 function showError(msg) {
   const box = document.createElement('div');
   box.textContent = msg;
@@ -1372,4 +1334,4 @@ window.onload = () => {
     
   </script>
 </body>
-  </html>
+</html>
