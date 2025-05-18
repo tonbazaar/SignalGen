@@ -400,24 +400,25 @@ async function updateTradeStats() {
       timestamp: Date.now() + timeOffset
     });
 
-    const orderPnls = {};
+    const tradeGroups = {};
 
     trades.forEach(t => {
-      const orderId = t.orderId;
+      const key = `${t.symbol}_${t.side}_${t.orderId}`;
       const pnl = parseFloat(t.realizedPnl);
 
-      if (!orderPnls[orderId]) {
-        orderPnls[orderId] = 0;
+      if (!tradeGroups[key]) {
+        tradeGroups[key] = 0;
       }
-      orderPnls[orderId] += pnl;
+      tradeGroups[key] += pnl;
     });
 
     let tp = 0;
     let sl = 0;
 
-    Object.values(orderPnls).forEach(pnl => {
-      if (pnl > 0.5) tp++; // Adjust this threshold as needed
-      else if (pnl < -0.5) sl++;
+    // Adjust thresholds to count more accurately
+    Object.values(tradeGroups).forEach(netPnl => {
+      if (netPnl > 0.1) tp++;
+      else if (netPnl < -0.1) sl++;
     });
 
     const total = tp + sl;
