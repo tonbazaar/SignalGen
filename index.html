@@ -390,27 +390,27 @@ premiumIcon.addEventListener("click", () => {
 
   // Toggle UI based on premium status
   if (window.isPremium && window.premiumStatus) {
-    // Show premium info box
-    const { daysLeft, expiresOn } = window.premiumStatus;
-    premiumBox.innerHTML = `
-      <div style="margin-bottom: 8px;"><strong style="color: #22c55e;">✅ Premium Access</strong></div>
-      <div>🗓️ <strong>${daysLeft} days</strong> remaining</div>
-      <div>📅 Expires: ${expiresOn}</div>
-    `;
-    premiumBox.style.display = "block";
-    premiumForm.style.display = "none";
+  // Show premium info box
+  const { daysLeft, expiresOn } = window.premiumStatus;
+  premiumBox.innerHTML = `
+    <div style="margin-bottom: 8px;"><strong style="color: #22c55e;">✅ Premium Access</strong></div>
+    <div>🗓️ <strong>${daysLeft} days</strong> remaining</div>
+    <div>📅 Expires: ${expiresOn}</div>
+  `;
+  premiumBox.style.display = premiumBox.style.display === "block" ? "none" : "block";
+  premiumForm.style.display = "none";
 
-    // Auto-hide after 5 seconds
-    setTimeout(() => {
-      premiumBox.style.display = "none";
-    }, 5000);
-  } else {
-    // Show form for non-premium
-    premiumForm.style.display = "block";
+  // Optional: auto-hide status box after 5 seconds
+  setTimeout(() => {
     premiumBox.style.display = "none";
-  }
-});
-  
+  }, 5000);
+} else {
+  // Toggle the premium form for non-premium users
+  const isFormVisible = premiumForm.style.display === "block";
+  premiumForm.style.display = isFormVisible ? "none" : "block";
+  premiumBox.style.display = "none";
+}
+
 // Toggle Stats Box
 statsIcon.addEventListener("click", () => {
   const statsBox = document.getElementById("todayStatsBox");
