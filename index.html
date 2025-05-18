@@ -410,7 +410,21 @@ premiumIcon.addEventListener("click", () => {
     premiumBox.style.display = "none";
   }
 });
+  
+// Toggle Stats Box
+statsIcon.addEventListener("click", () => {
+  const statsBox = document.getElementById("todayStatsBox");
+  const premiumForm = document.getElementById("premiumForm");
 
+  // Close premium form if it's open
+  if (premiumForm && premiumForm.style.display === "block") {
+    premiumForm.style.display = "none";
+  }
+
+  // Toggle stats box
+  statsBox.style.display = statsBox.style.display === "none" ? "block" : "none";
+});
+  
 async function updateTradeStats() {
   const startOfToday = new Date();
   startOfToday.setUTCHours(0, 0, 0, 0);
