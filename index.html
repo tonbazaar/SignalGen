@@ -1139,11 +1139,11 @@ async function updateMarketCondition() {
       const marketColor = marketCondition === "GOOD" ? "#16a34a" : "#dc2626";
       const trendColor = btcTrend === "bullish" ? "#16a34a" : "#dc2626";
 
-      statusEl.innerHTML = `Market: <span style="color:${marketColor}">${marketCondition}</span> (<span style="color:${trendColor}">${btcTrend.toUpperCase()}</span>)`;
-    } else {
+      statusEl.innerHTML = `<i class="fas fa-signal"></i> <span style="color:${marketColor}">${marketCondition}</span> (<span style="color:${trendColor}">${btcTrend.toUpperCase()}</span>)`;
+      } else {
       
       const color = (marketCondition === "GOOD" && btcTrend === "bullish") ? "#16a34a" : "#dc2626";
-      statusEl.textContent = `Market: ${marketCondition} (${btcTrend.toUpperCase()})`;
+      statusEl.innerHTML = `<i class="fas fa-signal"></i> ${marketCondition} (${btcTrend.toUpperCase()})`;
       statusEl.style.color = color;
     }
   }
