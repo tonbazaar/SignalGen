@@ -377,54 +377,57 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   document.getElementById("deviceCode").innerText = uid;
 
-  // Toggle Premium Form
-premiumIcon.addEventListener("click", () => {
+  premiumIcon.addEventListener("click", () => {
   const premiumForm = document.getElementById("premiumForm");
   const premiumBox = document.getElementById("premiumStatusBox");
   const statsBox = document.getElementById("todayStatsBox");
 
-  // Close other box
+  // Close stats box if open
   if (statsBox && statsBox.style.display === "block") {
     statsBox.style.display = "none";
   }
 
-  // Toggle UI based on premium status
+  // Premium user
   if (window.isPremium && window.premiumStatus) {
-  // Show premium info box
-  const { daysLeft, expiresOn } = window.premiumStatus;
-  premiumBox.innerHTML = `
-    <div style="margin-bottom: 8px;"><strong style="color: #22c55e;">✅ Premium Access</strong></div>
-    <div>🗓️ <strong>${daysLeft} days</strong> remaining</div>
-    <div>📅 Expires: ${expiresOn}</div>
-  `;
-  premiumBox.style.display = premiumBox.style.display === "block" ? "none" : "block";
-  premiumForm.style.display = "none";
+    const { daysLeft, expiresOn } = window.premiumStatus;
+    premiumBox.innerHTML = `
+      <div style="margin-bottom: 8px;"><strong style="color: #22c55e;">✅ Premium Access</strong></div>
+      <div>🗓️ <strong>${daysLeft} days</strong> remaining</div>
+      <div>📅 Expires: ${expiresOn}</div>
+    `;
+    premiumBox.style.display = premiumBox.style.display === "block" ? "none" : "block";
+    premiumForm.style.display = "none";
 
-  // Optional: auto-hide status box after 5 seconds
-  setTimeout(() => {
+    // Optional: auto-hide
+    setTimeout(() => {
+      premiumBox.style.display = "none";
+    }, 5000);
+
+  } else {
+    // Not premium → toggle form
+    const isFormVisible = premiumForm.style.display === "block";
+    premiumForm.style.display = isFormVisible ? "none" : "block";
     premiumBox.style.display = "none";
-  }, 5000);
-} else {
-  // Toggle the premium form for non-premium users
-  const isFormVisible = premiumForm.style.display === "block";
-  premiumForm.style.display = isFormVisible ? "none" : "block";
-  premiumBox.style.display = "none";
-}
+  }
+});
 
-// Toggle Stats Box
 statsIcon.addEventListener("click", () => {
   const statsBox = document.getElementById("todayStatsBox");
   const premiumForm = document.getElementById("premiumForm");
+  const premiumBox = document.getElementById("premiumStatusBox");
 
-  // Close premium form if it's open
+  // Close other boxes
   if (premiumForm && premiumForm.style.display === "block") {
     premiumForm.style.display = "none";
   }
+  if (premiumBox && premiumBox.style.display === "block") {
+    premiumBox.style.display = "none";
+  }
 
-  // Toggle stats box
+  // Toggle stats
   statsBox.style.display = statsBox.style.display === "none" ? "block" : "none";
 });
-  
+
 async function updateTradeStats() {
   const startOfToday = new Date();
   startOfToday.setUTCHours(0, 0, 0, 0);
