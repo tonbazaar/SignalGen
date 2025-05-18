@@ -768,7 +768,7 @@ if (signalType && symbol) {
           if (now - lastSignalTime < COOLDOWN_MINUTES * 60 * 1000) return null;
           cooldowns[symbol] = now;
   
-if (marketCondition !== "GOOD") {
+if (marketCondition !== "Healthy") {
   console.log("Signal skipped: Market condition is not GOOD.");
   return null;
 }
@@ -1120,7 +1120,7 @@ function getEMA(prices, period) {
   return ema;
 }
 
-let marketCondition = "BAD";
+let marketCondition = "Volatile";
 let btcTrend = "bearish";
 let nearPullback = false;
 
@@ -1131,7 +1131,7 @@ async function updateMarketCondition() {
   const trendOkay = emaGap > 0.002;
   const noVolumeSpike = currentVolume < avgVolume * 1.8;
 
-  marketCondition = (trendOkay && noVolumeSpike) ? "GOOD" : "BAD";
+  marketCondition = (trendOkay && noVolumeSpike) ? "Healthy" : "Volatile";
   btcTrend = trend;
 
   nearPullback = emaGap > 0.01;
@@ -1140,14 +1140,14 @@ async function updateMarketCondition() {
   const statusEl = document.getElementById("marketStatus");
   if (statusEl) {
     
-    if ((marketCondition === "GOOD" && btcTrend === "bearish") || (marketCondition === "BAD" && btcTrend === "bullish")) {
-      const marketColor = marketCondition === "GOOD" ? "#22c55e" : "#dc2626";
+    if ((marketCondition === "Healthy" && btcTrend === "bearish") || (marketCondition === "Volatile" && btcTrend === "bullish")) {
+      const marketColor = marketCondition === "Healthy" ? "#22c55e" : "#dc2626";
       const trendColor = btcTrend === "bullish" ? "#22c55e" : "#dc2626";
 
       statusEl.innerHTML = `<i class="fas fa-signal"></i> <span style="color:${marketColor}">${marketCondition}</span> <span style="color:${trendColor}">${btcTrend.toUpperCase()}</span>`;
       } else {
       
-      const color = (marketCondition === "GOOD" && btcTrend === "bullish") ? "#22c55e" : "#dc2626";
+      const color = (marketCondition === "Healthy" && btcTrend === "bullish") ? "#22c55e" : "#dc2626";
       statusEl.innerHTML = `<i class="fas fa-signal"></i> ${marketCondition} ${btcTrend.toUpperCase()}`;
       statusEl.style.color = color;
     }
@@ -1163,7 +1163,7 @@ function toggleScanButton() {
   const scanButton = document.getElementById("scanButton");
   const waitingMessage = document.getElementById("waitingMessage");
 
-  if (isPremium && marketCondition === "GOOD" && !nearPullback) {
+  if (isPremium && marketCondition === "Healthy" && !nearPullback) {
     scanButton.style.display = "inline-block";
     waitingMessage.style.display = "none";
   } else {
