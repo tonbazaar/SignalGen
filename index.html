@@ -768,7 +768,7 @@ if (signalType && symbol) {
           if (now - lastSignalTime < COOLDOWN_MINUTES * 60 * 1000) return null;
           cooldowns[symbol] = now;
   
-if (marketCondition !== "HEALTHY") {
+if (marketCondition !== "GOOD") {
   console.log("Signal skipped: Market condition is not GOOD.");
   return null;
 }
@@ -778,8 +778,8 @@ if (nearPullback) {
   return null;
 }
 
-if ((btcTrend === "Uptrend" && signalType === "SHORT") ||
-    (btcTrend === "Downtrend" && signalType === "LONG")) {
+if ((btcTrend === "bullish" && signalType === "SHORT") ||
+    (btcTrend === "bearish" && signalType === "LONG")) {
   console.log(`Signal skipped: BTC is ${btcTrend}, signal direction is ${signalType}`);
   return null;
 }
@@ -1089,9 +1089,9 @@ async function getBTCIndicators() {
   const priceBefore = closes[closes.length - 6]; // ~25 minutes ago
   const priceRising = priceNow > priceBefore;
 
-  let trend = "Downtrend";
+  let trend = "bearish";
   if (ema50[ema50.length - 1] > ema200[ema200.length - 1] && priceRising) {
-    trend = "Uptrend";
+    trend = "bullish";
   }
 
   // Debug output
@@ -1120,8 +1120,8 @@ function getEMA(prices, period) {
   return ema;
 }
 
-let marketCondition = "VOLATILE";
-let btcTrend = "Downtrend";
+let marketCondition = "BAD";
+let btcTrend = "bearish";
 let nearPullback = false;
 
 async function updateMarketCondition() {
@@ -1131,7 +1131,7 @@ async function updateMarketCondition() {
   const trendOkay = emaGap > 0.002;
   const noVolumeSpike = currentVolume < avgVolume * 1.8;
 
-  marketCondition = (trendOkay && noVolumeSpike) ? "HEALTHY" : "VOLATILE";
+  marketCondition = (trendOkay && noVolumeSpike) ? "GOOD" : "BAD";
   btcTrend = trend;
 
   nearPullback = emaGap > 0.01;
@@ -1140,14 +1140,14 @@ async function updateMarketCondition() {
   const statusEl = document.getElementById("marketStatus");
   if (statusEl) {
     
-    if ((marketCondition === "HEALTHY" && btcTrend === "Downtrend") || (marketCondition === "VOLATILE" && btcTrend === "Uptrend")) {
-      const marketColor = marketCondition === "HEALTHY" ? "#22c55e" : "#dc2626";
-      const trendColor = btcTrend === "Uptrend" ? "#22c55e" : "#dc2626";
+    if ((marketCondition === "GOOD" && btcTrend === "bearish) || (marketCondition === "BAD" && btcTrend === "bullish")) {
+      const marketColor = marketCondition === "GOOD" ? "#22c55e" : "#dc2626";
+      const trendColor = btcTrend === "bullish" ? "#22c55e" : "#dc2626";
 
       statusEl.innerHTML = `<i class="fas fa-signal"></i> <span style="color:${marketColor}">${marketCondition}</span> <span style="color:${trendColor}">${btcTrend.toUpperCase()}</span>`;
       } else {
       
-      const color = (marketCondition === "HEALTHY" && btcTrend === "Uptrend") ? "#22c55e" : "#dc2626";
+      const color = (marketCondition === "GOOD" && btcTrend === "bullish") ? "#22c55e" : "#dc2626";
       statusEl.innerHTML = `<i class="fas fa-signal"></i> ${marketCondition} ${btcTrend.toUpperCase()}`;
       statusEl.style.color = color;
     }
@@ -1163,7 +1163,7 @@ function toggleScanButton() {
   const scanButton = document.getElementById("scanButton");
   const waitingMessage = document.getElementById("waitingMessage");
 
-  if (isPremium && marketCondition === "HEALTHY" && !nearPullback) {
+  if (isPremium && marketCondition === "GOOD" && !nearPullback) {
     scanButton.style.display = "inline-block";
     waitingMessage.style.display = "none";
   } else {
