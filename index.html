@@ -600,17 +600,6 @@ async function updateTradeStats() {
   }
 }, 10000);
 
-  function showCustomLimitAlert() {
-  const alertBox = document.getElementById("customLimitAlert");
-  if (!alertBox) return;
-
-  alertBox.style.display = "block";
-
-  setTimeout(() => {
-    alertBox.style.display = "none";
-  }, 15000); // Show for 15 seconds
-}
-
 // Login
 function login() {
   const password = document.getElementById("password").value;
@@ -1333,7 +1322,18 @@ setInterval(syncServerTime, 10 * 60 * 1000); // Re-sync every 10 mins
     return data;
   });
 }
+  
+function showCustomLimitAlert() {
+  const alertBox = document.getElementById("customLimitAlert");
+  if (!alertBox) return;
 
+  alertBox.style.display = "block";
+
+  setTimeout(() => {
+    alertBox.style.display = "none";
+  }, 15000); // Show for 15 seconds
+}
+  
 function showError(msg) {
   const box = document.createElement('div');
   box.textContent = msg;
