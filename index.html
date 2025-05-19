@@ -147,7 +147,7 @@ input:focus {
   font-size: 14px;
 }
 
-    #settingsIcon, #premiumIcon, 
+ #logoutIcon, #settingsIcon, #premiumIcon, 
 #statsIcon {
   position: absolute;
   top: 10px;
@@ -157,23 +157,28 @@ input:focus {
   cursor: pointer;
   transition: transform 0.2s ease, background-color 0.3s ease;
 }
-
-#settingsIcon {
+    
+#logoutIcon {
   right: 10px;
+  color: #3b82f6; /* Green */
+}
+    
+#settingsIcon {
+  right: 50px;
   color: #22c55e; /* Green */
 }
     
 #premiumIcon {
-  right: 50px;
+  right: 90px;
   color: #facc15; /* gold/yellow */
 }
 
 #statsIcon {
-  right: 90px;
+  right: 130px;
   color: #3b82f6; /* blue */
 }
     
-#settingsIcon:hover, #premiumIcon:hover,
+#logoutIcon, #settingsIcon:hover, #premiumIcon:hover,
 #statsIcon:hover {
   transform: scale(1.2);
   background-color: rgba(255, 255, 255, 0.1); /* subtle glow on dark */
@@ -245,6 +250,7 @@ a:hover {
 
   <!-- Main Content (Hidden until password is correct) -->
   <div id="mainContent" style="display:none;">
+  <i id="logoutIcon" class="fas fa-sign-out-alt" title="Logout"></i>
   <i id="settingsIcon" class="fas fa-cog" title="Settings"></i>
   <i id="premiumIcon" class="fas fa-crown" title="Unlock Premium"></i>
   <i id="statsIcon" class="fas fa-chart-bar" title="View Stats"></i>
@@ -481,6 +487,19 @@ if (!sessionValidUntil || now >= parseInt(sessionValidUntil)) {
     loginForm.style.display = "block";
     mainContent.style.display = "none";
   }
+
+  const logoutIcon = document.getElementById("logoutIcon");
+if (logoutIcon) {
+  logoutIcon.addEventListener("click", () => {
+    const confirmLogout = confirm("Are you sure you want to logout?");
+    if (confirmLogout) {
+      localStorage.removeItem("sessionValidUntil");
+      document.getElementById("loginForm").style.display = "block";
+      document.getElementById("mainContent").style.display = "none";
+      showError("Logged out successfully!");
+    }
+  });
+}
 
   // UID Logic
   let uid = localStorage.getItem("uid");
