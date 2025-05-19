@@ -553,7 +553,7 @@ async function updateTradeStats() {
       showError("Premium check failed.");
     });
 
-  // Trade Count Watcher
+  /// Trade Count Watcher
   async function checkTradeLimit() {
   try {
     const count = await getOpenPositionsCount();
@@ -572,11 +572,9 @@ async function updateTradeStats() {
   }
 }
 
-// Run immediately
-checkTradeLimit();
-
 // Then repeat every 10 seconds
 setInterval(checkTradeLimit, 10000);
+
 
 // Login
 function login() {
