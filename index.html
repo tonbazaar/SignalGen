@@ -208,7 +208,7 @@ a:hover {
 </head>
 <body>
 
-<div id="tutorialBtn" style="display: none;">
+<div id="tutorialBox" style="display: none;">
   <a href="https://www.youtube.com/watch?v=YOUR_VIDEO_ID" target="_blank"
      style="position: fixed; bottom: 70px; right: 20px; background-color: #FF0000; color: #fff; padding: 8px 12px; border-radius: 30px; font-weight: bold; text-decoration: none; box-shadow: 0 4px 10px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 6px; font-size: 13px;"
      class="bounce">
@@ -216,7 +216,7 @@ a:hover {
   </a>
 </div>
 
-<div id="chatBtn" style="display: none;">
+<div id="chatAdminBox" style="display: none;">
   <a href="https://t.me/SUAIB235" target="_blank"
      style="position: fixed; bottom: 20px; right: 20px; background-color: #1d9bf0; color: #e6edf3; padding: 8px 12px; border-radius: 30px; font-weight: bold; text-decoration: none; box-shadow: 0 4px 10px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 6px; font-size: 13px;"
      class="bounce">
@@ -458,6 +458,18 @@ document.addEventListener("DOMContentLoaded", () => {
   const scanButton = document.getElementById("scanButton");
   const submitBtn = document.getElementById("submitBtn");
   const statusMsg = document.getElementById("statusMsg");
+
+  const tutorialBox = document.getElementById("tutorialBox");
+  const chatAdminBox = document.getElementById("chatAdminBox");
+
+// Show tutorial only on login/signup page
+if (!sessionValidUntil || now >= parseInt(sessionValidUntil)) {
+  if (tutorialBox) tutorialBox.style.display = "block";
+  if (chatAdminBox) chatAdminBox.style.display = "none";
+} else {
+  if (tutorialBox) tutorialBox.style.display = "none";
+  if (chatAdminBox) chatAdminBox.style.display = "block";
+}
 
   // Session Login Logic
   if (sessionValidUntil && now < parseInt(sessionValidUntil)) {
