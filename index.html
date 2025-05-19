@@ -439,12 +439,18 @@ a:hover {
 ">
   <div style="font-weight: 600; font-size: 16px; margin-bottom: 10px;">
     <i class="fab fa-youtube" style="color: #ef4444; margin-right: 6px;"></i>
-    Video Tutorial
+    YouTube Tutorial
   </div>
-  <p>Watch our guide to understand how to use the tool.</p>
-  <a href="https://www.youtube.com/" target="_blank" style="color: #3b82f6; text-decoration: underline;">
-    Watch on YouTube
-  </a>
+  <p style="margin-bottom: 12px;">Learn how to use the scanner effectively.</p>
+  <a href="https://www.youtube.com/" target="_blank" style="
+    display: inline-block;
+    padding: 8px 14px;
+    background-color: #ef4444;
+    color: #fff;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 500;
+  ">Watch on YouTube</a>
 </div>
 
   <footer style="text-align:center; font-size:13px; color:#8b949e; margin-top:40px;">
@@ -576,14 +582,14 @@ document.getElementById("saveSettings").addEventListener("click", () => {
 
 document.getElementById("youtubeIcon").addEventListener("click", () => {
   const tutorialBox = document.getElementById("tutorialBox");
-  const boxes = [
+  const otherBoxes = [
     document.getElementById("settingsBox"),
     document.getElementById("premiumStatusBox"),
     document.getElementById("premiumForm"),
     document.getElementById("todayStatsBox"),
   ];
 
-  boxes.forEach((box) => {
+  otherBoxes.forEach((box) => {
     if (box && box.style.display === "block") box.style.display = "none";
   });
 
