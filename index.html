@@ -179,59 +179,6 @@ input:focus {
   background-color: rgba(255, 255, 255, 0.1); /* subtle glow on dark */
 }
 
-.settings-modal {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.6);
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-
-.settings-content {
-  background: #111827;
-  padding: 20px;
-  border-radius: 10px;
-  width: 300px;
-  text-align: center;
-  color: white;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-}
-
-.settings-content input {
-  width: 100%;
-  padding: 10px;
-  margin: 10px 0;
-  border: none;
-  border-radius: 5px;
-  background: #1f2937;
-  color: white;
-}
-
-.settings-content button {
-  background-color: #22c55e;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.settings-content button:hover {
-  background-color: #16a34a;
-}
-
-#calculatedMargin {
-  margin: 10px 0;
-  font-size: 14px;
-  color: #fbbf24;
-}
-
 a {
   color: #60a5fa; /* Tailwind blue-400 */
   text-decoration: none;
@@ -419,14 +366,46 @@ a:hover {
   <div>Win Rate: <strong id="winRate">0%</strong></div>
 </div>
   
-<!-- Settings Modal -->
-<div id="settingsModal" class="settings-modal">
-  <div class="settings-content">
-    <h3>Set Trade Amount</h3>
-    <input type="number" id="usdtInput" placeholder="Enter amount (e.g. 20)" />
-    <p id="calculatedMargin">Margin: 1.00 USDT</p>
-    <button id="saveSettings">Save</button>
+<div id="settingsBox" style="
+  display: none;
+  margin-top: 16px;
+  padding: 16px 20px;
+  border-radius: 12px;
+  background-color: #161b22;
+  border: 1px solid #30363d;
+  color: #e6edf3;
+  font-size: 15px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+  max-width: 320px;
+  margin-left: auto;
+  margin-right: auto;
+">
+  <div style="font-weight: 600; font-size: 16px; margin-bottom: 12px;">
+    <i class="fas fa-cog" style="color: #10b981; margin-right: 6px;"></i>
+    Trade Settings
   </div>
+  <label for="usdtInput" style="display: block; margin-bottom: 6px;">Trade Amount (USDT)</label>
+  <input type="number" id="usdtInput" placeholder="e.g. 20" style="
+    width: 100%;
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: none;
+    background-color: #0d1117;
+    color: #e6edf3;
+    margin-bottom: 10px;
+  ">
+  <div id="marginInfo" style="margin-bottom: 12px; color: #fcd34d;">Estimated Margin: 1.00 USDT</div>
+  <button id="saveSettings" style="
+    background-color: #22c55e;
+    border: none;
+    padding: 10px;
+    border-radius: 8px;
+    color: white;
+    width: 100%;
+    font-weight: 500;
+    cursor: pointer;
+    font-size: 14px;
+  ">Save Settings</button>
 </div>
 
   <footer style="text-align:center; font-size:13px; color:#8b949e; margin-top:40px;">
@@ -518,43 +497,34 @@ statsIcon.addEventListener("click", () => {
   statsBox.style.display = statsBox.style.display === "none" ? "block" : "none";
 });
 
-  // Settings Icon Logic
-const settingsIcon = document.getElementById("settingsIcon");
-const settingsModal = document.getElementById("settingsModal");
-const usdtInput = document.getElementById("usdtInput");
-const calculatedMargin = document.getElementById("calculatedMargin");
-const saveSettings = document.getElementById("saveSettings");
-
-// Open Settings Modal
-settingsIcon.addEventListener("click", () => {
-  // Hide other boxes
-  const premiumForm = document.getElementById("premiumForm");
+  document.getElementById("settingsIcon").addEventListener("click", () => {
+  const settingsBox = document.getElementById("settingsBox");
   const premiumBox = document.getElementById("premiumStatusBox");
+  const premiumForm = document.getElementById("premiumForm");
   const statsBox = document.getElementById("todayStatsBox");
 
-  if (premiumForm) premiumForm.style.display = "none";
+  // Hide other boxes
   if (premiumBox) premiumBox.style.display = "none";
+  if (premiumForm) premiumForm.style.display = "none";
   if (statsBox) statsBox.style.display = "none";
 
-  settingsModal.style.display = "flex";
+  settingsBox.style.display = settingsBox.style.display === "block" ? "none" : "block";
 });
 
-// Calculate margin in real time
-usdtInput.addEventListener("input", () => {
-  const usdt = parseFloat(usdtInput.value);
-  const margin = !isNaN(usdt) ? usdt / 20 : 0;
-  calculatedMargin.textContent = `Margin: ${margin.toFixed(2)} USDT`;
+document.getElementById("usdtInput").addEventListener("input", (e) => {
+  const value = parseFloat(e.target.value);
+  const margin = value ? (value / 20).toFixed(2) : "0.00";
+  document.getElementById("marginInfo").innerText = `Estimated Margin: ${margin} USDT`;
 });
 
-// Save margin value to localStorage
-saveSettings.addEventListener("click", () => {
-  const usdt = parseFloat(usdtInput.value);
-  if (!isNaN(usdt) && usdt > 0) {
-    localStorage.setItem("tradeUSDT", usdt);
-    showError(`Trade amount saved: ${usdt} USDT`);
-    settingsModal.style.display = "none";
+document.getElementById("saveSettings").addEventListener("click", () => {
+  const value = parseFloat(document.getElementById("usdtInput").value);
+  if (!isNaN(value) && value > 0) {
+    localStorage.setItem("tradeAmount", value);
+    alert("Settings saved: " + value + " USDT");
+    document.getElementById("settingsBox").style.display = "none";
   } else {
-    showError("Please enter a valid USDT amount.");
+    alert("Enter a valid number.");
   }
 });
 
