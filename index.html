@@ -1191,7 +1191,7 @@ async function sendLimit(symbol, side, qty, price, tp, sl, reduceOnly, pricePrec
 }
     
   async function getQuantity(symbol, price, quantityPrecision) {
-  const usdt = window.env.TRADE_USDT; // USDT amount to use
+  const usdt = parseFloat(localStorage.getItem("tradeAmount") || 0);
   const qty = usdt / parseFloat(price);
   return parseFloat(qty).toFixed(quantityPrecision);
     }
