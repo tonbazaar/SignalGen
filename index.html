@@ -1203,8 +1203,8 @@ async function getBTCIndicators() {
   const closes = data.map(c => parseFloat(c[4]));
   const volumes = data.map(c => parseFloat(c[5]));
 
+  const ema20 = getEMA(closes, 20);
   const ema50 = getEMA(closes, 50);
-  const ema200 = getEMA(closes, 200);
   const currentVolume = volumes[volumes.length - 1];
   const avgVolume = volumes.slice(-30).reduce((a, b) => a + b, 0) / 30;
 
@@ -1213,19 +1213,19 @@ async function getBTCIndicators() {
   const priceRising = priceNow > priceBefore;
 
   let trend = "bearish";
-  if (ema50[ema50.length - 1] > ema200[ema200.length - 1] && priceRising) {
+  if (ema20[ema20.length - 1] > ema50[ema50.length - 1] && priceRising) {
     trend = "bullish";
   }
 
   // Debug output
   console.log(`BTC Trend: ${trend}`);
-  console.log(`EMA50: ${ema50[ema50.length - 1].toFixed(2)} | EMA200: ${ema200[ema200.length - 1].toFixed(2)}`);
+  console.log(`EMA20: ${ema20[ema20.length - 1].toFixed(2)} | EMA50: ${ema50[ema50.length - 1].toFixed(2)}`);
   console.log(`Price Now: ${priceNow} | Price 25min ago: ${priceBefore}`);
   console.log(`Volume: ${currentVolume} | AvgVolume(30): ${avgVolume}`);
 
   return {
+    ema20: ema20[ema20.length - 1],
     ema50: ema50[ema50.length - 1],
-    ema200: ema200[ema200.length - 1],
     currentVolume,
     avgVolume,
     trend
@@ -1248,9 +1248,9 @@ let btcTrend = "bearish";
 let nearPullback = false;
     
 async function updateMarketCondition() {
-  const { ema50, ema200, currentVolume, avgVolume, trend } = await getBTCIndicators();
+  const { ema20, ema50, currentVolume, avgVolume, trend } = await getBTCIndicators();
 
-  const emaGap = Math.abs(ema50 - ema200) / ema200;
+  const emaGap = Math.abs(ema20 - ema50) / ema200;
   const trendOkay = emaGap > 0.002;
   const noVolumeSpike = currentVolume < avgVolume * 1.8;
 
