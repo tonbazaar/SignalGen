@@ -147,33 +147,40 @@ input:focus {
   font-size: 14px;
 }
 
-    #premiumIcon, 
+    #settingsIcon,
+#statsIcon,
+#premiumIcon {
+  position: absolute;
+  top: 10px;
+  font-size: 22px;
+  padding: 10px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.2s ease, background-color 0.3s ease;
+}
+
+#settingsIcon {
+  right: 90px;
+  color: #a3a3a3; /* gray for settings */
+}
+
 #statsIcon {
-  position: absolute;
-  top: 10px;
-  font-size: 22px;
-  padding: 10px;
-  border-radius: 50%;
-  cursor: pointer;
-  transition: transform 0.2s ease, background-color 0.3s ease;
+  right: 50px;
+  color: #60a5fa; /* blue */
 }
 
 #premiumIcon {
-  right: 10px;
-  color: #facc15; /* gold/yellow */
+  right: 10px;
+  color: #facc15; /* gold/yellow */
 }
 
-#statsIcon {
-  right: 50px;
-  color: #60a5fa; /* blue */
+#settingsIcon:hover,
+#statsIcon:hover,
+#premiumIcon:hover {
+  transform: scale(1.2);
+  background-color: rgba(255, 255, 255, 0.1); /* subtle glow */
 }
-
-#premiumIcon:hover,
-#statsIcon:hover {
-  transform: scale(1.2);
-  background-color: rgba(255, 255, 255, 0.1); /* subtle glow on dark */
-}
-    
+ 
 a {
   color: #60a5fa; /* Tailwind blue-400 */
   text-decoration: none;
@@ -217,6 +224,7 @@ a:hover {
 
   <!-- Main Content (Hidden until password is correct) -->
   <div id="mainContent" style="display:none;">
+  <i id="settingsIcon" class="fas fa-cog" title="Settings"></i>
   <i id="premiumIcon" class="fas fa-crown" title="Unlock Premium"></i>
   <i id="statsIcon" class="fas fa-chart-bar" title="View Stats"></i>
   <h1 id="rocketIcon"><span class="flying">🚀</span> Signal Generator</h1>
