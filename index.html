@@ -554,24 +554,29 @@ async function updateTradeStats() {
     });
 
   // Trade Count Watcher
-  setInterval(async () => {
-    try {
-      const count = await getOpenPositionsCount();
-      const blocks = document.querySelectorAll(".signal-block");
+  async function checkTradeLimit() {
+  try {
+    const count = await getOpenPositionsCount();
+    const blocks = document.querySelectorAll(".signal-block");
 
-      if (count >= 3) {
-        showError("Limit reached. Avoid overtrading.");
-        scanButton.disabled = true;
-        blocks.forEach((b) => (b.style.display = "none"));
-      } else {
-        scanButton.disabled = false;
-        blocks.forEach((b) => (b.style.display = "block"));
-      }
-    } catch (err) {
-      console.error("Error checking positions:", err);
+    if (count >= 3) {
+      showError("Limit reached. Avoid overtrading.");
+      scanButton.disabled = true;
+      blocks.forEach((b) => (b.style.display = "none"));
+    } else {
+      scanButton.disabled = false;
+      blocks.forEach((b) => (b.style.display = "block"));
     }
-  }, 10000);
-});
+  } catch (err) {
+    console.error("Error checking positions:", err);
+  }
+}
+
+// Run immediately
+checkTradeLimit();
+
+// Then repeat every 10 seconds
+setInterval(checkTradeLimit, 10000);
 
 // Login
 function login() {
