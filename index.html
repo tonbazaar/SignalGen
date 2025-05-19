@@ -561,7 +561,6 @@ if (!sessionValidUntil || now >= parseInt(sessionValidUntil)) {
   if (sessionValidUntil && now < parseInt(sessionValidUntil)) {
     loginForm.style.display = "none";
     mainContent.style.display = "block";
-    showError("Welcome back!");
   } else {
     localStorage.removeItem("sessionValidUntil");
     loginForm.style.display = "block";
@@ -833,7 +832,7 @@ function login() {
   const password = document.getElementById("password").value;
   const storedPassword = localStorage.getItem("password");
   if (password === storedPassword) {
-    const expiresAt = Date.now() + 168 * 60 * 60 * 1000;
+    const expiresAt = Date.now() + 360 * 60 * 60 * 1000;
     localStorage.setItem("sessionValidUntil", expiresAt);
     document.getElementById("loginForm").style.display = "none";
     document.getElementById("mainContent").style.display = "block";
