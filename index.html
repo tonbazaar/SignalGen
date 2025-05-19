@@ -1195,7 +1195,7 @@ async function sendLimit(symbol, side, qty, price, tp, sl, reduceOnly, pricePrec
   const qty = usdt / parseFloat(price);
   return parseFloat(qty).toFixed(quantityPrecision);
     }
-    
+
 async function getBTCIndicators() {
   const res = await fetch("https://fapi.binance.com/fapi/v1/klines?symbol=BTCUSDT&interval=5m&limit=250");
   const data = await res.json();
@@ -1205,12 +1205,11 @@ async function getBTCIndicators() {
 
   const ema50 = getEMA(closes, 50);
   const ema200 = getEMA(closes, 200);
-
   const currentVolume = volumes[volumes.length - 1];
   const avgVolume = volumes.slice(-30).reduce((a, b) => a + b, 0) / 30;
 
   const priceNow = closes[closes.length - 1];
-  const priceBefore = closes[closes.length - 6]; // ~25 min ago
+  const priceBefore = closes[closes.length - 6]; // ~25 minutes ago
   const priceRising = priceNow > priceBefore;
 
   let trend = "bearish";
@@ -1218,28 +1217,36 @@ async function getBTCIndicators() {
     trend = "bullish";
   }
 
+  // Debug output
+  console.log(`BTC Trend: ${trend}`);
+  console.log(`EMA50: ${ema50[ema50.length - 1].toFixed(2)} | EMA200: ${ema200[ema200.length - 1].toFixed(2)}`);
+  console.log(`Price Now: ${priceNow} | Price 25min ago: ${priceBefore}`);
+  console.log(`Volume: ${currentVolume} | AvgVolume(30): ${avgVolume}`);
+
   return {
     ema50: ema50[ema50.length - 1],
     ema200: ema200[ema200.length - 1],
     currentVolume,
     avgVolume,
-    trend,
+    trend
   };
 }
 
 function getEMA(prices, period) {
   const k = 2 / (period + 1);
   const ema = [prices.slice(0, period).reduce((a, b) => a + b, 0) / period];
+
   for (let i = period; i < prices.length; i++) {
     ema.push(prices[i] * k + ema[ema.length - 1] * (1 - k));
   }
+
   return ema;
 }
 
 let marketCondition = "BAD";
 let btcTrend = "bearish";
 let nearPullback = false;
-
+    
 async function updateMarketCondition() {
   const { ema50, ema200, currentVolume, avgVolume, trend } = await getBTCIndicators();
 
@@ -1249,42 +1256,40 @@ async function updateMarketCondition() {
 
   marketCondition = (trendOkay && noVolumeSpike) ? "GOOD" : "BAD";
   btcTrend = trend;
-  nearPullback = emaGap > 0.01;
 
-  console.log(`BTC Trend: ${trend}`);
-  console.log(`EMA50: ${ema50.toFixed(2)}, EMA200: ${ema200.toFixed(2)}, EMA Gap: ${(emaGap * 100).toFixed(2)}%`);
-  console.log(`Price Rising: ${priceNow > priceBefore}`);
-  console.log(`Volume: ${currentVolume.toFixed(0)} | Avg: ${avgVolume.toFixed(0)}`);
-  console.log(`Market: ${marketCondition}, Pullback Risk: ${nearPullback}`);
+  nearPullback = emaGap > 0.01;
+  console.log(`Near Pullback: ${nearPullback}`);
 
   const pullbackEl = document.getElementById("pullbackStatus");
-  if (pullbackEl) {
-    const valueEl = pullbackEl.querySelector(".value");
-    valueEl.textContent = nearPullback ? "true" : "false";
-    pullbackEl.style.color = nearPullback ? "#f97316" : "#22c55e";
-  }
+if (pullbackEl) {
+  const valueEl = pullbackEl.querySelector(".value");
+  const isRisky = nearPullback;
+
+  valueEl.textContent = isRisky ? "true" : "false";
+  pullbackEl.style.color = isRisky ? "#f97316" : "#22c55e"; // Orange for risky, Green for normal
+}
 
   const statusEl = document.getElementById("marketStatus");
   if (statusEl) {
-    const colorGood = "#22c55e";
-    const colorBad = "#EF4444";
-
+    
     if ((marketCondition === "GOOD" && btcTrend === "bearish") || (marketCondition === "BAD" && btcTrend === "bullish")) {
-      const marketColor = marketCondition === "GOOD" ? colorGood : colorBad;
-      const trendColor = btcTrend === "bullish" ? colorGood : colorBad;
+      const marketColor = marketCondition === "GOOD" ? "#22c55e" : "#EF4444";
+      const trendColor = btcTrend === "bullish" ? "#22c55e" : "#EF4444";
+
       statusEl.innerHTML = `<i class="fas fa-signal"></i> <span style="color:${marketColor}">${marketCondition}</span> <span style="color:${trendColor}">${btcTrend.toUpperCase()}</span>`;
-    } else {
-      const color = (marketCondition === "GOOD" && btcTrend === "bullish") ? colorGood : colorBad;
+      } else {
+      
+      const color = (marketCondition === "GOOD" && btcTrend === "bullish") ? "#22c55e" : "#EF4444";
       statusEl.innerHTML = `<i class="fas fa-signal"></i> ${marketCondition} ${btcTrend.toUpperCase()}`;
       statusEl.style.color = color;
     }
   }
 
-  toggleScanButton?.();
+  toggleScanButton();
 }
 
 updateMarketCondition();
-setInterval(updateMarketCondition, 25000); // every 25s
+setInterval(updateMarketCondition, 25000); // Update every 25s
 
 function toggleScanButton() {
   const scanButton = document.getElementById("scanButton");
