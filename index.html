@@ -530,10 +530,10 @@ document.getElementById("saveSettings").addEventListener("click", () => {
   const value = parseFloat(document.getElementById("usdtInput").value);
   if (!isNaN(value) && value > 0) {
     localStorage.setItem("tradeAmount", value);
-    alert("Settings saved: " + value + " USDT");
+    showError("Settings saved: " + value + " USDT");
     document.getElementById("settingsBox").style.display = "none";
   } else {
-    alert("Enter a valid number.");
+    showError("Enter a valid number.");
   }
 });
 
