@@ -1197,7 +1197,7 @@ async function sendLimit(symbol, side, qty, price, tp, sl, reduceOnly, pricePrec
     }
 
 async function getBTCIndicators() {
-  const res = await fetch("https://fapi.binance.com/fapi/v1/klines?symbol=BTCUSDT&interval=5m&limit=250");
+  const res = await fetch("https://fapi.binance.com/fapi/v1/klines?symbol=BTCUSDT&interval=5m&limit=200");
   const data = await res.json();
 
   const closes = data.map(c => parseFloat(c[4]));
@@ -1259,8 +1259,8 @@ async function updateMarketCondition() {
 
   nearPullback = emaGap > 0.01;
   console.log(`Near Pullback: ${nearPullback}`);
-  
-const pullbackEl = document.getElementById("pullbackStatus");
+
+  const pullbackEl = document.getElementById("pullbackStatus");
 if (pullbackEl) {
   const valueEl = pullbackEl.querySelector(".value");
   const isRisky = nearPullback;
@@ -1268,7 +1268,7 @@ if (pullbackEl) {
   valueEl.textContent = isRisky ? "true" : "false";
   pullbackEl.style.color = isRisky ? "#f97316" : "#22c55e"; // Orange for risky, Green for normal
 }
-  
+
   const statusEl = document.getElementById("marketStatus");
   if (statusEl) {
     
