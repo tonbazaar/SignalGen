@@ -1139,7 +1139,7 @@ async function updateMarketCondition() {
   marketCondition = (trendOkay && noVolumeSpike) ? "GOOD" : "BAD";
   btcTrend = trend;
 
-  nearPullback = emaGap < 0.01;
+  nearPullback = emaGap > 0.01;
   console.log(`Near Pullback: ${nearPullback}`);
 
   const pullbackEl = document.getElementById("pullbackStatus");
@@ -1191,7 +1191,7 @@ function toggleScanButton() {
   document.getElementById("futuresBalance").innerHTML = `<i class="fas fa-wallet"></i> ${balance}`;
 
   const positionCount = await getOpenPositionsCount();
-  document.getElementById("positionsCount").innerHTML = `<i class="fas fa-chart-line"></i> ${positionCount}`;
+  document.getElementById("positionsCount").innerHTML = `<i class="fas fa-chart-line"></i> ${positionCount}/10`;
 
   const pnl = await getTodayPnL();
   document.getElementById("todayPnl").innerHTML = `<i class="fas fa-dollar-sign"></i> ${pnl >= 0 ? "+" : ""}$${pnl.toFixed(2)}`;
@@ -1315,7 +1315,7 @@ function showError(msg) {
     document.getElementById("futuresBalance").innerHTML = `<i class="fas fa-wallet"></i> ${balance}`;
 
     const positionCount = await getOpenPositionsCount();
-    document.getElementById("positionsCount").innerHTML = `<i class="fas fa-chart-line"></i> ${positionCount}`;
+    document.getElementById("positionsCount").innerHTML = `<i class="fas fa-chart-line"></i> ${positionCount}/10`;
 
     const pnl = await getTodayPnL();
     document.getElementById("todayPnl").innerHTML = `<i class="fas fa-dollar-sign"></i> ${pnl >= 0 ? "+" : ""}$${pnl.toFixed(2)}`;
