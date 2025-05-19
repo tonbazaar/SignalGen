@@ -147,7 +147,7 @@ input:focus {
   font-size: 14px;
 }
 
- #logoutIcon:hover, #settingsIcon, #premiumIcon, 
+ #logoutIcon, #settingsIcon, #premiumIcon, 
 #statsIcon {
   position: absolute;
   top: 10px;
@@ -178,7 +178,7 @@ input:focus {
   color: #3b82f6; /* blue */
 }
     
-#logoutIcon, #settingsIcon:hover, #premiumIcon:hover,
+#logoutIcon:hover, #settingsIcon:hover, #premiumIcon:hover,
 #statsIcon:hover {
   transform: scale(1.2);
   background-color: rgba(255, 255, 255, 0.1); /* subtle glow on dark */
@@ -491,7 +491,7 @@ if (!sessionValidUntil || now >= parseInt(sessionValidUntil)) {
   const logoutIcon = document.getElementById("logoutIcon");
 if (logoutIcon) {
   logoutIcon.addEventListener("click", () => {
-    const confirmLogout = showError("Are you sure you want to logout?");
+    const confirmLogout = confirm("Are you sure you want to logout?");
     if (confirmLogout) {
       localStorage.removeItem("sessionValidUntil");
       document.getElementById("loginForm").style.display = "block";
