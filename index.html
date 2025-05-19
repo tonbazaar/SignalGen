@@ -147,7 +147,7 @@ input:focus {
   font-size: 14px;
 }
 
- #logoutIcon, #settingsIcon, #premiumIcon, 
+ #logoutIcon:hover, #settingsIcon, #premiumIcon, 
 #statsIcon {
   position: absolute;
   top: 10px;
@@ -491,7 +491,7 @@ if (!sessionValidUntil || now >= parseInt(sessionValidUntil)) {
   const logoutIcon = document.getElementById("logoutIcon");
 if (logoutIcon) {
   logoutIcon.addEventListener("click", () => {
-    const confirmLogout = confirm("Are you sure you want to logout?");
+    const confirmLogout = showError("Are you sure you want to logout?");
     if (confirmLogout) {
       localStorage.removeItem("sessionValidUntil");
       document.getElementById("loginForm").style.display = "block";
