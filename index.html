@@ -440,7 +440,6 @@ document.addEventListener("DOMContentLoaded", () => {
   if (sessionValidUntil && now < parseInt(sessionValidUntil)) {
     loginForm.style.display = "none";
     mainContent.style.display = "block";
-    showError("Welcome back!");
   } else {
     localStorage.removeItem("sessionValidUntil");
     loginForm.style.display = "block";
