@@ -178,7 +178,47 @@ input:focus {
   transform: scale(1.2);
   background-color: rgba(255, 255, 255, 0.1); /* subtle glow on dark */
 }
- 
+
+    #settingsModal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+#settingsContent {
+  background: #1e1e1e;
+  padding: 20px;
+  border-radius: 10px;
+  width: 300px;
+  text-align: center;
+  color: white;
+}
+
+#settingsContent input {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  border: none;
+  border-radius: 5px;
+}
+
+#settingsContent button {
+  padding: 10px 20px;
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
 a {
   color: #60a5fa; /* Tailwind blue-400 */
   text-decoration: none;
@@ -290,7 +330,7 @@ a:hover {
     <p>✅ Auto-execute Binance trades</p>
     <p>✅ Priority support & updates</p>
     <p>⏰ <strong>Premium Validity:</strong> 30 days</p>
-    <p>💸 Send <strong>$2</strong> to Binance UID: <strong>381708407</strong></p>
+    <p>💸 Send <strong>$5</strong> to Binance UID: <strong>381708407</strong></p>
     <p>🔑 <strong>Your Premium Code:</strong></p>
     <p id="deviceCode" style="
       word-break: break-word;
@@ -364,6 +404,16 @@ a:hover {
   <div>TP Hits: <strong id="tpHit">0</strong></div>
   <div>SL Hits: <strong id="slHit">0</strong></div>
   <div>Win Rate: <strong id="winRate">0%</strong></div>
+</div>
+
+<div id="settingsModal" style="display: none;">
+  <div id="settingsContent">
+    <h3>Set Trade Amount</h3>
+    <label for="usdtInput">Enter USDT amount:</label>
+    <input type="number" id="usdtInput" placeholder="e.g. 20" />
+    <p id="calculatedMargin">Margin: 0 USDT</p>
+    <button id="saveSettings">Submit</button>
+  </div>
 </div>
 
   <footer style="text-align:center; font-size:13px; color:#8b949e; margin-top:40px;">
