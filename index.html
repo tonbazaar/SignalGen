@@ -1213,7 +1213,7 @@ async function getBTCIndicators() {
   const priceRising = priceNow > priceBefore;
 
   let trend = "bearish";
-  if (ema50[ema50.length - 1] > ema200[ema200.length - 1] && priceRising) {
+  if (ema50[ema50.length - 1] < ema200[ema200.length - 1] && priceRising) {
     trend = "bullish";
   }
 
@@ -1259,7 +1259,16 @@ async function updateMarketCondition() {
 
   nearPullback = emaGap > 0.01;
   console.log(`Near Pullback: ${nearPullback}`);
+  
+const pullbackEl = document.getElementById("pullbackStatus");
+if (pullbackEl) {
+  const valueEl = pullbackEl.querySelector(".value");
+  const isRisky = nearPullback;
 
+  valueEl.textContent = isRisky ? "true" : "false";
+  pullbackEl.style.color = isRisky ? "#f97316" : "#22c55e"; // Orange for risky, Green for normal
+}
+  
   const statusEl = document.getElementById("marketStatus");
   if (statusEl) {
     
