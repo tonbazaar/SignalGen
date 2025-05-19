@@ -148,7 +148,7 @@ input:focus {
 }
 
     #settingsIcon, #premiumIcon, 
-#statsIcon, #YoutubeIcon {
+#statsIcon {
   position: absolute;
   top: 10px;
   font-size: 22px;
@@ -172,14 +172,9 @@ input:focus {
   right: 90px;
   color: #3b82f6; /* blue */
 }
-
-    #YoutubeIcon {
-  right: 10px;
-  color: #FF0000; /* red */
-    }
     
 #settingsIcon:hover, #premiumIcon:hover,
-#statsIcon:hover, #YoutubeIcon:hover {
+#statsIcon:hover {
   transform: scale(1.2);
   background-color: rgba(255, 255, 255, 0.1); /* subtle glow on dark */
 }
@@ -208,9 +203,6 @@ a:hover {
 
   <div class="form-container" id="loginForm">
     <h2>Login</h2>
-    <a href="https://www.youtube.com/watch?v=YOUR_VIDEO_ID" target="_blank" style="color: #FF0000; text-decoration: none;">
-    <i id="YoutubeIcon" class="fab fa-youtube" title="YouTube Tutorial"></i>
-    </a>
     <input type="password" id="password" placeholder="Enter your password">
     <button onclick="login()">Login</button>
     <div class="error" id="loginError"></div>
