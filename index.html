@@ -148,7 +148,7 @@ input:focus {
 }
 
     #settingsIcon, #premiumIcon, 
-#statsIcon, #socialIcon {
+#statsIcon {
   position: absolute;
   top: 10px;
   font-size: 22px;
@@ -172,14 +172,9 @@ input:focus {
   right: 90px;
   color: #3b82f6; /* blue */
 }
-
-    #socialIcon {
-  right: 130px;
-  color: #EF4444; /* red */
-}
     
 #settingsIcon:hover, #premiumIcon:hover,
-#statsIcon:hover, #socialIcon:hover {
+#statsIcon:hover {
   transform: scale(1.2);
   background-color: rgba(255, 255, 255, 0.1); /* subtle glow on dark */
 }
@@ -230,7 +225,6 @@ a:hover {
   <i id="settingsIcon" class="fas fa-cog" title="Settings"></i>
   <i id="premiumIcon" class="fas fa-crown" title="Unlock Premium"></i>
   <i id="statsIcon" class="fas fa-chart-bar" title="View Stats"></i>
-  <i id="socialIcon" class="fas fa-globe" title="Social Links"></i>
   <h1 id="rocketIcon"><span class="flying">🚀</span> Signal Generator</h1>
   <p class="tagline">Auto-execute Binance trades with premium crypto signals</p>
   <button id="scanButton" onclick="scan()">Scan Now</button>
@@ -423,37 +417,11 @@ a:hover {
   </button>
 </div>
 
-  <div id="socialBox" style="
-  margin-top: 12px;
-  padding: 10px 14px; /* reduced padding */
-  border-radius: 10px; /* slightly smaller */
-  background-color: #161b22;
-  border: 1px solid #30363d;
-  color: #e6edf3;
-  font-size: 14px; /* slightly smaller font */
-  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.2); /* lighter shadow */
-  max-width: 300px;
-  margin-left: auto;
-  margin-right: auto;
-">
-  <div style="font-weight: 600; font-size: 16px; margin-bottom: 10px;">
-    <i class="fas fa-share-alt" style="color: #e879f9; margin-right: 6px;"></i>
-    Social Media
-  </div>
-  <div style="display: flex; flex-direction: column; gap: 10px;">
-    <a href="https://youtube.com/@yourchannel" target="_blank" style="color: #ef4444; text-decoration: none;">
-      <i class="fab fa-youtube"></i> YouTube Channel
-    </a>
-    <a href="https://t.me/yourbot" target="_blank" style="color: #26a5e4; text-decoration: none;">
-      <i class="fab fa-telegram"></i> Telegram Bot
-    </a>
-    <a href="https://t.me/yourchannel" target="_blank" style="color: #26a5e4; text-decoration: none;">
-      <i class="fab fa-telegram-plane"></i> Telegram Channel
-    </a>
-    <a href="https://www.tiktok.com/@yourusername" target="_blank" style="color: #ff0050; text-decoration: none;">
-      <i class="fab fa-tiktok"></i> TikTok Page
-    </a>
-  </div>
+  <!-- YouTube Icon Button -->
+<div style="text-align:center; margin-top: 16px;">
+  <a href="https://www.youtube.com/watch?v=YOUR_VIDEO_ID" target="_blank" style="color: #FF0000; text-decoration: none;">
+    <i class="fab fa-youtube" style="font-size: 24px; border: 1px solid #FF0000; padding: 8px; border-radius: 50%;"></i>
+  </a>
 </div>
 
   <footer style="text-align:center; font-size:13px; color:#8b949e; margin-top:40px;">
@@ -581,23 +549,6 @@ document.getElementById("saveSettings").addEventListener("click", () => {
   } else {
     showError("Enter a valid number.");
   }
-});
-
-document.getElementById("socialIcon").addEventListener("click", () => {
-  const socialBox = document.getElementById("socialBox");
-  const otherBoxes = [
-    document.getElementById("settingsBox"),
-    document.getElementById("premiumStatusBox"),
-    document.getElementById("premiumForm"),
-    document.getElementById("todayStatsBox"),
-    document.getElementById("tutorialBox")
-  ];
-
-  otherBoxes.forEach((box) => {
-    if (box && box.style.display === "block") box.style.display = "none";
-  });
-
-  socialBox.style.display = socialBox.style.display === "block" ? "none" : "block";
 });
 
 async function updateTradeStats() {
