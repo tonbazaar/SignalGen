@@ -570,8 +570,7 @@ async function updateTradeStats() {
     try {
       const count = await getOpenPositionsCount();
 
-      if (count >= 3) {
-        showError("Limit reached. Avoid overtrading.");
+      if (count >= 10) {
         scanButton.disabled = true;
         localStorage.setItem("scanBlocked", "true");
         hideSignalBlocks();
@@ -589,7 +588,6 @@ async function updateTradeStats() {
   if (localStorage.getItem("scanBlocked") === "true") {
     scanButton.disabled = true;
     hideSignalBlocks();
-    showError("Limit reached. Avoid overtrading.");
   } else {
     checkAndSetTradeLimit(); // Also runs a live check
   }
@@ -1164,7 +1162,7 @@ async function updateMarketCondition() {
   marketCondition = (trendOkay && noVolumeSpike) ? "GOOD" : "BAD";
   btcTrend = trend;
 
-  nearPullback = emaGap < 0.01;
+  nearPullback = emaGap > 0.01;
   console.log(`Near Pullback: ${nearPullback}`);
 
   const pullbackEl = document.getElementById("pullbackStatus");
