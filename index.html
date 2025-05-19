@@ -691,6 +691,34 @@ async function updateTradeStats() {
   setInterval(checkAndSetTradeLimit, 10000);
 });
 
+  const checkDailyPnLLimit = async () => {
+  const today = new Date().toISOString().split("T")[0];
+  const blockedDate = localStorage.getItem("pnlBlockedDate");
+
+  // Already blocked today
+  if (localStorage.getItem("pnlBlocked") === "true" && blockedDate === today) {
+    scanButton.disabled = true;
+    hideSignalBlocks();
+    return;
+  }
+
+  // Get today's PnL
+  const pnl = await getTodayPnL(); // Make sure this function exists and returns a number
+
+  if (pnl <= -10 || pnl >= 10) {
+    localStorage.setItem("pnlBlocked", "true");
+    localStorage.setItem("pnlBlockedDate", today);
+    scanButton.disabled = true;
+    hideSignalBlocks();
+  } else {
+    scanButton.disabled = false;
+    showSignalBlocks();
+  }
+};
+    
+checkDailyPnLLimit();
+setInterval(checkDailyPnLLimit, 20000); // Optional: recheck every 10 seconds
+ 
 // Login
 function login() {
   const password = document.getElementById("password").value;
