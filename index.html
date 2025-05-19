@@ -192,13 +192,17 @@ a:hover {
   display: none;
       }
 
-@keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  20%, 60% { transform: translateX(-4px); }
-  40%, 80% { transform: translateX(4px); }
+@keyframes pulseBounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
 }
-.shake {
-  animation: shake 0.6s infinite;
+.bounce {
+  animation: pulseBounce 1.5s infinite;
+}
     
   </style>
 </head>
@@ -206,13 +210,13 @@ a:hover {
 
 <a href="https://www.youtube.com/watch?v=YOUR_VIDEO_ID" target="_blank"
    style="position: fixed; bottom: 70px; right: 20px; background-color: #FF0000; color: #fff; padding: 8px 12px; border-radius: 30px; font-weight: bold; text-decoration: none; box-shadow: 0 4px 10px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 6px; font-size: 13px;"
-   class="shake">
+   class="bounce">
   <i class="fab fa-youtube"></i> Watch Tutorial
 </a>
 
 <a href="https://t.me/SUAIB235" target="_blank"
    style="position: fixed; bottom: 20px; right: 20px; background-color: #1d9bf0; color: #e6edf3; padding: 8px 12px; border-radius: 30px; font-weight: bold; text-decoration: none; box-shadow: 0 4px 10px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 6px; font-size: 13px;"
-   class="shake">
+   class="bounce">
   <i class="fab fa-telegram-plane"></i> Chat with Admin
 </a>
 
