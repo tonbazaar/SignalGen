@@ -60,7 +60,7 @@ h2 {
 }
 
 .loss {
-  color: #b91c1c;
+  color: #EF4444;
 }
 
 /* === Buttons === */
@@ -1273,13 +1273,13 @@ if (pullbackEl) {
   if (statusEl) {
     
     if ((marketCondition === "GOOD" && btcTrend === "bearish") || (marketCondition === "BAD" && btcTrend === "bullish")) {
-      const marketColor = marketCondition === "GOOD" ? "#22c55e" : "#b91c1c";
-      const trendColor = btcTrend === "bullish" ? "#22c55e" : "#b91c1c";
+      const marketColor = marketCondition === "GOOD" ? "#22c55e" : "#EF4444";
+      const trendColor = btcTrend === "bullish" ? "#22c55e" : "#EF4444";
 
       statusEl.innerHTML = `<i class="fas fa-signal"></i> <span style="color:${marketColor}">${marketCondition}</span> <span style="color:${trendColor}">${btcTrend.toUpperCase()}</span>`;
       } else {
       
-      const color = (marketCondition === "GOOD" && btcTrend === "bullish") ? "#22c55e" : "#b91c1c";
+      const color = (marketCondition === "GOOD" && btcTrend === "bullish") ? "#22c55e" : "#EF4444";
       statusEl.innerHTML = `<i class="fas fa-signal"></i> ${marketCondition} ${btcTrend.toUpperCase()}`;
       statusEl.style.color = color;
     }
