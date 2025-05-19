@@ -505,6 +505,46 @@ statsIcon.addEventListener("click", () => {
   statsBox.style.display = statsBox.style.display === "none" ? "block" : "none";
 });
 
+  // Settings Icon Logic
+const settingsIcon = document.getElementById("settingsIcon");
+const settingsModal = document.getElementById("settingsModal");
+const usdtInput = document.getElementById("usdtInput");
+const calculatedMargin = document.getElementById("calculatedMargin");
+const saveSettings = document.getElementById("saveSettings");
+
+// Open Settings Modal
+settingsIcon.addEventListener("click", () => {
+  // Hide other boxes
+  const premiumForm = document.getElementById("premiumForm");
+  const premiumBox = document.getElementById("premiumStatusBox");
+  const statsBox = document.getElementById("todayStatsBox");
+
+  if (premiumForm) premiumForm.style.display = "none";
+  if (premiumBox) premiumBox.style.display = "none";
+  if (statsBox) statsBox.style.display = "none";
+
+  settingsModal.style.display = "flex";
+});
+
+// Calculate margin in real time
+usdtInput.addEventListener("input", () => {
+  const usdt = parseFloat(usdtInput.value);
+  const margin = !isNaN(usdt) ? usdt / 20 : 0;
+  calculatedMargin.textContent = `Margin: ${margin.toFixed(2)} USDT`;
+});
+
+// Save margin value to localStorage
+saveSettings.addEventListener("click", () => {
+  const usdt = parseFloat(usdtInput.value);
+  if (!isNaN(usdt) && usdt > 0) {
+    localStorage.setItem("tradeUSDT", usdt);
+    showError(`Trade amount saved: ${usdt} USDT`);
+    settingsModal.style.display = "none";
+  } else {
+    showError("Please enter a valid USDT amount.");
+  }
+});
+
 async function updateTradeStats() {
   const startOfToday = new Date();
   startOfToday.setUTCHours(0, 0, 0, 0);
