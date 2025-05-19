@@ -459,12 +459,16 @@ document.addEventListener("DOMContentLoaded", () => {
   const premiumForm = document.getElementById("premiumForm");
   const premiumBox = document.getElementById("premiumStatusBox");
   const statsBox = document.getElementById("todayStatsBox");
+  const settingsBox = document.getElementById("settingsBox");
 
   // Close stats box if open
   if (statsBox && statsBox.style.display === "block") {
     statsBox.style.display = "none";
   }
-
+if (settingsBox && settingsBox.style.display === "block") {
+    settingsBox.style.display = "none"; 
+  }
+    
   // Premium user
   if (window.isPremium && window.premiumStatus) {
     const { daysLeft, expiresOn } = window.premiumStatus;
@@ -493,6 +497,7 @@ statsIcon.addEventListener("click", () => {
   const statsBox = document.getElementById("todayStatsBox");
   const premiumForm = document.getElementById("premiumForm");
   const premiumBox = document.getElementById("premiumStatusBox");
+  const settingsBox = document.getElementById("settingsBox");
 
   // Close other boxes
   if (premiumForm && premiumForm.style.display === "block") {
@@ -501,7 +506,9 @@ statsIcon.addEventListener("click", () => {
   if (premiumBox && premiumBox.style.display === "block") {
     premiumBox.style.display = "none";
   }
-
+  if (settingsBox && settingsBox.style.display === "block") 
+    settingsBox.style.display = "none";
+  }
   // Toggle stats
   statsBox.style.display = statsBox.style.display === "none" ? "block" : "none";
 });
