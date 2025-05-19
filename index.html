@@ -1250,7 +1250,7 @@ let nearPullback = false;
 async function updateMarketCondition() {
   const { ema20, ema50, currentVolume, avgVolume, trend } = await getBTCIndicators();
 
-  const emaGap = Math.abs(ema20 - ema50) / ema200;
+  const emaGap = Math.abs(ema20 - ema50) / ema50;
   const trendOkay = emaGap > 0.002;
   const noVolumeSpike = currentVolume < avgVolume * 1.8;
 
