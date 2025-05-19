@@ -440,6 +440,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (sessionValidUntil && now < parseInt(sessionValidUntil)) {
     loginForm.style.display = "none";
     mainContent.style.display = "block";
+    showError("Welcome back!");
   } else {
     localStorage.removeItem("sessionValidUntil");
     loginForm.style.display = "block";
@@ -690,34 +691,6 @@ async function updateTradeStats() {
   setInterval(checkAndSetTradeLimit, 10000);
 });
 
-  const checkDailyPnLLimit = async () => {
-  const today = new Date().toISOString().split("T")[0];
-  const blockedDate = localStorage.getItem("pnlBlockedDate");
-
-  // Already blocked today
-  if (localStorage.getItem("pnlBlocked") === "true" && blockedDate === today) {
-    scanButton.disabled = true;
-    hideSignalBlocks();
-    return;
-  }
-
-  // Get today's PnL
-  const pnl = await getTodayPnL(); // Make sure this function exists and returns a number
-
-  if (pnl <= -10 || pnl >= 10) {
-    localStorage.setItem("pnlBlocked", "true");
-    localStorage.setItem("pnlBlockedDate", today);
-    scanButton.disabled = true;
-    hideSignalBlocks();
-  } else {
-    scanButton.disabled = false;
-    showSignalBlocks();
-  }
-};
-    
-checkDailyPnLLimit();
-setInterval(checkDailyPnLLimit, 20000); // Optional: recheck every 10 seconds
- 
 // Login
 function login() {
   const password = document.getElementById("password").value;
@@ -1339,7 +1312,7 @@ function toggleScanButton() {
   document.getElementById("positionsCount").innerHTML = `<i class="fas fa-chart-line"></i> ${positionCount}/10`;
 
   const pnl = await getTodayPnL();
-  document.getElementById("todayPnl").innerHTML = `<i class="fas fa-dollar-sign"></i> ${pnl >= 0 ? "+" : ""}$${pnl.toFixed(2)}`;
+  document.getElementById("todayPnl").innerHTML = `<i class="fas fa-dollar-sign"></i> ${pnl >= 0 ? "+" : ""}$${pnl.toFixed(2)}/10`;
 };
     
 async function getFuturesBalance() {
@@ -1463,7 +1436,7 @@ function showError(msg) {
     document.getElementById("positionsCount").innerHTML = `<i class="fas fa-chart-line"></i> ${positionCount}/10`;
 
     const pnl = await getTodayPnL();
-    document.getElementById("todayPnl").innerHTML = `<i class="fas fa-dollar-sign"></i> ${pnl >= 0 ? "+" : ""}$${pnl.toFixed(2)}`;
+    document.getElementById("todayPnl").innerHTML = `<i class="fas fa-dollar-sign"></i> ${pnl >= 0 ? "+" : ""}$${pnl.toFixed(2)}/10`;
 
     console.log("Refreshed at:", new Date().toLocaleTimeString());
   } catch (err) {
