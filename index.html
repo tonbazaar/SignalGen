@@ -230,7 +230,7 @@ a:hover {
   <i id="settingsIcon" class="fas fa-cog" title="Settings"></i>
   <i id="premiumIcon" class="fas fa-crown" title="Unlock Premium"></i>
   <i id="statsIcon" class="fas fa-chart-bar" title="View Stats"></i>
-  <i id="tutorialIcon" class="fas fa-video" title="Video Tutorial"></i>
+  <i id="tutorialIcon" class="fab fa-youtube" title="Video Tutorial"></i>
   <h1 id="rocketIcon"><span class="flying">🚀</span> Signal Generator</h1>
   <p class="tagline">Auto-execute Binance trades with premium crypto signals</p>
   <button id="scanButton" onclick="scan()">Scan Now</button>
@@ -423,6 +423,30 @@ a:hover {
   </button>
 </div>
 
+  <div id="tutorialBox" style="
+  display: none;
+  margin-top: 16px;
+  padding: 16px 20px;
+  border-radius: 12px;
+  background-color: #161b22;
+  border: 1px solid #30363d;
+  color: #e6edf3;
+  font-size: 15px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+  max-width: 320px;
+  margin-left: auto;
+  margin-right: auto;
+">
+  <div style="font-weight: 600; font-size: 16px; margin-bottom: 10px;">
+    <i class="fab fa-youtube" style="color: #ef4444; margin-right: 6px;"></i>
+    Video Tutorial
+  </div>
+  <p>Watch our guide to understand how to use the tool.</p>
+  <a href="https://www.youtube.com/" target="_blank" style="color: #3b82f6; text-decoration: underline;">
+    Watch on YouTube
+  </a>
+</div>
+
   <footer style="text-align:center; font-size:13px; color:#8b949e; margin-top:40px;">
   © 2025 SignalGenerator.store — Built for Binance Futures Trading
 </footer>
@@ -548,6 +572,22 @@ document.getElementById("saveSettings").addEventListener("click", () => {
   } else {
     showError("Enter a valid number.");
   }
+});
+
+document.getElementById("youtubeIcon").addEventListener("click", () => {
+  const tutorialBox = document.getElementById("tutorialBox");
+  const boxes = [
+    document.getElementById("settingsBox"),
+    document.getElementById("premiumStatusBox"),
+    document.getElementById("premiumForm"),
+    document.getElementById("todayStatsBox"),
+  ];
+
+  boxes.forEach((box) => {
+    if (box && box.style.display === "block") box.style.display = "none";
+  });
+
+  tutorialBox.style.display = tutorialBox.style.display === "block" ? "none" : "block";
 });
 
 async function updateTradeStats() {
