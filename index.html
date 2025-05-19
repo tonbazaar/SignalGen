@@ -1213,7 +1213,7 @@ async function getBTCIndicators() {
   const priceRising = priceNow > priceBefore;
 
   let trend = "bearish";
-  if (ema50[ema50.length - 1] < ema200[ema200.length - 1] && priceRising) {
+  if (ema50[ema50.length - 1] > ema200[ema200.length - 1] && priceRising) {
     trend = "bullish";
   }
 
