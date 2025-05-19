@@ -1336,19 +1336,19 @@ async function getTodayPnL() {
 
     // Fetch realized PNL entries from Binance
     const incomeData = await sendSignedRequest("/fapi/v1/income", {
-      incomeType: "REALIZED_PNL",
-      startTime: startTimestamp,
-      limit: 1000
-    });
+  startTime: startTimestamp,
+  limit: 1000
+});
 
-    // Filter for today's entries only (UTC)
-    const today = new Date().toISOString().split("T")[0];
-    const todayPnl = incomeData
-      .filter(entry => {
-        const entryDate = new Date(entry.time).toISOString().split("T")[0];
-        return entry.incomeType === "REALIZED_PNL" && entryDate === today;
-      })
-      .reduce((sum, entry) => sum + parseFloat(entry.income), 0);
+const today = new Date().toISOString().split("T")[0];
+
+// Include all income types: REALIZED_PNL, COMMISSION, FUNDING_FEE, etc.
+const todayPnl = incomeData
+  .filter(entry => {
+    const entryDate = new Date(entry.time).toISOString().split("T")[0];
+    return entryDate === today;
+  })
+  .reduce((sum, entry) => sum + parseFloat(entry.income), 0);
 
     // Display
 const pnlElement = document.getElementById("pnlValue");
