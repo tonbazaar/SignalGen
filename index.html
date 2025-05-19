@@ -1312,7 +1312,7 @@ function toggleScanButton() {
   document.getElementById("positionsCount").innerHTML = `<i class="fas fa-chart-line"></i> ${positionCount}/10`;
 
   const pnl = await getTodayPnL();
-  document.getElementById("todayPnl").innerHTML = `<i class="fas fa-dollar-sign"></i> ${pnl >= 0 ? "+" : ""}$${pnl.toFixed(2)}/10`;
+  document.getElementById("todayPnl").innerHTML = `<i class="fas fa-dollar-sign"></i> ${pnl >= 0 ? "+" : ""}/10$${pnl.toFixed(2)}`;
 };
     
 async function getFuturesBalance() {
@@ -1436,7 +1436,7 @@ function showError(msg) {
     document.getElementById("positionsCount").innerHTML = `<i class="fas fa-chart-line"></i> ${positionCount}/10`;
 
     const pnl = await getTodayPnL();
-    document.getElementById("todayPnl").innerHTML = `<i class="fas fa-dollar-sign"></i> ${pnl >= 0 ? "+" : ""}$${pnl.toFixed(2)}/10`;
+    document.getElementById("todayPnl").innerHTML = `<i class="fas fa-dollar-sign"></i> ${pnl >= 0 ? "+" : ""}/10$${pnl.toFixed(2)}`;
 
     console.log("Refreshed at:", new Date().toLocaleTimeString());
   } catch (err) {
