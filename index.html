@@ -147,38 +147,36 @@ input:focus {
   font-size: 14px;
 }
 
-    #settingsIcon,
-#statsIcon,
-#premiumIcon {
-  position: absolute;
-  top: 10px;
-  font-size: 22px;
-  padding: 10px;
-  border-radius: 50%;
-  cursor: pointer;
-  transition: transform 0.2s ease, background-color 0.3s ease;
+    #settingsIcon, #premiumIcon, 
+#statsIcon {
+  position: absolute;
+  top: 10px;
+  font-size: 22px;
+  padding: 10px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.2s ease, background-color 0.3s ease;
 }
 
 #settingsIcon {
-  right: 90px;
-  color: #a3a3a3; /* gray for settings */
+  right: 50px;
+  color: #22c55e; /* Green */
+}
+    
+#premiumIcon {
+  right: 50px;
+  color: #facc15; /* gold/yellow */
 }
 
 #statsIcon {
-  right: 50px;
-  color: #60a5fa; /* blue */
+  right: 90px;
+  color: #60a5fa; /* blue */
 }
 
-#premiumIcon {
-  right: 10px;
-  color: #facc15; /* gold/yellow */
-}
-
-#settingsIcon:hover,
-#statsIcon:hover,
-#premiumIcon:hover {
-  transform: scale(1.2);
-  background-color: rgba(255, 255, 255, 0.1); /* subtle glow */
+#settingsIcon:hover, #premiumIcon:hover,
+#statsIcon:hover {
+  transform: scale(1.2);
+  background-color: rgba(255, 255, 255, 0.1); /* subtle glow on dark */
 }
  
 a {
