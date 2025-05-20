@@ -1401,7 +1401,7 @@ if (pullbackEl) {
   const valueEl = pullbackEl.querySelector(".value");
   const isRisky = nearPullback;
 
-  valueEl.textContent = isRisky ? "true" : "false";
+  valueEl.textContent = isRisky ? "Risk Zone" : "Safe Zone";
   pullbackEl.style.color = isRisky ? "#f97316" : "#22c55e"; // Orange for risky, Green for normal
 }
 
