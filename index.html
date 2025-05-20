@@ -4,36 +4,55 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Maintenance Mode</title>
+  <title>Under Maintenance</title>
   <style>
     body {
-      margin: 0;
-      padding: 0;
-      background-color: #0f172a;
-      color: #f1f5f9;
       font-family: Arial, sans-serif;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
+      background: #111827;
+      color: #ffffff;
       text-align: center;
+      padding: 100px 20px;
     }
     h1 {
-      font-size: 2.5rem;
-      color: #facc15;
+      font-size: 2.5em;
+      margin-bottom: 10px;
     }
-    p {
-      font-size: 1.2rem;
-      margin-top: 10px;
-      color: #cbd5e1;
+    #countdown {
+      font-size: 1.8em;
+      color: #22c55e;
+      margin-top: 20px;
     }
   </style>
 </head>
 <body>
-  <h1>System Under Maintenance</h1>
-  <p>We are currently updating our system. Please check back shortly.</p>
+  <h1>We're Under Maintenance</h1>
+  <p>We'll be back shortly!</p>
+  <div id="countdown">Loading...</div>
+
+  <script>
+    // Set your target date/time (Year, Month (0-11), Day, Hour, Minute, Second)
+    const targetDate = new Date("2025-05-21T12:00:00").getTime();
+
+    const countdownEl = document.getElementById("countdown");
+
+    const interval = setInterval(() => {
+      const now = new Date().getTime();
+      const distance = targetDate - now;
+
+      if (distance < 0) {
+        clearInterval(interval);
+        countdownEl.innerHTML = "We're back online!";
+        return;
+      }
+
+      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+      countdownEl.innerHTML = `${days}d ${hours}h ${minutes}m ${seconds}s remaining`;
+    }, 1000);
+  </script>
 </body>
 </html>
 
