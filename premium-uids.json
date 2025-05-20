@@ -2,7 +2,7 @@
   "_note": "Manually managed premium users with 30-day access. Dates are in ISO 8601 format.",
   "premium": [
     {
-      "uid": "ae8c8ded-bc10-4e4e-b755-a229044e955",
+      "uid": "ae8c8ded-bc10-4e4e-b755-a229044e955a",
       "start": "2025-05-13T10:00:00Z",
       "expires": "2025-06-12T10:00:00Z"
     },
@@ -25,11 +25,6 @@
   "uid": "1305a1ed-fb5d-40b0-9cae-210f096254c5",
   "start": "2025-05-13T19:51:16.581Z",
   "expires": "2025-06-12T19:51:16.581Z"
-}, 
-   {
-  "uid": "7e94f3f2-8d14-46aa-8ff2-922b5a4e5efb",
-  "start": "2025-05-20T08:01:57.101Z",
-  "expires": "2025-06-19T08:01:57.101Z"
 } 
   ]
 }
