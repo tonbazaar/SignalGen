@@ -1,61 +1,3 @@
-<!--
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Under Maintenance</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #111827;
-      color: #ffffff;
-      text-align: center;
-      padding: 100px 20px;
-    }
-    h1 {
-      font-size: 2.5em;
-      margin-bottom: 10px;
-    }
-    #countdown {
-      font-size: 1.8em;
-      color: #22c55e;
-      margin-top: 20px;
-    }
-  </style>
-</head>
-<body>
-  <h1>We're Under Maintenance</h1>
-  <p>We'll be back shortly!</p>
-  <div id="countdown">Loading...</div>
-
-  <script>
-    const targetDate = new Date("2025-05-21T12:00:00").getTime();
-
-    const countdownEl = document.getElementById("countdown");
-
-    const interval = setInterval(() => {
-      const now = new Date().getTime();
-      const distance = targetDate - now;
-
-      if (distance < 0) {
-        clearInterval(interval);
-        countdownEl.innerHTML = "We're back online!";
-        return;
-      }
-
-      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-      countdownEl.innerHTML = `${days}d ${hours}h ${minutes}m ${seconds}s remaining`;
-    }, 1000);
-  </script>
-</body>
-</html>
--->
-
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -1646,4 +1588,3 @@ window.onload = () => {
   </script>
 </body>
 </html>
-
