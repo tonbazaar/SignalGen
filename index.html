@@ -953,13 +953,15 @@ async function getPrecisionInfo(symbol) {
     const latestRsi = rsi.at(-1);
     const latestMacd = macd.at(-1);
     const latestSignal = signal.at(-1);
-    const latestAtr = atr.at(-1) || 0;
+    const latestAtr = atr.at(-1);
     const macdHistogram = latestMacd - latestSignal;
 
     const candleStrength = (lastClose - lastOpen) / lastClose;
     const wickRatio = (lastHigh - lastLow) / lastClose;
 
-    // Config
+    const recentHigh = Math.max(...highs.slice(-20));
+    const recentLow = Math.min(...lows.slice(-20));
+
     const THRESHOLDS = {
       rsiLong: 55,
       rsiShort: 45,
@@ -971,7 +973,6 @@ async function getPrecisionInfo(symbol) {
       minConfirmCandles: 2
     };
 
-    // Recent candles
     const recentOpens = opens.slice(-3);
     const recentCloses = closes.slice(-3);
     const recentBullishCount = recentCloses.filter((c, i) => c > recentOpens[i]).length;
@@ -983,124 +984,104 @@ async function getPrecisionInfo(symbol) {
     let score = 0, shortScore = 0;
     let scoreReasons = [], shortScoreReasons = [];
 
-if (latestEma9 > latestEma21) { score += 1; scoreReasons.push("EMA9 > EMA21"); }
-if (latestRsi > THRESHOLDS.rsiLong) { score += 1; scoreReasons.push("RSI > 55"); }
-if (macdHistogram > THRESHOLDS.macdPositive) { score += 1; scoreReasons.push("MACD > 0"); }
-if (lastVol > dynamicVolumeThreshold) { score += 1; scoreReasons.push("Volume > Avg * 1.5"); }
-if (candleStrength > dynamicCandleStrength) { score += 1; scoreReasons.push("Candle Strength > Threshold"); }
-if (wickRatio < THRESHOLDS.wickRatioMax) { score += 1; scoreReasons.push("Wick Ratio < 0.02"); }
-if (recentBullishCount >= THRESHOLDS.minConfirmCandles) { score += 1; scoreReasons.push("2+ Bullish Candles"); }
+    // LONG score logic
+    if (latestEma9 > latestEma21) { score++; scoreReasons.push("EMA9 > EMA21"); }
+    if (latestRsi > THRESHOLDS.rsiLong) { score++; scoreReasons.push("RSI > 55"); }
+    if (macdHistogram > THRESHOLDS.macdPositive) { score++; scoreReasons.push("MACD > 0"); }
+    if (lastVol > dynamicVolumeThreshold) { score++; scoreReasons.push("Volume > Avg * 1.5"); }
+    if (candleStrength > dynamicCandleStrength) { score++; scoreReasons.push("Strong Bullish Candle"); }
+    if (wickRatio < THRESHOLDS.wickRatioMax) { score++; scoreReasons.push("Wick Ratio < 0.02"); }
+    if (recentBullishCount >= THRESHOLDS.minConfirmCandles) { score++; scoreReasons.push("2+ Bullish Candles"); }
 
-if (latestEma9 < latestEma21) { shortScore += 1; shortScoreReasons.push("EMA9 < EMA21"); }
-if (latestRsi < THRESHOLDS.rsiShort) { shortScore += 1; shortScoreReasons.push("RSI < 45"); }
-if (macdHistogram < THRESHOLDS.macdNegative) { shortScore += 1; shortScoreReasons.push("MACD < 0"); }
-if (lastVol > dynamicVolumeThreshold) { shortScore += 1; shortScoreReasons.push("Volume > Avg * 1.5"); }
-if (candleStrength < -dynamicCandleStrength) { shortScore += 1; shortScoreReasons.push("Candle Strength Negative"); }
-if (wickRatio < THRESHOLDS.wickRatioMax) { shortScore += 1; shortScoreReasons.push("Wick Ratio < 0.02"); }
-if (recentBearishCount >= THRESHOLDS.minConfirmCandles) { shortScore += 1; shortScoreReasons.push("2+ Bearish Candles"); }
+    // SHORT score logic
+    if (latestEma9 < latestEma21) { shortScore++; shortScoreReasons.push("EMA9 < EMA21"); }
+    if (latestRsi < THRESHOLDS.rsiShort) { shortScore++; shortScoreReasons.push("RSI < 45"); }
+    if (macdHistogram < THRESHOLDS.macdNegative) { shortScore++; shortScoreReasons.push("MACD < 0"); }
+    if (lastVol > dynamicVolumeThreshold) { shortScore++; shortScoreReasons.push("Volume > Avg * 1.5"); }
+    if (candleStrength < -dynamicCandleStrength) { shortScore++; shortScoreReasons.push("Bearish Candle Strength"); }
+    if (wickRatio < THRESHOLDS.wickRatioMax) { shortScore++; shortScoreReasons.push("Wick Ratio < 0.02"); }
+    if (recentBearishCount >= THRESHOLDS.minConfirmCandles) { shortScore++; shortScoreReasons.push("2+ Bearish Candles"); }
 
-let signalType = null;
-let confidence = "None";
-let reasons = [];
+    // Signal decision
+    let signalType = null;
+    let confidence = "None";
+    let reasons = [];
 
-if (score >= 7) {
-  signalType = "LONG";
-  confidence = "Very High";
-  reasons = scoreReasons;
-} else if (shortScore >= 7) {
-  signalType = "SHORT";
-  confidence = "Very High";
-  reasons = shortScoreReasons;
-} else if (score === 6) {
-  signalType = "LONG";
-  confidence = "High";
-  reasons = scoreReasons;
-} else if (shortScore === 6) {
-  signalType = "SHORT";
-  confidence = "High";
-  reasons = shortScoreReasons;
-}
+    if (score >= 7) {
+      signalType = "LONG";
+      confidence = "Very High";
+      reasons = scoreReasons;
+    } else if (shortScore >= 7) {
+      signalType = "SHORT";
+      confidence = "Very High";
+      reasons = shortScoreReasons;
+    }
 
-if (signalType && symbol) {
-          const now = Date.now();
-          const lastSignalTime = cooldowns[symbol] || 0;
-          if (now - lastSignalTime < COOLDOWN_MINUTES * 60 * 1000) return null;
-          cooldowns[symbol] = now;
-  
-if (marketCondition !== "GOOD") {
-  console.log("Signal skipped: Market condition is not GOOD.");
-  return null;
-}
+    // === Enhanced Filters ===
+    if (signalType === "LONG" && lastClose > recentHigh * 0.98) return null;
+    if (signalType === "SHORT" && lastClose < recentLow * 1.02) return null;
 
-if (nearPullback) {
-  console.log("Signal skipped: BTC is near a potential pullback zone.");
-  return null;
-}
+    if (!signalType || marketCondition !== "GOOD" || nearPullback) return null;
 
-if ((btcTrend === "bullish" && signalType === "SHORT") ||
-    (btcTrend === "bearish" && signalType === "LONG")) {
-  console.log(`Signal skipped: BTC is ${btcTrend}, signal direction is ${signalType}`);
-  return null;
-}
+    if ((btcTrend === "bullish" && signalType === "SHORT") ||
+        (btcTrend === "bearish" && signalType === "LONG")) {
+      return null;
+    }
 
-const price = lastClose; 
-const atrMultiplier = 2.0; // You can tune this
-const rrRatio = 1.2; // Risk\:Reward
-const minSlPercent = 0.005; // 0.5%
+    // Cooldown check
+    const now = Date.now();
+    const lastSignalTime = cooldowns[symbol] || 0;
+    if (now - lastSignalTime < COOLDOWN_MINUTES * 60 * 1000) return null;
+    cooldowns[symbol] = now;
 
-let sl, tp;
+    // === SL / TP Based on Swing Levels ===
+    let sl, tp, risk, rrRatio = 1.2;
+    const price = lastClose;
+    const swingLow = Math.min(...lows.slice(-10));
+    const swingHigh = Math.max(...highs.slice(-10));
 
-const rawSl = signalType === "LONG"
-  ? price - latestAtr * atrMultiplier
-  : price + latestAtr * atrMultiplier;
+    if (signalType === "LONG") {
+      sl = Math.min(price - price * 0.005, swingLow);
+      risk = price - sl;
+      tp = price + risk * rrRatio;
+    } else {
+      sl = Math.max(price + price * 0.005, swingHigh);
+      risk = sl - price;
+      tp = price - risk * rrRatio;
+    }
 
-const minSl = price * minSlPercent;
+    sl = sl.toFixed(5);
+    tp = tp.toFixed(5);
 
-// Ensure SL is not too tight
-sl = signalType === "LONG"
-  ? Math.min(price - minSl, rawSl)
-  : Math.max(price + minSl, rawSl);
+    const escapedReasons = reasons.map(r =>
+      r.replace(/&/g, '&amp;')
+       .replace(/</g, '&lt;')
+       .replace(/>/g, '&gt;')
+    ).join('\n');
 
-// Calculate TP based on SL distance (risk-reward logic)
-const risk = Math.abs(price - sl);
-tp = signalType === "LONG"
-  ? (price + risk * rrRatio)
-  : (price - risk * rrRatio);
-
-// Format to 5 decimals (adjust if needed for token precision)
-sl = sl.toFixed(5);
-tp = tp.toFixed(5);
-
-const escapedReasons = reasons.map(r =>
-  r.replace(/&/g, '&amp;')
-   .replace(/</g, '&lt;')
-   .replace(/>/g, '&gt;')
-).join('\n');
-
-const telegramMessage = `
-<b>🚨 Signal Alert </b>  
-━━━━━━━━━━━━━━━━━  
-<b>📊 Pair:</b> <code>${symbol}</code>  
-<b>📉 Position:</b> <b><code>${signalType}</code></b>  
-<b>🎯 Entry:</b> <code>${price.toFixed(5)}</code>  
-<b>⭐ Take Profit:</b> <code>${tp}</code>  
-<b>⛔ Stop Loss:</b> <code>${sl}</code>  
-<b>⚙️ Leverage:</b> <code>10x – 20x</code>  
-<b>🔒 Confidence:</b> <code>${confidence}</code>  
-━━━━━━━━━━━━━━━━━  
-<b>🧪 Matched Rules:</b>  
+    const telegramMessage = `
+<b>🚨 Signal Alert </b>  
+━━━━━━━━━━━━━━━━━  
+<b>📊 Pair:</b> <code>${symbol}</code>  
+<b>📉 Position:</b> <b><code>${signalType}</code></b>  
+<b>🎯 Entry:</b> <code>${price.toFixed(5)}</code>  
+<b>⭐ Take Profit:</b> <code>${tp}</code>  
+<b>⛔ Stop Loss:</b> <code>${sl}</code>  
+<b>⚙️ Leverage:</b> <code>10x – 20x</code>  
+<b>🔒 Confidence:</b> <code>${confidence}</code>  
+━━━━━━━━━━━━━━━━━  
+<b>🧪 Matched Rules:</b>  
 <pre>${escapedReasons}</pre>
 
-<b>🧠 Strategy:</b>  
-<i>SL is mandatory. Always apply position sizing and risk management.</i>  
+<b>🧠 Strategy:</b>  
+<i>SL is mandatory. Always apply position sizing and risk management.</i>  
 
 <b>🔎 Source:</b> <i>High-confluence algo strategy</i>
 `;
 
-await sendToTelegram(telegramMessage);
+    await sendToTelegram(telegramMessage);
 
-
-          return `
+    return `
 <div class="signal-block">
   <b>📊 Symbol:</b> ${symbol}<br>
   <b>🚨 SIGNAL:</b> <span class="${signalType === "LONG" ? "long" : "short"}">${signalType}</span><br>
@@ -1110,13 +1091,12 @@ await sendToTelegram(telegramMessage);
   <b>⚙️ Leverage:</b> ${confidence === "High" ? "20x (or max)" : "10–20x"}<br>
   <b>✅ Confidence:</b> <code>${confidence} (score: ${signalType === "LONG" ? score : shortScore})</code>
   <button class="trade-btn" onclick="placeTrade('${symbol}', '${signalType === "LONG" ? "BUY" : "SELL"}', '${price.toFixed(5)}', '${tp}', '${sl}')">Trade</button>
-  </div>`;
-        }
-      } catch (err) {
-        console.error("Error analyzing", symbol, err);
-        return null;
-      }
-    }
+</div>`;
+  } catch (err) {
+    console.error("Error analyzing", symbol, err);
+    return null;
+  }
+}
 
     function calculateEMA(closes, period) {
       const k = 2 / (period + 1);
