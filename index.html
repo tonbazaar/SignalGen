@@ -1045,8 +1045,11 @@ if ((btcTrend === "bullish" && signalType === "SHORT") ||
 
 // 1. Avoid weak breakout candles
 const lastCandleBody = Math.abs(lastClose - lastOpen);
-const bodyToRangeRatio = lastCandleBody / (lastHigh - lastLow);
-if (bodyToRangeRatio < 0.4) {
+const bodyToRangeRatio = (lastHigh !== lastLow)
+  ? lastCandleBody / (lastHigh - lastLow)
+  : 0;
+
+if (bodyToRangeRatio < 0.6) {
   console.log("Signal skipped: Weak breakout candle body.");
   return null;
 }
@@ -1069,13 +1072,14 @@ if ((signalType === "LONG" && !trendUp) || (signalType === "SHORT" && !trendDown
   return null;
 }
 
+const price = lastClose; 
+  
 // 4. ATR minimum threshold (avoid tight range)
 if (latestAtr < price * 0.0025) {
   console.log("Signal skipped: ATR too low (range too tight).");
   return null;
 }
 
-const price = lastClose; 
 const atrMultiplier = 2.0; // You can tune this
 const rrRatio = 1.2; // Risk\:Reward
 const minSlPercent = 0.005; // 0.5%
