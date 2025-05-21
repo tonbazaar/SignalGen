@@ -967,7 +967,7 @@ async function getPrecisionInfo(symbol) {
       macdNegative: 0.0,
       volMultiplier: 1.2,
       candleStrengthMin: 0.0015,
-      wickRatioMax: 0.03,
+      wickRatioMax: 0.02,
       minConfirmCandles: 2
     };
 
@@ -1045,7 +1045,7 @@ if ((btcTrend === "bullish" && signalType === "SHORT") ||
 
 const price = lastClose; 
 const atrMultiplier = 1.8; // You can tune this
-const rrRatio = 1.5; // Risk\:Reward
+const rrRatio = 1.3; // Risk\:Reward
 const minSlPercent = 0.0075; // 0.75%
 
 let sl, tp;
