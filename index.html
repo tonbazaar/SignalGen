@@ -1008,14 +1008,22 @@ async function getPrecisionInfo(symbol) {
     let reasons = [];
 
     if (score >= 7) {
-      signalType = "LONG";
-      confidence = "Very High";
-      reasons = scoreReasons;
-    } else if (shortScore >= 7) {
-      signalType = "SHORT";
-      confidence = "Very High";
-      reasons = shortScoreReasons;
-    }
+  signalType = "LONG";
+  confidence = "Very High";
+  reasons = scoreReasons;
+} else if (shortScore >= 7) {
+  signalType = "SHORT";
+  confidence = "Very High";
+  reasons = shortScoreReasons;
+} else if (score === 6) {
+  signalType = "LONG";
+  confidence = "High";
+  reasons = scoreReasons;
+} else if (shortScore === 6) {
+  signalType = "SHORT";
+  confidence = "High";
+  reasons = shortScoreReasons;
+}
 
     // === Enhanced Filters ===
     if (signalType === "LONG" && lastClose > recentHigh * 0.98) return null;
