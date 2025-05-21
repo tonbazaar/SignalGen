@@ -1046,7 +1046,7 @@ if ((btcTrend === "bullish" && signalType === "SHORT") ||
 // 1. Avoid weak breakout candles
 const lastCandleBody = Math.abs(lastClose - lastOpen);
 const bodyToRangeRatio = lastCandleBody / (lastHigh - lastLow);
-if (bodyToRangeRatio < 0.6) {
+if (bodyToRangeRatio < 0.4) {
   console.log("Signal skipped: Weak breakout candle body.");
   return null;
 }
