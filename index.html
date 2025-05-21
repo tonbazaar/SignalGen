@@ -899,7 +899,7 @@ async function getPrecisionInfo(symbol) {
   if (!autoTriggered) {
     clearInterval(scanInterval); // Reset interval when manually scanning
     autoScanActive = true;
-    scanInterval = setInterval(() => scan(true), 15000); // Run every 15s
+    scanInterval = setInterval(() => scan(true), 30000); // Run every 30s
   }
 
   output.innerHTML = "Scanning...";
@@ -921,7 +921,7 @@ async function getPrecisionInfo(symbol) {
 
        async function analyzeSymbol(symbol) {
   try {
-    const url = `https://fapi.binance.com/fapi/v1/klines?symbol=${symbol}&interval=5m&limit=100`;
+    const url = `https://fapi.binance.com/fapi/v1/klines?symbol=${symbol}&interval=15m&limit=100`;
     const res = await fetch(url);
     const data = await res.json();
 
@@ -965,9 +965,9 @@ async function getPrecisionInfo(symbol) {
       rsiShort: 45,
       macdPositive: 0.0,
       macdNegative: 0.0,
-      volMultiplier: 1.5,
-      candleStrengthMin: 0.002,
-      wickRatioMax: 0.02,
+      volMultiplier: 1.2,
+      candleStrengthMin: 0.0015,
+      wickRatioMax: 0.03,
       minConfirmCandles: 2
     };
 
@@ -1044,9 +1044,9 @@ if ((btcTrend === "bullish" && signalType === "SHORT") ||
 }
 
 const price = lastClose; 
-const atrMultiplier = 2.0; // You can tune this
-const rrRatio = 1.2; // Risk\:Reward
-const minSlPercent = 0.005; // 0.5%
+const atrMultiplier = 1.8; // You can tune this
+const rrRatio = 1.5; // Risk\:Reward
+const minSlPercent = 0.0075; // 0.75%
 
 let sl, tp;
 
@@ -1070,7 +1070,6 @@ tp = signalType === "LONG"
 // Format to 5 decimals (adjust if needed for token precision)
 sl = sl.toFixed(5);
 tp = tp.toFixed(5);
-
 
 const escapedReasons = reasons.map(r =>
   r.replace(/&/g, '&amp;')
@@ -1119,7 +1118,6 @@ await sendToTelegram(telegramMessage);
       }
     } 
         
-
     function calculateEMA(closes, period) {
       const k = 2 / (period + 1);
       let ema = [closes[0]];
