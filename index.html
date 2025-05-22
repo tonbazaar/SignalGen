@@ -1037,9 +1037,9 @@ if (!safeToEnter) {
   return null;
 }
 
-if ((btcTrend === "bullish" && signalType === "SHORT") ||
-    (btcTrend === "bearish" && signalType === "LONG")) {
-  console.log(`Signal skipped: BTC is ${btcTrend}, signal direction is ${signalType}`);
+if ((nextMove === "bullish" && signalType === "SHORT") ||
+    (nextMove === "bearish" && signalType === "LONG")) {
+  console.log(`Signal skipped: Forecast is ${nextMove}, signal is ${signalType}`);
   return null;
 }
 
@@ -1374,6 +1374,12 @@ async function getBTCIndicators() {
 
   const safeToTrade = slope > 0.1 && !recentlySpiked;
 
+let forecast = "sideways"; // default
+if (slope > 0.2 && rsiNow > 55) forecast = "bullish";
+else if (slope < -0.2 && rsiNow < 45) forecast = "bearish";
+else if (rsiNow >= 45 && rsiNow <= 55) forecast = "sideways";
+    
+  
   return {
   ema50Now,
   ema200Now,
@@ -1445,12 +1451,6 @@ let marketCondition = "BAD";
 let btcTrend = "bearish";
 let safeToEnter = false;
 
-let forecast = "sideways"; // default
-if (slope > 0.2 && rsiNow > 55) forecast = "bullish";
-else if (slope < -0.2 && rsiNow < 45) forecast = "bearish";
-else if (rsiNow >= 45 && rsiNow <= 55) forecast = "sideways";
-    
-
 async function updateMarketCondition() {
   const {
     ema50Now,
@@ -1460,7 +1460,7 @@ async function updateMarketCondition() {
     currentVolume,
     avgVolume,
     trend,
-    forecast, 
+    forecast,
     recentlySpiked,
     safeToTrade
   } = await getBTCIndicators();
