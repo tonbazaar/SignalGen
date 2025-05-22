@@ -1027,7 +1027,7 @@ if (signalType && symbol) {
           if (now - lastSignalTime < COOLDOWN_MINUTES * 60 * 1000) return null;
           cooldowns[symbol] = now;
   
-if (marketCondition !== "GOOD") {
+if (marketCondition !== "BAD") {
   console.log("Signal skipped: Market condition is not GOOD.");
   return null;
 }
