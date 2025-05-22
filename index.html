@@ -1344,7 +1344,7 @@ let nextMove = "sideways";
 let pullbackStatus = "RISKY ZONE";
 
 async function getBTCIndicators() {
-  const res = await fetch("https://fapi.binance.com/fapi/v1/klines?symbol=BTCUSDT&interval=15m&limit=250");
+  const res = await fetch("https://fapi.binance.com/fapi/v1/klines?symbol=BTCUSDT&interval=5m&limit=250");
   const data = await res.json();
 
   const closes = data.map(c => parseFloat(c[4]));
@@ -1358,7 +1358,7 @@ async function getBTCIndicators() {
   const atr = calculateATR(highs, lows, closes, 14);
 
   const priceNow = closes[closes.length - 1];
-  const priceBefore = closes[closes.length - 6]; // 90min ago
+  const priceBefore = closes[closes.length - 18]; // 90min ago
   const currentVolume = volumes[volumes.length - 1];
   const avgVolume = volumes.slice(-30).reduce((a, b) => a + b, 0) / 30;
 
