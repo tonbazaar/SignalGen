@@ -1333,9 +1333,9 @@ async function sendLimit(symbol, side, qty, price, tp, sl, reduceOnly, pricePrec
     }
 
 let marketCondition = "BAD";
-let btcTrend = "bearish";
 let safeToEnter = false;
 let nextMove = "sideways";
+let pullbackStatus = "RISKY ZONE";
 
 async function getBTCIndicators() {
   const res = await fetch("https://fapi.binance.com/fapi/v1/klines?symbol=BTCUSDT&interval=15m&limit=250");
@@ -1371,12 +1371,6 @@ async function getBTCIndicators() {
   const overboughtOrOversold = rsiNow > 75 || rsiNow < 25;
 
   const recentlySpiked = (priceSpike && volumeSpike) || overextended || overboughtOrOversold;
-
-  let trend = "bearish";
-  if (ema50Now > ema200Now && slope > 0 && priceRising) {
-    trend = "bullish";
-  }
-
   const safeToTrade = slope > 0.1 && !recentlySpiked;
 
   let forecast = "sideways";
@@ -1384,19 +1378,9 @@ async function getBTCIndicators() {
   else if (slope < -0.2 && rsiNow < 45) forecast = "bearish";
 
   return {
-    ema50Now,
-    ema200Now,
-    slope,
-    rsiNow,
-    currentVolume,
-    avgVolume,
-    atrNow,
-    priceNow,
-    priceBefore,
-    trend,
     forecast,
-    recentlySpiked,
-    safeToTrade
+    safeToTrade,
+    recentlySpiked
   };
 }
 
@@ -1453,45 +1437,35 @@ function calculateATR(highs, lows, closes, period = 14) {
 
 async function updateMarketCondition() {
   try {
-    const {
-      ema50Now,
-      ema200Now,
-      slope,
-      rsiNow,
-      currentVolume,
-      avgVolume,
-      trend,
-      forecast,
-      recentlySpiked,
-      safeToTrade
-    } = await getBTCIndicators();
+    const { forecast, safeToTrade, recentlySpiked } = await getBTCIndicators();
 
     marketCondition = safeToTrade ? "GOOD" : "BAD";
-    btcTrend = trend;
-    safeToEnter = safeToTrade;
     nextMove = forecast;
+    pullbackStatus = recentlySpiked ? "RISKY ZONE" : "SAFE ZONE";
 
-    const statusEl = document.getElementById("marketStatus");
-    if (statusEl) {
-      const marketColor = marketCondition === "GOOD" ? "#22c55e" : "#EF4444";
-      const moveColor = nextMove === "bullish" ? "#22c55e" :
-                        nextMove === "bearish" ? "#EF4444" : "#facc15";
+    const marketEl = document.querySelector("#marketStatus .value");
+    const pullbackEl = document.querySelector("#pullbackStatus .value");
 
-      statusEl.innerHTML = `<i class="fas fa-signal"></i>
-        <span style="color:${marketColor}">${marketCondition}</span>
-        <span style="color:${moveColor}">${nextMove.toUpperCase()}</span>`;
+    if (marketEl) {
+      marketEl.innerHTML = `${marketCondition} / ${nextMove.toUpperCase()}`;
+      marketEl.style.color = marketCondition === "GOOD" ? "#22c55e" : "#EF4444";
     }
 
-    toggleScanButton(); // Optional: your own logic
+    if (pullbackEl) {
+      pullbackEl.innerHTML = pullbackStatus;
+      pullbackEl.style.color = pullbackStatus === "SAFE ZONE" ? "#22c55e" : "#f97316";
+    }
+
+    toggleScanButton?.(); // Optional: call only if defined
   } catch (err) {
-    console.error("Error updating market condition:", err);
+    console.error("Market update error:", err);
   }
 }
 
-// Start updates every 20 seconds
+// Start real-time updates
 updateMarketCondition();
 setInterval(updateMarketCondition, 20000);
- 
+
   function toggleScanButton() {
   const scanButton = document.getElementById("scanButton");
   const waitingMessage = document.getElementById("waitingMessage");
