@@ -1028,23 +1028,23 @@ if (signalType && symbol) {
           cooldowns[symbol] = now;
   
 if (marketCondition !== "GOOD") {
-  console.log("Signal skipped: Market condition is not GOOD.");
+  showError("Signal skipped: Market condition is not GOOD.");
   return null;
 }
 
 if (recentlySpiked) {
-  console.log("Signal skipped: BTC in risky zone (not safe to enter).");
+  showError("Signal skipped: BTC in risky zone (not safe to enter).");
   return null;
 }
 
 if (nextMove === "sideways") {
-  console.log("Signal skipped: Market forecast is sideways.");
+  showError("Signal skipped: Market forecast is sideways.");
   return null;
 }
 
 if ((nextMove === "bullish" && signalType === "SHORT") ||
     (nextMove === "bearish" && signalType === "LONG")) {
-  console.log(`Signal skipped: Forecast is ${nextMove}, but signal is ${signalType}`);
+  showError(`Signal skipped: Forecast is ${nextMove}, but signal is ${signalType}`);
   return null;
 }
 
