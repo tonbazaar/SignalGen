@@ -1032,11 +1032,6 @@ if (marketCondition !== "GOOD") {
   return null;
 }
 
-if (recentlySpiked) {
-  console.log("Signal skipped: BTC in risky zone (not safe to enter).");
-  return null;
-}
-
 if (nextMove === "sideways") {
   console.log("Signal skipped: Market forecast is sideways.");
   return null;
