@@ -1472,7 +1472,7 @@ setInterval(updateMarketCondition, 20000);
 
   if (!scanButton || !waitingMessage) return;
 
-  const isSafeMarket = marketCondition === "GOOD" && pullbackStatus === "SAFE ZONE";
+  const isSafeMarket = marketCondition === "BAD" && pullbackStatus === "SAFE ZONE";
   const isDirectional = nextMove !== "sideways";
 
   const canTrade = isPremium && isSafeMarket && isDirectional;
