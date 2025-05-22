@@ -1375,20 +1375,20 @@ async function getBTCIndicators() {
   const safeToTrade = slope > 0.1 && !recentlySpiked;
 
   return {
-    ema50Now,
-    ema200Now,
-    slope,
-    rsiNow,
-    currentVolume,
-    avgVolume,
-    atrNow,
-    priceNow,
-    priceBefore,
-    trend,
-    recentlySpiked,
-    safeToTrade
-  };
-}
+  ema50Now,
+  ema200Now,
+  slope,
+  rsiNow,
+  currentVolume,
+  avgVolume,
+  atrNow,
+  priceNow,
+  priceBefore,
+  trend,             // current trend
+  forecast,          // next likely move
+  recentlySpiked,
+  safeToTrade
+};
 
 function getEMA(prices, period) {
   const k = 2 / (period + 1);
@@ -1445,6 +1445,12 @@ let marketCondition = "BAD";
 let btcTrend = "bearish";
 let safeToEnter = false;
 
+let forecast = "sideways"; // default
+if (slope > 0.2 && rsiNow > 55) forecast = "bullish";
+else if (slope < -0.2 && rsiNow < 45) forecast = "bearish";
+else if (rsiNow >= 45 && rsiNow <= 55) forecast = "sideways";
+    
+
 async function updateMarketCondition() {
   const {
     ema50Now,
@@ -1454,6 +1460,7 @@ async function updateMarketCondition() {
     currentVolume,
     avgVolume,
     trend,
+    forecast, 
     recentlySpiked,
     safeToTrade
   } = await getBTCIndicators();
@@ -1461,20 +1468,18 @@ async function updateMarketCondition() {
   marketCondition = safeToTrade ? "GOOD" : "BAD";
   btcTrend = trend;
   safeToEnter = safeToTrade;
-
-  const pullbackEl = document.getElementById("pullbackStatus");
-  if (pullbackEl) {
-    const valueEl = pullbackEl.querySelector(".value");
-    valueEl.textContent = recentlySpiked ? "Risk Zone" : "Safe Zone";
-    pullbackEl.style.color = recentlySpiked ? "#f97316" : "#22c55e";
-  }
+  nextMove = forecast;
 
   const statusEl = document.getElementById("marketStatus");
-  if (statusEl) {
-    const marketColor = marketCondition === "GOOD" ? "#22c55e" : "#EF4444";
-    const trendColor = btcTrend === "bullish" ? "#22c55e" : "#EF4444";
-    statusEl.innerHTML = `<i class="fas fa-signal"></i> <span style="color:${marketColor}">${marketCondition}</span> <span style="color:${trendColor}">${btcTrend.toUpperCase()}</span>`;
-  }
+if (statusEl) {
+  const marketColor = marketCondition === "GOOD" ? "#22c55e" : "#EF4444";
+  const moveColor = nextMove === "bullish" ? "#22c55e" :
+                    nextMove === "bearish" ? "#EF4444" : "#facc15";
+
+  statusEl.innerHTML = `<i class="fas fa-signal"></i>
+    <span style="color:${marketColor}">${marketCondition}</span>
+    <span style="color:${moveColor}">${nextMove.toUpperCase()}</span>`;
+}
 
   toggleScanButton(); // Your existing logic
 }
