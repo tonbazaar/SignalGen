@@ -1486,9 +1486,9 @@ async function updateMarketCondition() {
     const pullbackEl = document.querySelector("#pullbackStatus .value");
 
     if (marketEl) {
-      marketEl.innerHTML = ${marketCondition} / ${nextMove.toUpperCase()};
+      marketEl.innerHTML = `${marketCondition} / ${nextMove.toUpperCase()}`;
       marketEl.style.color = marketCondition === "GOOD" ? "#22c55e" : "#EF4444";
-  }
+    }
 
     if (pullbackEl) {
       pullbackEl.innerHTML = pullbackStatus;
