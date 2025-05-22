@@ -1048,7 +1048,40 @@ if ((nextMove === "bullish" && signalType === "SHORT") ||
   return null;
 }
 
+// 1. Avoid weak breakout candles
+const lastCandleBody = Math.abs(lastClose - lastOpen);
+const bodyToRangeRatio = lastCandleBody / (lastHigh - lastLow);
+if (bodyToRangeRatio < 0.6) {
+  console.log("Signal skipped: Weak breakout candle body.");
+  return null;
+}
+
+// 2. Detect unusual volume spike
+const prevVolAvg = volumes.slice(-6, -1).reduce((a, b) => a + b, 0) / 5;
+const unusualSpike = lastVol > prevVolAvg * 2.5;
+if (unusualSpike) {
+  console.log("Signal skipped: Unusual sudden volume spike.");
+  return null;
+}
+
+// 3. Confirm local trend direction (last 3 candles)
+const last3Closes = closes.slice(-3);
+const trendUp = last3Closes.every((c, i, arr) => i === 0 || c > arr[i - 1]);
+const trendDown = last3Closes.every((c, i, arr) => i === 0 || c < arr[i - 1]);
+
+if ((signalType === "LONG" && !trendUp) || (signalType === "SHORT" && !trendDown)) {
+  console.log("Signal skipped: Last 3 candles not supporting the trend.");
+  return null;
+}
+  
 const price = lastClose;
+  
+// 4. ATR minimum threshold (avoid tight range)
+if (latestAtr < price * 0.0025) {
+  console.log("Signal skipped: ATR too low (range too tight).");
+  return null;
+}
+
 const atrMultiplier = 2.0; // You can tune this
 const rrRatio = 1.2; // Risk\:Reward
 const minSlPercent = 0.005; // 0.5%
