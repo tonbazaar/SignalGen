@@ -1032,7 +1032,7 @@ if (marketCondition !== "GOOD") {
   return null;
 }
 
-if (!recentlySpiked) {
+if (recentlySpiked) {
   console.log("Signal skipped: BTC in risky zone (not safe to enter).");
   return null;
 }
