@@ -1470,13 +1470,15 @@ setInterval(updateMarketCondition, 20000);
   const scanButton = document.getElementById("scanButton");
   const waitingMessage = document.getElementById("waitingMessage");
 
-  if (isPremium && marketCondition === "GOOD" && safeToEnter) {
-    scanButton.style.display = "inline-block";
-    waitingMessage.style.display = "none";
-  } else {
-    scanButton.style.display = "none";
-    waitingMessage.style.display = isPremium ? "block" : "none";
-  }
+  if (!scanButton || !waitingMessage) return;
+
+  const isSafeMarket = marketCondition === "GOOD" && pullbackStatus === "SAFE ZONE";
+  const isDirectional = nextMove !== "sideways";
+
+  const canTrade = isPremium && isSafeMarket && isDirectional;
+
+  scanButton.style.display = canTrade ? "inline-block" : "none";
+  waitingMessage.style.display = isPremium && !canTrade ? "block" : "none";
 }
 
  window.onload = async () => {
