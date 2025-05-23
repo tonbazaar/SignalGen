@@ -534,6 +534,24 @@ a:hover {
   <script src="env2.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/crypto-js.js"></script>
   <script>
+    
+const COOLDOWN_MINUTES = 60;
+
+// === Clean cooldowns once during page load ===
+let cooldowns = {};
+const storedCooldowns = localStorage.getItem("cooldowns");
+if (storedCooldowns) {
+  cooldowns = JSON.parse(storedCooldowns);
+
+  Object.keys(cooldowns).forEach(sym => {
+    if (Date.now() - cooldowns[sym] > COOLDOWN_MINUTES * 60 * 1000) {
+      delete cooldowns[sym];
+    }
+  });
+
+  localStorage.setItem("cooldowns", JSON.stringify(cooldowns));
+}
+ 
 document.addEventListener("DOMContentLoaded", () => {
   const loginForm = document.getElementById("loginForm");
   const mainContent = document.getElementById("mainContent");
@@ -871,27 +889,7 @@ function showSignupForm() {
   document.getElementById("loginForm").style.display = "none";
   document.getElementById("signupForm").style.display = "block";
 }
-
-const COOLDOWN_MINUTES = 60;
-
-// === Clean cooldowns once during page load ===
-let cooldowns = {};
-
-const storedCooldowns = localStorage.getItem("cooldowns");
-if (storedCooldowns) {
-  cooldowns = JSON.parse(storedCooldowns);
-
-  // Remove expired cooldowns
-  Object.keys(cooldowns).forEach(sym => {
-    if (Date.now() - cooldowns[sym] > COOLDOWN_MINUTES * 60 * 1000) {
-      delete cooldowns[sym];
-    }
-  });
-
-  // Save cleaned version
-  localStorage.setItem("cooldowns", JSON.stringify(cooldowns));
-}
-   
+  
 let scanInterval = null;
 let autoScanActive = false;
     
