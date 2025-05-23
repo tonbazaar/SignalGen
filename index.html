@@ -535,21 +535,6 @@ a:hover {
   <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/crypto-js.js"></script>
   <script>
 
-    // === Clean cooldowns once during page load ===
-let cooldowns = {};
-const storedCooldowns = localStorage.getItem("cooldowns");
-if (storedCooldowns) {
-  cooldowns = JSON.parse(storedCooldowns);
-
-  Object.keys(cooldowns).forEach(sym => {
-    if (Date.now() - cooldowns[symbol] > COOLDOWN_MINUTES * 60 * 1000) {
-      delete cooldowns[symbol];
-    }
-  });
-
-  localStorage.setItem("cooldowns", JSON.stringify(cooldowns));
-    }
-
 document.addEventListener("DOMContentLoaded", () => {
   const loginForm = document.getElementById("loginForm");
   const mainContent = document.getElementById("mainContent");
@@ -892,7 +877,7 @@ let scanInterval = null;
 let autoScanActive = false;
 
 
-    //let cooldowns = JSON.parse(localStorage.getItem("cooldowns") || "{}");
+    let cooldowns = JSON.parse(localStorage.getItem("cooldowns") || "{}");
     const COOLDOWN_MINUTES = 60;
 
     const output = document.getElementById("output");
@@ -1039,17 +1024,17 @@ if (score >= 7) {
   reasons = shortScoreReasons;
 }
 
-const now = Date.now();
-const lastSignalTime = cooldowns[symbol] || 0;
+if (signalType && symbol) {
+  const now = Date.now();
+  const lastSignalTime = cooldowns[symbol] || 0;
 
-if (now - lastSignalTime < COOLDOWN_MINUTES * 60 * 1000) {
-  console.log(`Signal skipped: ${symbol} is on cooldown.`);
-  return null;
-}
+  if (now - lastSignalTime < COOLDOWN_MINUTES * 60 * 1000) {
+    console.log(`Cooldown active for ${symbol}`);
+    return null;
+  }
 
-// Save new cooldown
-cooldowns[symbol] = now;
-localStorage.setItem("cooldowns", JSON.stringify(cooldowns));
+  cooldowns[symbol] = now;
+  localStorage.setItem("cooldowns", JSON.stringify(cooldowns));
 
 if (marketCondition !== "GOOD") {
   console.log("Signal skipped: Market condition is not GOOD.");
