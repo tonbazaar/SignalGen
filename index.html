@@ -791,7 +791,7 @@ async function updateTradeStats() {
     };
   }
     } else {
-        showError("Premium access not found.");
+        console.log("Premium access not found.");
       }
 
       window.isPremium = isPremium;
@@ -848,6 +848,8 @@ async function updateTradeStats() {
 function login() {
   const password = document.getElementById("password").value;
   const storedPassword = localStorage.getItem("password");
+  const storedApi = localStorage.getItem("binanceApi");
+  const storedSecret = localStorage.getItem("binanceSecret");
   if (password === storedPassword) {
     const expiresAt = Date.now() + 360 * 60 * 60 * 1000;
     localStorage.setItem("sessionValidUntil", expiresAt);
