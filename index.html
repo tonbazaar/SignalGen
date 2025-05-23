@@ -816,7 +816,7 @@ async function updateTradeStats() {
     try {
       const count = await getOpenPositionsCount();
 
-      if (count >= 6) {
+      if (count >= 2) {
         scanButton.disabled = true;
         localStorage.setItem("scanBlocked", "true");
         hideSignalBlocks();
@@ -1105,8 +1105,8 @@ if (latestAtr < price * 0.0025) {
   return null;
 }
 
-const atrMultiplier = 1.5; // You can tune this
-const rrRatio = 1.3; // Risk\:Reward
+const atrMultiplier = 1.8; // You can tune this
+const rrRatio = 1.2; // Risk\:Reward
 const minSlPercent = 0.005; // 0.5%
 
 let sl, tp;
@@ -1548,7 +1548,7 @@ setInterval(updateMarketCondition, 20000);
   document.getElementById("futuresBalance").innerHTML = `<i class="fas fa-wallet"></i> ${balance}`;
 
   const positionCount = await getOpenPositionsCount();
-  document.getElementById("positionsCount").innerHTML = `<i class="fas fa-chart-line"></i> ${positionCount}/5`;
+  document.getElementById("positionsCount").innerHTML = `<i class="fas fa-chart-line"></i> ${positionCount}/2`;
 
   const pnl = await getTodayPnL();
   document.getElementById("todayPnl").innerHTML = `<i class="fas fa-dollar-sign"></i> ${pnl >= 0 ? "+" : ""}$${pnl.toFixed(2)}`;
@@ -1672,7 +1672,7 @@ function showError(msg) {
     document.getElementById("futuresBalance").innerHTML = `<i class="fas fa-wallet"></i> ${balance}`;
 
     const positionCount = await getOpenPositionsCount();
-    document.getElementById("positionsCount").innerHTML = `<i class="fas fa-chart-line"></i> ${positionCount}/5`;
+    document.getElementById("positionsCount").innerHTML = `<i class="fas fa-chart-line"></i> ${positionCount}/2`;
 
     const pnl = await getTodayPnL();
     document.getElementById("todayPnl").innerHTML = `<i class="fas fa-dollar-sign"></i> ${pnl >= 0 ? "+" : ""}$${pnl.toFixed(2)}`;
