@@ -875,8 +875,12 @@ function showSignupForm() {
 let scanInterval = null;
 let autoScanActive = false;
 
-    let cooldowns = JSON.parse(localStorage.getItem("cooldowns") || "{}");
-    const COOLDOWN_MINUTES = 60;
+const cooldowns = JSON.parse(localStorage.getItem("cooldowns") || "{}");
+const COOLDOWN_MINUTES = 60;
+
+    
+    //const cooldowns = {};
+    //const COOLDOWN_MINUTES = 60;
     const output = document.getElementById("output");
     const lastTime = document.getElementById("lastTime");
 
