@@ -872,11 +872,29 @@ function showSignupForm() {
   document.getElementById("signupForm").style.display = "block";
 }
 
+const COOLDOWN_MINUTES = 60;
+
+// === Clean cooldowns once during page load ===
+let cooldowns = {};
+
+const storedCooldowns = localStorage.getItem("cooldowns");
+if (storedCooldowns) {
+  cooldowns = JSON.parse(storedCooldowns);
+
+  // Remove expired cooldowns
+  Object.keys(cooldowns).forEach(sym => {
+    if (Date.now() - cooldowns[sym] > COOLDOWN_MINUTES * 60 * 1000) {
+      delete cooldowns[sym];
+    }
+  });
+
+  // Save cleaned version
+  localStorage.setItem("cooldowns", JSON.stringify(cooldowns));
+}
+   
 let scanInterval = null;
 let autoScanActive = false;
     
-    const cooldowns = {};
-    const COOLDOWN_MINUTES = 60;
     const output = document.getElementById("output");
     const lastTime = document.getElementById("lastTime");
 
@@ -1021,12 +1039,18 @@ if (score >= 7) {
   reasons = shortScoreReasons;
 }
 
-if (signalType && symbol) {
-          const now = Date.now();
-          const lastSignalTime = cooldowns[symbol] || 0;
-          if (now - lastSignalTime < COOLDOWN_MINUTES * 60 * 1000) return null;
-          cooldowns[symbol] = now;
-  
+const now = Date.now();
+const lastSignalTime = cooldowns[symbol] || 0;
+
+if (now - lastSignalTime < COOLDOWN_MINUTES * 60 * 1000) {
+  console.log(`Signal skipped: ${symbol} is on cooldown.`);
+  return null;
+}
+
+// Save new cooldown
+cooldowns[symbol] = now;
+localStorage.setItem("cooldowns", JSON.stringify(cooldowns));
+
 if (marketCondition !== "GOOD") {
   console.log("Signal skipped: Market condition is not GOOD.");
   return null;
