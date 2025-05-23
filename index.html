@@ -1105,51 +1105,32 @@ if (latestAtr < price * 0.0025) {
   return null;
 }
 
-// === Improved SL/TP Logic ===
+const atrMultiplier = 2.0; // You can tune this
+const rrRatio = 1.2; // Risk\:Reward
+const minSlPercent = 0.005; // 0.5%
 
-// Swing-based SL fallback
-const recentLows = lows.slice(-5);
-const recentHighs = highs.slice(-5);
-const swingLow = Math.min(...recentLows);
-const swingHigh = Math.max(...recentHighs);
-
-// ATR fallback
-const atrMultiplier = 2.0;
-const minSlPercent = 0.005;
-const rrRatioBase = 1.2; // Risk:Reward base
+let sl, tp;
 
 const rawSl = signalType === "LONG"
-  ? price - latestAtr * atrMultiplier
-  : price + latestAtr * atrMultiplier;
+  ? price - latestAtr * atrMultiplier
+  : price + latestAtr * atrMultiplier;
 
 const minSl = price * minSlPercent;
 
-// Final SL using structure + ATR
+// Ensure SL is not too tight
 sl = signalType === "LONG"
-  ? Math.min(swingLow, price - minSl, rawSl)
-  : Math.max(swingHigh, price + minSl, rawSl);
+  ? Math.min(price - minSl, rawSl)
+  : Math.max(price + minSl, rawSl);
 
-// Calculate risk
-let risk = Math.abs(price - sl);
-
-// Dynamically adjust RR based on ATR
-const atrRatio = latestAtr / price;
-let rrRatio = atrRatio < 0.005 ? 1.5 : atrRatio > 0.01 ? 1.0 : rrRatioBase;
-
-// TP based on risk
+// Calculate TP based on SL distance (risk-reward logic)
+const risk = Math.abs(price - sl);
 tp = signalType === "LONG"
-  ? price + risk * rrRatio
-  : price - risk * rrRatio;
+  ? (price + risk * rrRatio)
+  : (price - risk * rrRatio);
 
-// Ensure TP covers minimum expected gain (0.3%)
-const minGain = price * 0.003;
-if (Math.abs(tp - price) < minGain) {
-  tp = signalType === "LONG" ? price + minGain : price - minGain;
-}
-
-// Format SL & TP
+// Format to 5 decimals (adjust if needed for token precision)
 sl = sl.toFixed(5);
-tp = tp.toFixed(5);
+tp = tp.toFixed(5)
 
 const escapedReasons = reasons.map(r =>
   r.replace(/&/g, '&amp;')
