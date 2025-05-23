@@ -949,8 +949,9 @@ const confirmTrend = async (symbol) => {
 
   const tf15 = await tfCheck('15m');
   const tf1h = await tfCheck('1h');
+  const tf4h = await tfCheck('4h');
 
-  return { tf15, tf1h };
+  return { tf15, tf1h, tf4h };
 };
 
   async function analyzeSymbol(symbol) {
@@ -1088,9 +1089,9 @@ if ((nextMove === "bullish" && signalType === "SHORT") ||
   return null;
 }
 
-const { tf15, tf1h } = await confirmTrend(symbol);
-if ((signalType === "LONG" && (tf15 !== "LONG" || tf1h !== "LONG")) ||
-    (signalType === "SHORT" && (tf15 !== "SHORT" || tf1h !== "SHORT"))) {
+const { tf15, tf1h, tf4h } = await confirmTrend(symbol);
+if ((signalType === "LONG" && (tf15 !== "LONG" || tf1h !== "LONG" || tf4h === "SHORT")) ||
+    (signalType === "SHORT" && (tf15 !== "SHORT" || tf1h !== "SHORT" || tf4h === "LONG"))) {
   console.log("Signal skipped: Higher TFs not confirming the trend.");
   return null;
 }
