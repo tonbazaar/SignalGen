@@ -592,8 +592,6 @@ document.getElementById("cancelLogout").addEventListener("click", () => {
 
 document.getElementById("confirmLogout").addEventListener("click", () => {
   localStorage.removeItem("sessionValidUntil");
-  localStorage.removeItem("binanceApi");
-  localStorage.removeItem("binanceSecret");
   document.getElementById("loginForm").style.display = "block";
   document.getElementById("mainContent").style.display = "none";
   document.getElementById("logoutModal").style.display = "none";
