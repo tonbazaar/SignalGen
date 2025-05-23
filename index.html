@@ -1460,46 +1460,8 @@ async function getBTCIndicators() {
   const safeToTrade = slope > 0.1 && !recentlySpiked;
 
   let forecast = "sideways";
-
-// Recent price action
-const recentHigh = Math.max(...closes.slice(-10));
-const recentLow = Math.min(...closes.slice(-10));
-
-// Trend direction and strength
-const emaBullish = ema50Now > ema200Now;
-const emaBearish = ema50Now < ema200Now;
-const slopeStrongUp = slope > 0.25;
-const slopeStrongDown = slope < -0.25;
-
-// Volatility confirmation
-const atrSpike = atrNow > (priceNow * 0.005); // ATR > 0.5%
-
-// RSI strength
-const rsiBullish = rsiNow > 60;
-const rsiBearish = rsiNow < 40;
-
-// Momentum confirmation
-const momentumUp = priceNow > recentHigh;
-const momentumDown = priceNow < recentLow;
-
-// Final logic
-if (
-  emaBullish &&
-  slopeStrongUp &&
-  rsiBullish &&
-  momentumUp &&
-  atrSpike
-) {
-  forecast = "bullish";
-} else if (
-  emaBearish &&
-  slopeStrongDown &&
-  rsiBearish &&
-  momentumDown &&
-  atrSpike
-) {
-  forecast = "bearish";
-}
+  if (slope > 0.2 && rsiNow > 55) forecast = "bullish";
+  else if (slope < -0.2 && rsiNow < 45) forecast = "bearish";
 
   return {
     forecast,
