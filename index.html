@@ -534,6 +534,27 @@ a:hover {
   <script src="env2.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/crypto-js.js"></script>
   <script>
+
+    const COOLDOWN_MINUTES = 60;
+
+// === Clean cooldowns once during page load ===
+let cooldowns = {};
+
+const storedCooldowns = localStorage.getItem("cooldowns");
+if (storedCooldowns) {
+  cooldowns = JSON.parse(storedCooldowns);
+
+  // Remove expired cooldowns
+  Object.keys(cooldowns).forEach(sym => {
+    if (Date.now() - cooldowns[sym] > COOLDOWN_MINUTES * 60 * 1000) {
+      delete cooldowns[sym];
+    }
+  });
+
+  // Save cleaned version
+  localStorage.setItem("cooldowns", JSON.stringify(cooldowns));
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   const loginForm = document.getElementById("loginForm");
   const mainContent = document.getElementById("mainContent");
@@ -875,12 +896,6 @@ function showSignupForm() {
 let scanInterval = null;
 let autoScanActive = false;
     
-let cooldowns = JSON.parse(localStorage.getItem("cooldowns") || "{}");
-const COOLDOWN_MINUTES = 60;
-
-    
-    //const cooldowns = {};
-    //const COOLDOWN_MINUTES = 60;
     const output = document.getElementById("output");
     const lastTime = document.getElementById("lastTime");
 
@@ -1025,17 +1040,18 @@ if (score >= 7) {
   reasons = shortScoreReasons;
 }
 
-  if (signalType && symbol) {
-  const now = Date.now();
-  const lastSignalTime = cooldowns[symbol] || 0;
+const now = Date.now();
+const lastSignalTime = cooldowns[symbol] || 0;
 
-  if (now - lastSignalTime < COOLDOWN_MINUTES * 60 * 1000) {
-    console.log(`Cooldown active for ${symbol}`);
-    return null;
-  }
+if (now - lastSignalTime < COOLDOWN_MINUTES * 60 * 1000) {
+  console.log(`Signal skipped: ${symbol} is on cooldown.`);
+  return null;
+}
 
-  cooldowns[symbol] = now;
-  localStorage.setItem("cooldowns", JSON.stringify(cooldowns));
+// Save new cooldown
+cooldowns[symbol] = now;
+localStorage.setItem("cooldowns", JSON.stringify(cooldowns));
+
     
 if (marketCondition !== "GOOD") {
   console.log("Signal skipped: Market condition is not GOOD.");
