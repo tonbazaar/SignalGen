@@ -846,7 +846,11 @@ async function updateTradeStats() {
 function login() {
   const password = document.getElementById("password").value;
   const storedPassword = localStorage.getItem("password");
-  if (password === storedPassword) {
+  const binanceApi = document.getElementById("binanceApi").value;
+  const storedApi = localStorage.getItem("binanceApi");
+  const binanceSecret = document.getElementById("binanceSecret").value;
+  const storedSecret = localStorage.getItem("binanceSecret");
+  if (password === storedPassword && binanceApi === storedApi && binanceSecret === storedSecret) {
     const expiresAt = Date.now() + 360 * 60 * 60 * 1000;
     localStorage.setItem("sessionValidUntil", expiresAt);
     document.getElementById("loginForm").style.display = "none";
