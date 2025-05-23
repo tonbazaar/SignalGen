@@ -1166,9 +1166,8 @@ tp = signalType === "LONG"
   ? (price + risk * rrRatio)
   : (price - risk * rrRatio);
 
-// Format to 5 decimals (adjust if needed for token precision)
-sl = sl.toFixed(5);
-tp = tp.toFixed(5)
+sl = Number(sl).toFixed(pricePrecision);
+tp = Number(tp).toFixed(pricePrecision);
 
 const escapedReasons = reasons.map(r =>
   r.replace(/&/g, '&amp;')
@@ -1181,7 +1180,7 @@ const telegramMessage = `
 ━━━━━━━━━━━━━━━━━  
 <b>📊 Pair:</b> <code>${symbol}</code>  
 <b>📉 Position:</b> <b><code>${signalType}</code></b>  
-<b>🎯 Entry:</b> <code>${price.toFixed(5)}</code>  
+<b>🎯 Entry:</b> <code>${price.toFixed(pricePrecision)}</code>  
 <b>⭐ Take Profit:</b> <code>${tp}</code>  
 <b>⛔ Stop Loss:</b> <code>${sl}</code>  
 <b>⚙️ Leverage:</b> <code>10x – 20x</code>  
@@ -1203,7 +1202,7 @@ await sendToTelegram(telegramMessage);
 <div class="signal-block">
   <b>📊 Symbol:</b> ${symbol}<br>
   <b>🚨 SIGNAL:</b> <span class="${signalType === "LONG" ? "long" : "short"}">${signalType}</span><br>
-  <b>💰 Entry:</b> ${price.toFixed(5)}<br>
+  <b>💰 Entry:</b> ${price.toFixed(pricePrecision)}<br>
   <b>⭐ TP:</b> ${tp}<br>
   <b>⛔ SL:</b> ${sl}<br>
   <b>⚙️ Leverage:</b> ${confidence === "High" ? "20x (or max)" : "10–20x"}<br>
