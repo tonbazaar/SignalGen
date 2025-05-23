@@ -935,7 +935,24 @@ async function getPrecisionInfo(symbol) {
 
   return filtered.length > 0;
 }
-    
+
+const confirmTrend = async (symbol) => {
+  const tfCheck = async (interval) => {
+    const url = `https://fapi.binance.com/fapi/v1/klines?symbol=${symbol}&interval=${interval}&limit=50`;
+    const res = await fetch(url);
+    const data = await res.json();
+    const closes = data.map(c => parseFloat(c[4]));
+    const ema9 = calculateEMA(closes, 9).at(-1);
+    const ema21 = calculateEMA(closes, 21).at(-1);
+    return ema9 > ema21 ? 'LONG' : ema9 < ema21 ? 'SHORT' : 'NEUTRAL';
+  };
+
+  const tf15 = await tfCheck('15m');
+  const tf1h = await tfCheck('1h');
+
+  return { tf15, tf1h };
+};
+
   async function analyzeSymbol(symbol) {
   try {
     const url = `https://fapi.binance.com/fapi/v1/klines?symbol=${symbol}&interval=5m&limit=100`;
@@ -1068,6 +1085,13 @@ if (nextMove === "sideways") {
 if ((nextMove === "bullish" && signalType === "SHORT") ||
     (nextMove === "bearish" && signalType === "LONG")) {
   console.log(`Signal skipped: Forecast is ${nextMove}, but signal is ${signalType}`);
+  return null;
+}
+
+const { tf15, tf1h } = await confirmTrend(symbol);
+if ((signalType === "LONG" && (tf15 !== "LONG" || tf1h !== "LONG")) ||
+    (signalType === "SHORT" && (tf15 !== "SHORT" || tf1h !== "SHORT"))) {
+  console.log("Signal skipped: Higher TFs not confirming the trend.");
   return null;
 }
 
