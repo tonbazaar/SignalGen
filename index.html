@@ -535,14 +535,20 @@ a:hover {
   <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/crypto-js.js"></script>
   <script>
 
-const now = Date.now();
-Object.keys(cooldowns).forEach(symbol => {
-  if (now - cooldowns[symbol] > COOLDOWN_MINUTES * 60 * 1000) {
-    delete cooldowns[symbol];
+setInterval(() => {
+  const now = Date.now();
+  let changed = false;
+  Object.keys(cooldowns).forEach(symbol => {
+    if (now - cooldowns[symbol] > COOLDOWN_MINUTES * 60 * 1000) {
+      delete cooldowns[symbol];
+      changed = true;
+    }
+  });
+  if (changed) {
+    localStorage.setItem("cooldowns", JSON.stringify(cooldowns));
   }
-});
-localStorage.setItem("cooldowns", JSON.stringify(cooldowns));
-  
+}, 300000); // runs every 5 minutes
+
 document.addEventListener("DOMContentLoaded", () => {
   const loginForm = document.getElementById("loginForm");
   const mainContent = document.getElementById("mainContent");
