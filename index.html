@@ -1081,7 +1081,7 @@ if (signalType && symbol) {
   cooldowns[symbol] = now;
   localStorage.setItem("cooldowns", JSON.stringify(cooldowns));
 
-if (marketCondition !== "BAD") {
+if (marketCondition !== "GOOD") {
   console.log("Signal skipped: Market condition is not GOOD.");
   return null;
 }
@@ -1572,7 +1572,7 @@ setInterval(updateMarketCondition, 20000);
 
   if (!scanButton || !waitingMessage) return;
 
-  const isSafeMarket = marketCondition === "BAD" && pullbackStatus === "SAFE ZONE";
+  const isSafeMarket = marketCondition === "GOOD" && pullbackStatus === "SAFE ZONE";
   const isDirectional = nextMove !== "sideways";
 
   const canTrade = isPremium && isSafeMarket && isDirectional;
