@@ -874,8 +874,8 @@ function showSignupForm() {
   
 let scanInterval = null;
 let autoScanActive = false;
-
-const cooldowns = JSON.parse(localStorage.getItem("cooldowns") || "{}");
+    
+let cooldowns = JSON.parse(localStorage.getItem("cooldowns") || "{}");
 const COOLDOWN_MINUTES = 60;
 
     
@@ -1025,7 +1025,7 @@ if (score >= 7) {
   reasons = shortScoreReasons;
 }
 
-if (signalType && symbol) {
+  if (signalType && symbol) {
   const now = Date.now();
   const lastSignalTime = cooldowns[symbol] || 0;
 
@@ -1036,8 +1036,7 @@ if (signalType && symbol) {
 
   cooldowns[symbol] = now;
   localStorage.setItem("cooldowns", JSON.stringify(cooldowns));
-}
-
+    
 if (marketCondition !== "GOOD") {
   console.log("Signal skipped: Market condition is not GOOD.");
   return null;
