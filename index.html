@@ -535,6 +535,14 @@ a:hover {
   <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/crypto-js.js"></script>
   <script>
 
+const now = Date.now();
+Object.keys(cooldowns).forEach(symbol => {
+  if (now - cooldowns[symbol] > COOLDOWN_MINUTES * 60 * 1000) {
+    delete cooldowns[symbol];
+  }
+});
+localStorage.setItem("cooldowns", JSON.stringify(cooldowns));
+  
 document.addEventListener("DOMContentLoaded", () => {
   const loginForm = document.getElementById("loginForm");
   const mainContent = document.getElementById("mainContent");
