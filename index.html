@@ -1105,52 +1105,32 @@ if (latestAtr < price * 0.0025) {
   return null;
 }
 
-// 1. Define recent structure
-const recentHighs = highs.slice(-10);
-const recentLows = lows.slice(-10);
-const swingHigh = Math.max(...recentHighs);
-const swingLow = Math.min(...recentLows);
+const atrMultiplier = 1.5; // You can tune this
+const rrRatio = 1.3; // Risk\:Reward
+const minSlPercent = 0.005; // 0.5%
 
-// 2. ATR-based volatility
-const atrRatio = latestAtr / price;
+let sl, tp;
 
-// 3. Base SL using structure and ATR
-let sl = signalType === "LONG"
-  ? Math.max(swingLow, price - latestAtr * 1.8)
-  : Math.min(swingHigh, price + latestAtr * 1.8);
+const rawSl = signalType === "LONG"
+  ? price - latestAtr * atrMultiplier
+  : price + latestAtr * atrMultiplier;
 
-// 4. Adjust SL to avoid tight zones
-const minLoss = price * 0.004; // 0.4%
-if (Math.abs(price - sl) < minLoss) {
-  sl = signalType === "LONG" ? price - minLoss : price + minLoss;
-}
+const minSl = price * minSlPercent;
 
-// 5. Dynamic Risk:Reward
-let rrRatio;
-if (atrRatio < 0.003) rrRatio = 1.8; // low volatility → better reward
-else if (atrRatio > 0.008) rrRatio = 1.0; // high volatility → tighter reward
-else rrRatio = 1.4;
+// Ensure SL is not too tight
+sl = signalType === "LONG"
+  ? Math.min(price - minSl, rawSl)
+  : Math.max(price + minSl, rawSl);
 
-// 6. TP based on SL distance and RR
+// Calculate TP based on SL distance (risk-reward logic)
 const risk = Math.abs(price - sl);
-let tp = signalType === "LONG"
-  ? price + risk * rrRatio
-  : price - risk * rrRatio;
+tp = signalType === "LONG"
+  ? (price + risk * rrRatio)
+  : (price - risk * rrRatio);
 
-// 7. Cap TP to next resistance/support (optional)
-const maxTarget = signalType === "LONG"
-  ? Math.min(...recentHighs.filter(h => h > price))
-  : Math.max(...recentLows.filter(l => l < price));
-
-if (maxTarget && (
-    (signalType === "LONG" && tp > maxTarget) ||
-    (signalType === "SHORT" && tp < maxTarget))) {
-  tp = maxTarget;
-}
-
-// 8. Format to 5 decimals
+// Format to 5 decimals (adjust if needed for token precision)
 sl = sl.toFixed(5);
-tp = tp.toFixed(5);
+tp = tp.toFixed(5)
 
 const escapedReasons = reasons.map(r =>
   r.replace(/&/g, '&amp;')
