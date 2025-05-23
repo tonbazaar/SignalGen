@@ -851,6 +851,15 @@ function login() {
   if (password === storedPassword) {
     const expiresAt = Date.now() + 360 * 60 * 60 * 1000;
     localStorage.setItem("sessionValidUntil", expiresAt);
+
+    const storedApi = localStorage.getItem("apiBackup");
+    const storedSecret = localStorage.getItem("secretBackup");
+
+    if (storedApi && storedSecret) {
+      localStorage.setItem("binanceApi", storedApi);
+      localStorage.setItem("binanceSecret", storedSecret);
+    }
+    
     document.getElementById("loginForm").style.display = "none";
     document.getElementById("mainContent").style.display = "block";
     showError("Login successful!");
