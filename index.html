@@ -534,24 +534,6 @@ a:hover {
   <script src="env2.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/crypto-js.js"></script>
   <script>
-    
-const COOLDOWN_MINUTES = 60;
-
-// === Clean cooldowns once during page load ===
-let cooldowns = {};
-const storedCooldowns = localStorage.getItem("cooldowns");
-if (storedCooldowns) {
-  cooldowns = JSON.parse(storedCooldowns);
-
-  Object.keys(cooldowns).forEach(sym => {
-    if (Date.now() - cooldowns[sym] > COOLDOWN_MINUTES * 60 * 1000) {
-      delete cooldowns[sym];
-    }
-  });
-
-  localStorage.setItem("cooldowns", JSON.stringify(cooldowns));
-}
- 
 document.addEventListener("DOMContentLoaded", () => {
   const loginForm = document.getElementById("loginForm");
   const mainContent = document.getElementById("mainContent");
@@ -892,7 +874,8 @@ function showSignupForm() {
   
 let scanInterval = null;
 let autoScanActive = false;
-    
+
+    const COOLDOWN_MINUTES = 60;
     const output = document.getElementById("output");
     const lastTime = document.getElementById("lastTime");
 
