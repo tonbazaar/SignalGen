@@ -278,67 +278,83 @@ a:hover {
   background-color: #16a34a;
 }
 
-#landingPage {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  background-color: #0e0e0e;
-  color: white;
-  padding: 20px;
-  text-align: center;
-}
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
 
-.landing-wrapper {
-  max-width: 600px;
-}
+  #landingPage {
+    display: none;
+    height: 100vh;
+    width: 100vw;
+    background-color: #0b0f19;
+    color: #ffffff;
+    font-family: 'Inter', sans-serif;
+    text-align: center;
+    padding: 40px 20px;
+    box-sizing: border-box;
+  }
 
-.landing-title {
-  font-size: 2.8rem;
-  font-weight: bold;
-  color: #facc15; /* Binance yellow */
-  margin-bottom: 16px;
-}
+  .landing-wrapper {
+    max-width: 800px;
+    margin: auto;
+  }
 
-.landing-subtitle {
-  font-size: 1.1rem;
-  color: #bbb;
-  margin-bottom: 32px;
-}
+  .landing-logo {
+    width: 60px;
+    margin-bottom: 20px;
+  }
 
-.landing-btn-group {
-  display: flex;
-  gap: 20px;
-  justify-content: center;
-  flex-wrap: wrap;
-}
+  .landing-title {
+    font-size: 2.8rem;
+    font-weight: 700;
+    color: #facc15;
+    margin-bottom: 16px;
+  }
 
-.landing-btn {
-  padding: 12px 28px;
-  font-size: 1rem;
-  border-radius: 6px;
-  border: 2px solid #facc15;
-  background-color: transparent;
-  color: #facc15;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s;
-}
+  .landing-subtitle {
+    font-size: 1.2rem;
+    color: #bbb;
+    margin-bottom: 30px;
+  }
 
-.landing-btn:hover {
-  background-color: #facc15;
-  color: #0e0e0e;
-}
+  .landing-description {
+    font-size: 1rem;
+    color: #aaa;
+    line-height: 1.6;
+    margin-bottom: 40px;
+  }
 
-.landing-btn.primary {
-  background-color: #facc15;
-  color: #0e0e0e;
-}
+  .landing-btn-group {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
 
-.landing-btn.primary:hover {
-  background-color: #e5b300;
-  border-color: #e5b300;
-}
+  .landing-btn {
+    padding: 12px 30px;
+    font-size: 1rem;
+    border-radius: 8px;
+    border: 2px solid #facc15;
+    background-color: transparent;
+    color: #facc15;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+
+  .landing-btn:hover {
+    background-color: #facc15;
+    color: #0e0e0e;
+  }
+
+  .landing-btn.primary {
+    background-color: #facc15;
+    color: #0e0e0e;
+  }
+
+  .landing-btn.primary:hover {
+    background-color: #e5b300;
+    border-color: #e5b300;
+  }
 
   </style>
 </head>
@@ -588,10 +604,16 @@ a:hover {
   </button>
 </div>
 
-<div id="landingPage" style="display: none;">
+<div id="landingPage">
   <div class="landing-wrapper">
+    <img src="https://cdn-icons-png.flaticon.com/512/5968/5968260.png" alt="Crypto Icon" class="landing-logo">
     <h1 class="landing-title">Smarter Binance Signals</h1>
-    <p class="landing-subtitle">High-accuracy, low-pullback signals with automated TP/SL — built for real traders.</p>
+    <p class="landing-subtitle">Built for traders who demand accuracy, automation, and results.</p>
+    <p class="landing-description">
+      Our high-confluence algorithm generates Binance Futures trading signals with advanced technical analysis.
+      Experience automated Take Profit and Stop Loss, optimized for low drawdown and high win rate.
+      Secure. Fast. Reliable. Join the next generation of smart crypto traders.
+    </p>
     <div class="landing-btn-group">
       <button onclick="showSignupForm()" class="landing-btn primary">Sign Up</button>
       <button onclick="showLoginForm()" class="landing-btn">Login</button>
@@ -653,7 +675,7 @@ if (!sessionValidUntil || now >= parseInt(sessionValidUntil)) {
     mainContent.style.display = "block";
   } else {
     localStorage.removeItem("sessionValidUntil");
-    landingPage.style.display = "block";
+    landingPage.style.display = "flex";
     loginForm.style.display = "none";
     mainContent.style.display = "none";
   }
@@ -673,7 +695,7 @@ document.getElementById("confirmLogout").addEventListener("click", () => {
   document.getElementById("loginForm").style.display = "none";
   document.getElementById("mainContent").style.display = "none";
   document.getElementById("logoutModal").style.display = "none";
-  document.getElementById("landingPage").style.display = "block";
+  document.getElementById("landingPage").style.display = "flex";
   showError("Logged out successfully!");
 });
 
