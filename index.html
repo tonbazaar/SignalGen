@@ -278,83 +278,69 @@ a:hover {
   background-color: #16a34a;
 }
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+.landing-hero {
+  text-align: center;
+  padding: 60px 20px;
+  background-color: #0d1117;
+  color: #e6edf3;
+}
 
-  #landingPage {
-    display: none;
-    height: 100vh;
-    width: 100vw;
-    background-color: #0b0f19;
-    color: #ffffff;
-    font-family: 'Inter', sans-serif;
-    text-align: center;
-    padding: 40px 20px;
-    box-sizing: border-box;
-  }
+.landing-header h1 {
+  font-size: 32px;
+  margin-bottom: 10px;
+  color: #facc15;
+}
 
-  .landing-wrapper {
-    max-width: 800px;
-    margin: auto;
-  }
+.landing-header p {
+  font-size: 16px;
+  color: #94a3b8;
+  margin-bottom: 30px;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
 
-  .landing-logo {
-    width: 60px;
-    margin-bottom: 20px;
-  }
+.landing-buttons button {
+  margin: 0 10px;
+  background-color: #facc15;
+  color: #0d1117;
+  border: none;
+  padding: 10px 24px;
+  font-size: 15px;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.3s;
+}
 
-  .landing-title {
-    font-size: 2.8rem;
-    font-weight: 700;
-    color: #facc15;
-    margin-bottom: 16px;
-  }
+.landing-buttons button:hover {
+  background-color: #eab308;
+}
 
-  .landing-subtitle {
-    font-size: 1.2rem;
-    color: #bbb;
-    margin-bottom: 30px;
-  }
+.landing-features {
+  margin-top: 40px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 20px;
+}
 
-  .landing-description {
-    font-size: 1rem;
-    color: #aaa;
-    line-height: 1.6;
-    margin-bottom: 40px;
-  }
+.landing-features div {
+  background-color: #161b22;
+  border: 1px solid #30363d;
+  padding: 20px;
+  border-radius: 12px;
+  font-size: 14px;
+  color: #e6edf3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
 
-  .landing-btn-group {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    flex-wrap: wrap;
-  }
-
-  .landing-btn {
-    padding: 12px 30px;
-    font-size: 1rem;
-    border-radius: 8px;
-    border: 2px solid #facc15;
-    background-color: transparent;
-    color: #facc15;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s;
-  }
-
-  .landing-btn:hover {
-    background-color: #facc15;
-    color: #0e0e0e;
-  }
-
-  .landing-btn.primary {
-    background-color: #facc15;
-    color: #0e0e0e;
-  }
-
-  .landing-btn.primary:hover {
-    background-color: #e5b300;
-    border-color: #e5b300;
-  }
+.landing-features i {
+  font-size: 20px;
+  color: #22c55e;
+  margin-bottom: 10px;
+}
 
   </style>
 </head>
@@ -604,19 +590,21 @@ a:hover {
   </button>
 </div>
 
-<div id="landingPage">
-  <div class="landing-wrapper">
-    <img src="https://cdn-icons-png.flaticon.com/512/5968/5968260.png" alt="Crypto Icon" class="landing-logo">
-    <h1 class="landing-title">Smarter Binance Signals</h1>
-    <p class="landing-subtitle">Built for traders who demand accuracy, automation, and results.</p>
-    <p class="landing-description">
-      Our high-confluence algorithm generates Binance Futures trading signals with advanced technical analysis.
-      Experience automated Take Profit and Stop Loss, optimized for low drawdown and high win rate.
-      Secure. Fast. Reliable. Join the next generation of smart crypto traders.
-    </p>
-    <div class="landing-btn-group">
-      <button onclick="showSignupForm()" class="landing-btn primary">Sign Up</button>
-      <button onclick="showLoginForm()" class="landing-btn">Login</button>
+<div id="landingPage" style="display: none;">
+  <div class="landing-hero">
+    <div class="landing-header">
+      <h1><i class="fas fa-bolt"></i> Signal Generator for Binance Futures</h1>
+      <p>Get high-confidence crypto signals backed by multi-timeframe confluence and smart filtering.</p>
+      <div class="landing-buttons">
+        <button onclick="showLogin()">Login</button>
+        <button onclick="showSignup()">Signup</button>
+      </div>
+    </div>
+    <div class="landing-features">
+      <div><i class="fas fa-robot"></i><span>Auto Trade Execution</span></div>
+      <div><i class="fas fa-chart-line"></i><span>TP-Hit Optimized Strategy</span></div>
+      <div><i class="fas fa-clock"></i><span>5m – 4h Timeframe Validation</span></div>
+      <div><i class="fas fa-shield-alt"></i><span>Risk Management Applied</span></div>
     </div>
   </div>
 </div>
@@ -675,7 +663,7 @@ if (!sessionValidUntil || now >= parseInt(sessionValidUntil)) {
     mainContent.style.display = "block";
   } else {
     localStorage.removeItem("sessionValidUntil");
-    landingPage.style.display = "flex";
+    landingPage.style.display = "block";
     loginForm.style.display = "none";
     mainContent.style.display = "none";
   }
@@ -695,7 +683,7 @@ document.getElementById("confirmLogout").addEventListener("click", () => {
   document.getElementById("loginForm").style.display = "none";
   document.getElementById("mainContent").style.display = "none";
   document.getElementById("logoutModal").style.display = "none";
-  document.getElementById("landingPage").style.display = "flex";
+  document.getElementById("landingPage").style.display = "block";
   showError("Logged out successfully!");
 });
 
