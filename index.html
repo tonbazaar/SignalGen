@@ -280,63 +280,66 @@ a:hover {
 
 #landingPage {
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
   height: 100vh;
-  background: linear-gradient(to right, #0f0c29, #302b63, #24243e);
+  background-color: #0e0e0e;
   color: white;
-  text-align: center;
   padding: 20px;
+  text-align: center;
 }
 
-.landing-container {
+.landing-wrapper {
   max-width: 600px;
 }
 
 .landing-title {
-  font-size: 3rem;
+  font-size: 2.8rem;
+  font-weight: bold;
+  color: #facc15; /* Binance yellow */
   margin-bottom: 16px;
-  color: #F0B90B;
 }
 
 .landing-subtitle {
-  font-size: 1.2rem;
-  color: #ccc;
+  font-size: 1.1rem;
+  color: #bbb;
   margin-bottom: 32px;
 }
 
-.landing-buttons {
+.landing-btn-group {
   display: flex;
-  justify-content: center;
   gap: 20px;
+  justify-content: center;
   flex-wrap: wrap;
 }
 
 .landing-btn {
-  padding: 12px 24px;
+  padding: 12px 28px;
   font-size: 1rem;
   border-radius: 6px;
-  border: 2px solid #F0B90B;
-  background: transparent;
-  color: #F0B90B;
+  border: 2px solid #facc15;
+  background-color: transparent;
+  color: #facc15;
+  font-weight: 600;
   cursor: pointer;
-  transition: 0.3s ease;
+  transition: all 0.3s;
 }
 
 .landing-btn:hover {
-  background-color: #F0B90B;
-  color: #000;
+  background-color: #facc15;
+  color: #0e0e0e;
 }
 
 .landing-btn.primary {
-  background-color: #F0B90B;
-  color: #000;
+  background-color: #facc15;
+  color: #0e0e0e;
 }
 
 .landing-btn.primary:hover {
-  background-color: #dba600;
+  background-color: #e5b300;
+  border-color: #e5b300;
 }
-  
+
   </style>
 </head>
 <body>
@@ -586,10 +589,10 @@ a:hover {
 </div>
 
 <div id="landingPage" style="display: none;">
-  <div class="landing-container">
+  <div class="landing-wrapper">
     <h1 class="landing-title">Smarter Binance Signals</h1>
-    <p class="landing-subtitle">High-confluence, auto-managed signals built for real traders.</p>
-    <div class="landing-buttons">
+    <p class="landing-subtitle">High-accuracy, low-pullback signals with automated TP/SL — built for real traders.</p>
+    <div class="landing-btn-group">
       <button onclick="showSignupForm()" class="landing-btn primary">Sign Up</button>
       <button onclick="showLoginForm()" class="landing-btn">Login</button>
     </div>
