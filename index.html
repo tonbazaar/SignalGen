@@ -526,6 +526,13 @@ a:hover {
   </button>
 </div>
 
+<div id="landingPage" style="display: none; text-align:center; padding-top:80px;">
+  <h1 style="font-size: 32px; color: #facc15;">Welcome to Signal Generator</h1>
+  <p class="tagline">High-accuracy Binance Futures signals with auto-trading</p>
+  <button onclick="showLoginForm()">Login</button>
+  <button onclick="showSignupForm()" style="margin-left:10px;">Sign Up</button>
+</div>
+  
   <footer style="text-align:center; font-size:13px; color:#8b949e; margin-top:40px;">
   © 2025 SignalGenerator.store — Built for Binance Futures Trading
 </footer>
@@ -562,6 +569,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const tutorialBox = document.getElementById("tutorialBox");
   const chatAdminBox = document.getElementById("chatAdminBox");
+  const landingPage = document.getElementById("landingPage");
 
 // Show tutorial only on login/signup page
 if (!sessionValidUntil || now >= parseInt(sessionValidUntil)) {
@@ -574,11 +582,13 @@ if (!sessionValidUntil || now >= parseInt(sessionValidUntil)) {
 
   // Session Login Logic
   if (sessionValidUntil && now < parseInt(sessionValidUntil)) {
+    landingPage.style.display = "none";
     loginForm.style.display = "none";
     mainContent.style.display = "block";
   } else {
     localStorage.removeItem("sessionValidUntil");
-    loginForm.style.display = "block";
+    landingPage.style.display = "block";
+    loginForm.style.display = "none";
     mainContent.style.display = "none";
   }
 
@@ -594,9 +604,10 @@ document.getElementById("confirmLogout").addEventListener("click", () => {
   localStorage.removeItem("sessionValidUntil");
   localStorage.removeItem("binanceApi");
   localStorage.removeItem("binanceSecret");
-  document.getElementById("loginForm").style.display = "block";
+  document.getElementById("loginForm").style.display = "none";
   document.getElementById("mainContent").style.display = "none";
   document.getElementById("logoutModal").style.display = "none";
+  document.getElementById("landingPage").style.display = "block";
   showError("Logged out successfully!");
 });
 
@@ -892,10 +903,12 @@ function signup() {
 
 // UI Toggling
 function showLoginForm() {
+  document.getElementById("landingPage").style.display = "none";
   document.getElementById("signupForm").style.display = "none";
   document.getElementById("loginForm").style.display = "block";
 }
 function showSignupForm() {
+  document.getElementById("landingPage").style.display = "none";
   document.getElementById("loginForm").style.display = "none";
   document.getElementById("signupForm").style.display = "block";
 }
