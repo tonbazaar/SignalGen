@@ -1251,21 +1251,21 @@ const minSlPercent = 0.005; // 0.5%
 let sl, tp;
 
 const rawSl = signalType === "LONG"
-  ? price - latestAtr * atrMultiplier
-  : price + latestAtr * atrMultiplier;
+  ? entryPrice - latestAtr * atrMultiplier
+  : entryPrice + latestAtr * atrMultiplier;
 
-const minSl = price * minSlPercent;
+const minSl = entryPrice * minSlPercent;
 
 // Ensure SL is not too tight
 sl = signalType === "LONG"
-  ? Math.min(price - minSl, rawSl)
-  : Math.max(price + minSl, rawSl);
+  ? Math.min(entryPrice - minSl, rawSl)
+  : Math.max(entryPrice + minSl, rawSl);
 
 // Calculate TP based on SL distance (risk-reward logic)
-const risk = Math.abs(price - sl);
+const risk = Math.abs(entryPrice - sl);
 tp = signalType === "LONG"
-  ? (price + risk * rrRatio)
-  : (price - risk * rrRatio);
+  ? (entryPrice + risk * rrRatio)
+  : (entryPrice - risk * rrRatio);
 
 // Format SL & TP
 sl = sl.toFixed(5);
