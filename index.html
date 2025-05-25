@@ -1090,19 +1090,19 @@ const confirmTrend = async (symbol) => {
       throw new Error("Insufficient indicator data.");
     }
 
-    const lastClose = closes.at(-2);
-    const lastOpen = opens.at(-2);
-    const lastHigh = highs.at(-2);
-    const lastLow = lows.at(-2);
-    const lastVol = volumes.at(-2);
+    const lastClose = closes.at(-1);
+    const lastOpen = opens.at(-1);
+    const lastHigh = highs.at(-1);
+    const lastLow = lows.at(-1);
+    const lastVol = volumes.at(-1);
     const avgVol = volumes.slice(-20).reduce((a, b) => a + b, 0) / 20;
 
-    const latestEma9 = ema9.at(-2);
-    const latestEma21 = ema21.at(-2);
-    const latestRsi = rsi.at(-2);
-    const latestMacd = macd.at(-2);
-    const latestSignal = signal.at(-2);
-    const latestAtr = atr.at(-2) || 0;
+    const latestEma9 = ema9.at(-1);
+    const latestEma21 = ema21.at(-1);
+    const latestRsi = rsi.at(-1);
+    const latestMacd = macd.at(-1);
+    const latestSignal = signal.at(-1);
+    const latestAtr = atr.at(-1) || 0;
     const macdHistogram = latestMacd - latestSignal;
 
     const candleStrength = (lastClose - lastOpen) / lastClose;
@@ -1148,10 +1148,6 @@ if (candleStrength < -dynamicCandleStrength) { shortScore += 1; shortScoreReason
 if (wickRatio < THRESHOLDS.wickRatioMax) { shortScore += 1; shortScoreReasons.push("Wick Ratio < 0.02"); }
 if (recentBearishCount >= THRESHOLDS.minConfirmCandles) { shortScore += 1; shortScoreReasons.push("2+ Bearish Candles"); }
 
-const logicClose = closes.at(-2); // For indicator logic
-const price = closes.at(-1); // For trade execution
-const entryPrice = price;         // Use this for TP/SL and alerts
-  
 let signalType = null;
 let confidence = "None";
 let reasons = [];
@@ -1209,41 +1205,8 @@ if ((signalType === "LONG" && (tf15 !== "LONG" || tf1h !== "LONG")) ||
   console.log("Signal skipped: Higher TFs not confirming the trend.");
   return null;
 }
-
-// 1. Avoid weak breakout candles
-const lastCandleBody = Math.abs(lastClose - lastOpen);
-const bodyToRangeRatio = lastCandleBody / (lastHigh - lastLow);
-if (bodyToRangeRatio < 0.6) {
-  console.log("Signal skipped: Weak breakout candle body.");
-  return null;
-}
-
-// 2. Detect unusual volume spike
-const prevVolAvg = volumes.slice(-6, -1).reduce((a, b) => a + b, 0) / 5;
-const unusualSpike = lastVol > prevVolAvg * 2.5;
-if (unusualSpike) {
-  console.log("Signal skipped: Unusual sudden volume spike.");
-  return null;
-}
-
-// 3. Confirm local trend direction (last 3 candles)
-const last3Closes = closes.slice(-3);
-const trendUp = last3Closes.every((c, i, arr) => i === 0 || c > arr[i - 1]);
-const trendDown = last3Closes.every((c, i, arr) => i === 0 || c < arr[i - 1]);
-
-if ((signalType === "LONG" && !trendUp) || (signalType === "SHORT" && !trendDown)) {
-  console.log("Signal skipped: Last 3 candles not supporting the trend.");
-  return null;
-}
   
-const entryPrice = price;
-  
-// 4. ATR minimum threshold (avoid tight range)
-if (latestAtr < entryPrice * 0.0025) {
-  console.log("Signal skipped: ATR too low (range too tight).");
-  return null;
-}
-
+const price = lastClose;
 const atrMultiplier = 1.8; // You can tune this
 const rrRatio = 1.2; // Risk\:Reward
 const minSlPercent = 0.005; // 0.5%
@@ -1251,21 +1214,21 @@ const minSlPercent = 0.005; // 0.5%
 let sl, tp;
 
 const rawSl = signalType === "LONG"
-  ? entryPrice - latestAtr * atrMultiplier
-  : entryPrice + latestAtr * atrMultiplier;
+  ? price - latestAtr * atrMultiplier
+  : price + latestAtr * atrMultiplier;
 
-const minSl = entryPrice * minSlPercent;
+const minSl = price * minSlPercent;
 
 // Ensure SL is not too tight
 sl = signalType === "LONG"
-  ? Math.min(entryPrice - minSl, rawSl)
-  : Math.max(entryPrice + minSl, rawSl);
+  ? Math.min(price - minSl, rawSl)
+  : Math.max(price + minSl, rawSl);
 
 // Calculate TP based on SL distance (risk-reward logic)
-const risk = Math.abs(entryPrice - sl);
+const risk = Math.abs(price - sl);
 tp = signalType === "LONG"
-  ? (entryPrice + risk * rrRatio)
-  : (entryPrice - risk * rrRatio);
+  ? (price + risk * rrRatio)
+  : (price - risk * rrRatio);
 
 // Format SL & TP
 sl = sl.toFixed(5);
