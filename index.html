@@ -1231,7 +1231,16 @@ if ((signalType === "LONG" && !trendUp) || (signalType === "SHORT" && !trendDown
   console.log("Signal skipped: Last 3 candles not supporting the trend.");
   return null;
 }
-  
+
+const klineIntervalMs = 5 * 60 * 1000; // 5-minute candle
+const latestKlineOpenTime = data.at(-1)[0]; // Get open time of current candle
+const timeSinceOpen = Date.now() - latestKlineOpenTime;
+
+if (timeSinceOpen < 60 * 1000 || timeSinceOpen > 4 * 60 * 1000) {
+  console.log("Signal skipped: Candle age not between 1–4 minutes.");
+  return null;
+}
+
 const price = lastClose;
   
 // 4. ATR minimum threshold (avoid tight range)
