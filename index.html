@@ -1004,8 +1004,6 @@ function showSignupForm() {
   
     let scanInterval = null;
     let autoScanActive = false;
-    let countdown = 30;
-    let countdownInterval = null;
 
     let cooldowns = JSON.parse(localStorage.getItem("cooldowns") || "{}");
     const COOLDOWN_MINUTES = 60;
@@ -1030,23 +1028,10 @@ async function getPrecisionInfo(symbol) {
 
     async function scan(autoTriggered = false) {
   if (!autoTriggered) {
-  clearInterval(scanInterval);
-  clearInterval(countdownInterval);
-
-  autoScanActive = true;
-  countdown = 30;
-  updateCountdown();
-
-  countdownInterval = setInterval(() => {
-    countdown--;
-    updateCountdown();
-  }, 1000);
-
-  scanInterval = setInterval(() => {
-    scan(true);
-    countdown = 30;
-  }, 30000);
-}
+    clearInterval(scanInterval); // Reset interval when manually scanning
+    autoScanActive = true;
+    scanInterval = setInterval(() => scan(true), 30000); // Run every 30s
+  }
 
   output.innerHTML = "Scanning...";
   const res = await fetch("https://fapi.binance.com/fapi/v1/ticker/price");
@@ -1055,7 +1040,7 @@ async function getPrecisionInfo(symbol) {
   const results = await Promise.all(usdtPairs.map(c => analyzeSymbol(c.symbol)));
   const filtered = results.filter(r => r);
   output.innerHTML = filtered.length > 0 ? filtered.join("") : "No strong signals found.";
-  lastTime.innerText = "Last scanned: " + new Date().toLocaleTimeString() + ` | Next scan in: ${countdown}s`;
+  lastTime.innerText = "Last scanned: " + new Date().toLocaleTimeString();
 
   if (filtered.length > 0 && autoScanActive) {
     clearInterval(scanInterval);
@@ -1800,13 +1785,7 @@ setInterval(syncServerTime, 10 * 60 * 1000); // Re-sync every 10 mins
     }
     return data;
   });
-}
-
-    function updateCountdown() {
-  const lastTimeEl = document.getElementById("lastTime");
-  const lastScannedText = lastTimeEl.innerText.split("|")[0].trim(); // keep left part
-  lastTimeEl.innerText = `${lastScannedText} | Next scan in: ${countdown}s`;
-}
+}  
 
 function showError(msg) {
   const box = document.createElement('div');
