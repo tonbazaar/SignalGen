@@ -1582,13 +1582,14 @@ if (slope > 0.2 && rsiNow > 55 && strongMomentum && isBullish3) {
   forecast = "bullish";
 } else if (slope < -0.2 && rsiNow < 45 && strongMomentum && isBearish3) {
   forecast = "bearish";
-
-  return {
-    forecast,
-    safeToTrade,
-    recentlySpiked
-  };
 }
+
+// Move return outside the condition block
+return {
+  forecast,
+  safeToTrade,
+  recentlySpiked
+};
 
 function getEMA(prices, period) {
   const k = 2 / (period + 1);
