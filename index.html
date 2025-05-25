@@ -1235,12 +1235,12 @@ if ((signalType === "LONG" && !trendUp) || (signalType === "SHORT" && !trendDown
 const price = lastClose;
   
 // 4. ATR minimum threshold (avoid tight range)
-if (latestAtr < entryPrice * 0.0025) {
+if (latestAtr < price * 0.0025) {
   console.log("Signal skipped: ATR too low (range too tight).");
   return null;
     }
   
-const atrMultiplier = 1.8; // You can tune this
+const atrMultiplier = 2.5; // You can tune this
 const rrRatio = 1.2; // Risk\:Reward
 const minSlPercent = 0.005; // 0.5%
 
