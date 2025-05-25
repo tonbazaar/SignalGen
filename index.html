@@ -1569,21 +1569,20 @@ async function getBTCIndicators() {
   const recentlySpiked = (priceSpike && volumeSpike) || overextended || overboughtOrOversold;
   const safeToTrade = slope > 0.1 && !recentlySpiked;
 
-  let forecast = "sideways";
+ const gainPast15 = (priceNow - closes.at(-16)) / closes.at(-16);
+ const strongMomentum = Math.abs(gainPast15) > 0.01;
 
-const gainPast15 = (priceNow - closes.at(-16)) / closes.at(-16);
-const strongMomentum = Math.abs(gainPast15) > 0.01;
+ const last3Closes = closes.slice(-3);
+ const last3Opens = opens.slice(-3);
+ const isBullish3 = last3Closes.every((c, i) => c > last3Opens[i]);
+ const isBearish3 = last3Closes.every((c, i) => c < last3Opens[i]);
 
-const last3Closes = closes.slice(-3);
-const last3Opens = opens.slice(-3);
-const isBullish3 = last3Closes.every((c, i) => c > last3Opens[i]);
-const isBearish3 = last3Closes.every((c, i) => c < last3Opens[i]);
-
+let forecast = "sideways";
 if (slope > 0.2 && rsiNow > 55 && strongMomentum && isBullish3) {
   forecast = "bullish";
 } else if (slope < -0.2 && rsiNow < 45 && strongMomentum && isBearish3) {
   forecast = "bearish";
-} 
+}
 
   return {
     forecast,
