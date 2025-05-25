@@ -1090,19 +1090,19 @@ const confirmTrend = async (symbol) => {
       throw new Error("Insufficient indicator data.");
     }
 
-    const lastClose = closes.at(-1);
-    const lastOpen = opens.at(-1);
-    const lastHigh = highs.at(-1);
-    const lastLow = lows.at(-1);
-    const lastVol = volumes.at(-1);
+    const lastClose = closes.at(-2);
+    const lastOpen = opens.at(-2);
+    const lastHigh = highs.at(-2);
+    const lastLow = lows.at(-2);
+    const lastVol = volumes.at(-2);
     const avgVol = volumes.slice(-20).reduce((a, b) => a + b, 0) / 20;
 
-    const latestEma9 = ema9.at(-1);
-    const latestEma21 = ema21.at(-1);
-    const latestRsi = rsi.at(-1);
-    const latestMacd = macd.at(-1);
-    const latestSignal = signal.at(-1);
-    const latestAtr = atr.at(-1) || 0;
+    const latestEma9 = ema9.at(-2);
+    const latestEma21 = ema21.at(-2);
+    const latestRsi = rsi.at(-2);
+    const latestMacd = macd.at(-2);
+    const latestSignal = signal.at(-2);
+    const latestAtr = atr.at(-2) || 0;
     const macdHistogram = latestMacd - latestSignal;
 
     const candleStrength = (lastClose - lastOpen) / lastClose;
@@ -1148,6 +1148,10 @@ if (candleStrength < -dynamicCandleStrength) { shortScore += 1; shortScoreReason
 if (wickRatio < THRESHOLDS.wickRatioMax) { shortScore += 1; shortScoreReasons.push("Wick Ratio < 0.02"); }
 if (recentBearishCount >= THRESHOLDS.minConfirmCandles) { shortScore += 1; shortScoreReasons.push("2+ Bearish Candles"); }
 
+const logicClose = closes.at(-2); // For indicator logic
+const price = closes.at(-1); // For trade execution
+const entryPrice = price;         // Use this for TP/SL and alerts
+  
 let signalType = null;
 let confidence = "None";
 let reasons = [];
@@ -1232,10 +1236,10 @@ if ((signalType === "LONG" && !trendUp) || (signalType === "SHORT" && !trendDown
   return null;
 }
   
-const price = lastClose;
+const entryPrice = price;
   
 // 4. ATR minimum threshold (avoid tight range)
-if (latestAtr < price * 0.0025) {
+if (latestAtr < entryPrice * 0.0025) {
   console.log("Signal skipped: ATR too low (range too tight).");
   return null;
 }
