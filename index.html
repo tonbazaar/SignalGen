@@ -1538,7 +1538,6 @@ async function getBTCIndicators() {
   const data = await res.json();
 
   const closes = data.map(c => parseFloat(c[4]));
-  const opens = data.map(c => parseFloat(c[1])); // ✅ added
   const highs = data.map(c => parseFloat(c[2]));
   const lows = data.map(c => parseFloat(c[3]));
   const volumes = data.map(c => parseFloat(c[5]));
@@ -1553,6 +1552,7 @@ async function getBTCIndicators() {
   const currentVolume = volumes[volumes.length - 1];
   const avgVolume = volumes.slice(-30).reduce((a, b) => a + b, 0) / 30;
 
+  const priceRising = priceNow > priceBefore;
   const rsiNow = rsi[rsi.length - 1];
   const atrNow = atr[atr.length - 1];
 
@@ -1569,20 +1569,9 @@ async function getBTCIndicators() {
   const recentlySpiked = (priceSpike && volumeSpike) || overextended || overboughtOrOversold;
   const safeToTrade = slope > 0.1 && !recentlySpiked;
 
-  const gainPast15 = (priceNow - closes.at(-16)) / closes.at(-16);
-  const strongMomentum = Math.abs(gainPast15) > 0.01;
-
-  const last3Closes = closes.slice(-3);
-  const last3Opens = opens.slice(-3);
-  const isBullish3 = last3Closes.every((c, i) => c > last3Opens[i]);
-  const isBearish3 = last3Closes.every((c, i) => c < last3Opens[i]);
-
   let forecast = "sideways";
-  if (slope > 0.2 && rsiNow > 55 && strongMomentum && isBullish3) {
-    forecast = "bullish";
-  } else if (slope < -0.2 && rsiNow < 45 && strongMomentum && isBearish3) {
-    forecast = "bearish";
-  }
+  if (slope > 0.2 && rsiNow > 55) forecast = "bullish";
+  else if (slope < -0.2 && rsiNow < 45) forecast = "bearish";
 
   return {
     forecast,
