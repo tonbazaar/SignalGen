@@ -447,14 +447,10 @@ a:hover {
   <i class="fas fa-exclamation-triangle"></i> <span class="value">...</span>
 </span>
 
-</div>
-
-  <div style="margin: 10px 0;">
-  <span id="lastTime"></span>
-  <span id="nextScanTimer" style="margin-left: 10px;"></span>
   </div>
-  <div id="output">Loading...</div>
 
+    <div id="lastTime" style="margin-bottom:10px; margin-top:10px;"></div>
+    <div id="output">Loading...</div>
   </div>
 
   <div id="premiumForm" style="
@@ -1006,11 +1002,10 @@ function showSignupForm() {
   document.getElementById("signupForm").style.display = "block";
 }
   
-let scanInterval = null;
-let autoScanActive = false;
-let countdown = 30;
-let countdownInterval = null;
-
+    let scanInterval = null;
+    let autoScanActive = false;
+    let countdown = 30;
+    let countdownInterval = null;
 
     let cooldowns = JSON.parse(localStorage.getItem("cooldowns") || "{}");
     const COOLDOWN_MINUTES = 60;
@@ -1033,45 +1028,42 @@ async function getPrecisionInfo(symbol) {
   return { pricePrecision, quantityPrecision };
 }
 
-async function scan(autoTriggered = false) {
+    async function scan(autoTriggered = false) {
   if (!autoTriggered) {
-    clearInterval(scanInterval); // stop previous auto-scan
-    clearInterval(countdownInterval); // stop previous countdown
+  clearInterval(scanInterval);
+  clearInterval(countdownInterval);
 
-    autoScanActive = true;
-    countdown = 30;
-    updateCountdown(); // display initial value
+  autoScanActive = true;
+  countdown = 30;
+  updateCountdown();
 
-    countdownInterval = setInterval(() => {
-      countdown--;
-      updateCountdown();
-    }, 1000);
+  countdownInterval = setInterval(() => {
+    countdown--;
+    updateCountdown();
+  }, 1000);
 
-    scanInterval = setInterval(() => {
-      scan(true);
-      countdown = 30; // reset countdown
-    }, 30000);
-  }
+  scanInterval = setInterval(() => {
+    scan(true);
+    countdown = 30;
+  }, 30000);
+}
 
   output.innerHTML = "Scanning...";
-
   const res = await fetch("https://fapi.binance.com/fapi/v1/ticker/price");
   const coins = await res.json();
   const usdtPairs = coins.filter(c => c.symbol.endsWith("USDT") && !c.symbol.includes("_"));
   const results = await Promise.all(usdtPairs.map(c => analyzeSymbol(c.symbol)));
   const filtered = results.filter(r => r);
-
   output.innerHTML = filtered.length > 0 ? filtered.join("") : "No strong signals found.";
-  lastTime.innerText = "Last scanned: " + new Date().toLocaleTimeString();
+  lastTime.innerText = "Last scanned: " + new Date().toLocaleTimeString() + ` | Next scan in: ${countdown}s`;
 
   if (filtered.length > 0 && autoScanActive) {
     clearInterval(scanInterval);
-    clearInterval(countdownInterval);
     autoScanActive = false;
   }
 
   return filtered.length > 0;
-}
+    }
 
 const confirmTrend = async (symbol) => {
   const tfCheck = async (interval) => {
@@ -1811,10 +1803,9 @@ setInterval(syncServerTime, 10 * 60 * 1000); // Re-sync every 10 mins
 }
 
     function updateCountdown() {
-  const timer = document.getElementById("nextScanTimer");
-  if (timer) {
-    timer.innerText = `Next scan in: ${countdown}s`;
-  }
+  const lastTimeEl = document.getElementById("lastTime");
+  const lastScannedText = lastTimeEl.innerText.split("|")[0].trim(); // keep left part
+  lastTimeEl.innerText = `${lastScannedText} | Next scan in: ${countdown}s`;
 }
 
 function showError(msg) {
