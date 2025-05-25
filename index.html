@@ -1031,36 +1031,40 @@ async function getPrecisionInfo(symbol) {
   return { pricePrecision, quantityPrecision };
 }
 
-    if (!autoTriggered) {
-  clearInterval(scanInterval);
-  clearInterval(countdownInterval);
+async function scan(autoTriggered = false) {
+  if (!autoTriggered) {
+    clearInterval(scanInterval); // stop previous auto-scan
+    clearInterval(countdownInterval); // stop previous countdown
 
-  autoScanActive = true;
-  countdown = 30;
-  updateCountdown();
+    autoScanActive = true;
+    countdown = 30;
+    updateCountdown(); // display initial value
 
-  countdownInterval = setInterval(() => {
-    countdown--;
-    updateCountdown();
-  }, 1000);
+    countdownInterval = setInterval(() => {
+      countdown--;
+      updateCountdown();
+    }, 1000);
 
-  scanInterval = setInterval(() => {
-    scan(true);
-    countdown = 30; // reset for next cycle
-  }, 30000);
-}
+    scanInterval = setInterval(() => {
+      scan(true);
+      countdown = 30; // reset countdown
+    }, 30000);
+  }
 
   output.innerHTML = "Scanning...";
+
   const res = await fetch("https://fapi.binance.com/fapi/v1/ticker/price");
   const coins = await res.json();
   const usdtPairs = coins.filter(c => c.symbol.endsWith("USDT") && !c.symbol.includes("_"));
   const results = await Promise.all(usdtPairs.map(c => analyzeSymbol(c.symbol)));
   const filtered = results.filter(r => r);
+
   output.innerHTML = filtered.length > 0 ? filtered.join("") : "No strong signals found.";
   lastTime.innerText = "Last scanned: " + new Date().toLocaleTimeString();
 
   if (filtered.length > 0 && autoScanActive) {
     clearInterval(scanInterval);
+    clearInterval(countdownInterval);
     autoScanActive = false;
   }
 
