@@ -1,0 +1,342 @@
+let scanInterval = null;
+    let autoScanActive = false;
+
+    let cooldowns = JSON.parse(localStorage.getItem("cooldowns") || "{}");
+    const COOLDOWN_MINUTES = 60;
+
+    const output = document.getElementById("output");
+    const lastTime = document.getElementById("lastTime");
+
+async function getPrecisionInfo(symbol) {
+  const res = await fetch('https://fapi.binance.com/fapi/v1/exchangeInfo');
+  const data = await res.json();
+  const symbolInfo = data.symbols.find(s => s.symbol === symbol);
+  if (!symbolInfo) throw new Error('Symbol not found');
+
+  const priceFilter = symbolInfo.filters.find(f => f.filterType === "PRICE_FILTER");
+  const lotSize = symbolInfo.filters.find(f => f.filterType === "LOT_SIZE");
+
+  const pricePrecision = Math.round(-Math.log10(parseFloat(priceFilter.tickSize)));
+  const quantityPrecision = Math.round(-Math.log10(parseFloat(lotSize.stepSize)));
+
+  return { pricePrecision, quantityPrecision };
+}
+
+    async function scan(autoTriggered = false) {
+  if (!autoTriggered) {
+    clearInterval(scanInterval); // Reset interval when manually scanning
+    autoScanActive = true;
+    scanInterval = setInterval(() => scan(true), 30000); // Run every 30s
+  }
+
+  output.innerHTML = "Scanning...";
+  const res = await fetch("https://fapi.binance.com/fapi/v1/ticker/price");
+  const coins = await res.json();
+  const usdtPairs = coins.filter(c => c.symbol.endsWith("USDT") && !c.symbol.includes("_"));
+  const results = await Promise.all(usdtPairs.map(c => analyzeSymbol(c.symbol)));
+  const filtered = results.filter(r => r);   
+  output.innerHTML = filtered.length > 0 ? filtered.join("") : "No strong signals found.";
+  lastTime.innerText = "Last scanned: " + new Date().toLocaleTimeString();
+
+  if (filtered.length > 0 && autoScanActive) {
+    clearInterval(scanInterval);
+    autoScanActive = false;
+  }
+
+  return filtered.length > 0;
+    }
+
+const confirmTrend = async (symbol) => {
+  const tfCheck = async (interval) => {
+    const url = `https://fapi.binance.com/fapi/v1/klines?symbol=${symbol}&interval=${interval}&limit=50`;
+    const res = await fetch(url);
+    const data = await res.json();
+    const closes = data.map(c => parseFloat(c[4]));
+    const ema9 = calculateEMA(closes, 9).at(-1);
+    const ema21 = calculateEMA(closes, 21).at(-1);
+    return ema9 > ema21 ? 'LONG' : ema9 < ema21 ? 'SHORT' : 'NEUTRAL';
+  };
+
+  const tf15 = await tfCheck('15m');
+  const tf1h = await tfCheck('1h');
+  const tf30 = await tfCheck('30m');
+  const tf4h = await tfCheck('4h');
+return { tf15, tf1h, tf30, tf4h };
+
+
+  async function analyzeSymbol(symbol) {
+  try {
+    const url = `https://fapi.binance.com/fapi/v1/klines?symbol=${symbol}&interval=5m&limit=100`;
+    const res = await fetch(url);
+    const data = await res.json();
+
+    const closes = data.map(c => parseFloat(c[4]));
+    const opens = data.map(c => parseFloat(c[1]));
+    const highs = data.map(c => parseFloat(c[2]));
+    const lows = data.map(c => parseFloat(c[3]));
+    const volumes = data.map(c => parseFloat(c[5]));
+
+    const ema9 = calculateEMA(closes, 9);
+    const ema21 = calculateEMA(closes, 21);
+    const rsi = calculateRSI(closes, 14);
+    const { macd, signal } = calculateMACD(closes);
+    const atr = calculateATR(highs, lows, closes, 14);
+
+    if (!ema9.length || !ema21.length || !rsi.length || !macd.length || !signal.length || !atr.length) {
+      throw new Error("Insufficient indicator data.");
+    }
+
+    const lastClose = closes.at(-1);
+    const lastOpen = opens.at(-1);
+    const lastHigh = highs.at(-1);
+    const lastLow = lows.at(-1);
+    const lastVol = volumes.at(-1);
+    const avgVol = volumes.slice(-20).reduce((a, b) => a + b, 0) / 20;
+
+    const latestEma9 = ema9.at(-1);
+    const latestEma21 = ema21.at(-1);
+    const latestRsi = rsi.at(-1);
+    const latestMacd = macd.at(-1);
+    const latestSignal = signal.at(-1);
+    const latestAtr = atr.at(-1) || 0;
+    const macdHistogram = latestMacd - latestSignal;
+    const macdUp = macd.slice(-3).every((v, i, a) => i === 0 || v > a[i - 1]);
+    const macdDown = macd.slice(-3).every((v, i, a) => i === 0 || v < a[i - 1]);
+  
+    const candleStrength = (lastClose - lastOpen) / lastClose;
+    const wickRatio = (lastHigh - lastLow) / lastClose;
+
+    // Config
+    const THRESHOLDS = {
+      rsiLong: 55,
+      rsiShort: 45,
+      macdPositive: 0.0,
+      macdNegative: 0.0,
+      volMultiplier: 1.5,
+      candleStrengthMin: 0.002,
+      wickRatioMax: 0.02,
+      minConfirmCandles: 2
+    };
+
+    // Recent candles
+    const recentOpens = opens.slice(-3);
+    const recentCloses = closes.slice(-3);
+    const recentBullishCount = recentCloses.filter((c, i) => c > recentOpens[i]).length;
+    const recentBearishCount = recentCloses.filter((c, i) => c < recentOpens[i]).length;
+
+    const dynamicCandleStrength = Math.max(THRESHOLDS.candleStrengthMin, latestAtr * 0.0015);
+    const dynamicVolumeThreshold = avgVol * THRESHOLDS.volMultiplier;
+
+    let score = 0, shortScore = 0;
+    let scoreReasons = [], shortScoreReasons = [];
+
+if (latestEma9 > latestEma21) { score += 1; scoreReasons.push("EMA9 > EMA21"); }
+if (latestRsi > THRESHOLDS.rsiLong) { score += 1; scoreReasons.push("RSI > 55"); }
+if (macdHistogram > THRESHOLDS.macdPositive) { score += 1; scoreReasons.push("MACD > 0"); }
+if (lastVol > dynamicVolumeThreshold) { score += 1; scoreReasons.push("Volume > Avg * 1.5"); }
+if (candleStrength > dynamicCandleStrength) { score += 1; scoreReasons.push("Candle Strength > Threshold"); }
+if (wickRatio < THRESHOLDS.wickRatioMax) { score += 1; scoreReasons.push("Wick Ratio < 0.02"); }
+if (recentBullishCount >= THRESHOLDS.minConfirmCandles) { score += 1; scoreReasons.push("2+ Bullish Candles"); }
+
+if (latestEma9 < latestEma21) { shortScore += 1; shortScoreReasons.push("EMA9 < EMA21"); }
+if (latestRsi < THRESHOLDS.rsiShort) { shortScore += 1; shortScoreReasons.push("RSI < 45"); }
+if (macdHistogram < THRESHOLDS.macdNegative) { shortScore += 1; shortScoreReasons.push("MACD < 0"); }
+if (lastVol > dynamicVolumeThreshold) { shortScore += 1; shortScoreReasons.push("Volume > Avg * 1.5"); }
+if (candleStrength < -dynamicCandleStrength) { shortScore += 1; shortScoreReasons.push("Candle Strength Negative"); }
+if (wickRatio < THRESHOLDS.wickRatioMax) { shortScore += 1; shortScoreReasons.push("Wick Ratio < 0.02"); }
+if (recentBearishCount >= THRESHOLDS.minConfirmCandles) { shortScore += 1; shortScoreReasons.push("2+ Bearish Candles"); }
+
+let signalType = null;
+let confidence = "None";
+let reasons = [];
+
+if (score >= 7) {
+  signalType = "LONG";
+  confidence = "Very High";
+  reasons = scoreReasons;
+} else if (shortScore >= 7) {
+  signalType = "SHORT";
+  confidence = "Very High";
+  reasons = shortScoreReasons;
+} else if (score === 6) {
+  signalType = "LONG";
+  confidence = "High";
+  reasons = scoreReasons;
+} else if (shortScore === 6) {
+  signalType = "SHORT";
+  confidence = "High";
+  reasons = shortScoreReasons;
+}
+
+if (signalType && symbol) {
+  const now = Date.now();
+  const lastSignalTime = cooldowns[symbol] || 0;
+
+  if (now - lastSignalTime < COOLDOWN_MINUTES * 60 * 1000) {
+    console.log(`Cooldown active for ${symbol}`);
+    return null;
+  }
+
+  cooldowns[symbol] = now;
+  localStorage.setItem("cooldowns", JSON.stringify(cooldowns));
+
+if ((signalType === "LONG" && !macdUp) || (signalType === "SHORT" && !macdDown)) {
+  console.log("Signal skipped: MACD momentum not strong.");
+  return null;
+}
+ 
+  if (recentlySpiked) {
+  console.log("Signal skipped: BTC in risky zone (not safe to enter).");
+  return null;
+}
+
+if (nextMove === "sideways") {
+  console.log("Signal skipped: Market forecast is sideways.");
+  return null;
+}
+
+if ((nextMove === "bullish" && signalType === "SHORT") ||
+    (nextMove === "bearish" && signalType === "LONG")) {
+  console.log(`Signal skipped: Forecast is ${nextMove}, but signal is ${signalType}`);
+  return null;
+}
+
+const { tf15, tf1h, tf30, tf4h } = await confirmTrend(symbol);
+
+if ((signalType === "LONG" && (tf15 !== "LONG" || tf1h !== "LONG" || tf30 !== "LONG" || tf4h !== "LONG")) ||
+    (signalType === "SHORT" && (tf15 !== "SHORT" || tf1h !== "SHORT" || tf30 !== "SHORT" || tf4h !== "SHORT"))) {
+  console.log("Signal skipped: Higher TFs not confirming the trend.");
+  return null;
+}
+
+    // 1. Avoid weak breakout candles
+const lastCandleBody = Math.abs(lastClose - lastOpen);
+const bodyToRangeRatio = lastCandleBody / (lastHigh - lastLow);
+const wickSize = (lastHigh - lastLow) - lastCandleBody;
+const bodyToWickRatio = lastCandleBody / (wickSize || 1);
+    
+if (bodyToWickRatio < 1.2) {
+  console.log("Signal skipped: Weak body-to-wick ratio.");
+  return null;
+}
+   
+if (bodyToRangeRatio < 0.6) {
+  console.log("Signal skipped: Weak breakout candle body.");
+  return null;
+}
+
+// 2. Detect unusual volume spike
+const prevVolAvg = volumes.slice(-6, -1).reduce((a, b) => a + b, 0) / 5;
+const unusualSpike = lastVol > prevVolAvg * 2.5;
+if (unusualSpike) {
+  console.log("Signal skipped: Unusual sudden volume spike.");
+  return null;
+}
+
+// 3. Confirm local trend direction (last 3 candles)
+const last3Closes = closes.slice(-3);
+const trendUp = last3Closes.every((c, i, arr) => i === 0 || c > arr[i - 1]);
+const trendDown = last3Closes.every((c, i, arr) => i === 0 || c < arr[i - 1]);
+
+if ((signalType === "LONG" && !trendUp) || (signalType === "SHORT" && !trendDown)) {
+  console.log("Signal skipped: Last 3 candles not supporting the trend.");
+  return null;
+}
+
+  const volTrendMatch = (signalType === "LONG" && lastClose > closes[closes.length - 2]) ||
+                      (signalType === "SHORT" && lastClose < closes[closes.length - 2]);
+if (!volTrendMatch) {
+  console.log("Signal skipped: Volume not confirming direction.");
+  return null;
+}
+
+const price = lastClose;
+  
+// 4. ATR minimum threshold (avoid tight range)
+if (latestAtr < price * 0.003) {
+  console.log("Signal skipped: ATR too low (range too tight).");
+  return null;
+}
+
+  const recentHigh = Math.max(...highs.slice(-10, -5));
+const recentLow = Math.min(...lows.slice(-10, -5));
+if ((signalType === "LONG" && price < recentHigh * 0.995) ||
+    (signalType === "SHORT" && price > recentLow * 1.005)) {
+  console.log("Signal skipped: Not breaking key level.");
+  return null;
+}
+
+const atrMultiplier = 2.5; // You can tune this
+const rrRatio = latestAtr > price * 0.01 ? 1.3 : 1.5;
+const minSlPercent = 0.005; // 0.5%
+
+let sl, tp;
+
+const rawSl = signalType === "LONG"
+  ? price - latestAtr * atrMultiplier
+  : price + latestAtr * atrMultiplier;
+
+const minSl = price * minSlPercent;
+
+// Ensure SL is not too tight
+const bufferMultiplier = 1.05;
+sl = signalType === "LONG"
+  ? Math.min(price - minSl, rawSl) - (latestAtr * 0.2 * bufferMultiplier)
+  : Math.max(price + minSl, rawSl) + (latestAtr * 0.2 * bufferMultiplier);
+
+// Calculate TP based on SL distance (risk-reward logic)
+const risk = Math.abs(price - sl);
+tp = signalType === "LONG"
+  ? (price + risk * rrRatio)
+  : (price - risk * rrRatio);
+
+// Format SL & TP
+sl = sl.toFixed(5);
+tp = tp.toFixed(5);
+
+const escapedReasons = reasons.map(r =>
+  r.replace(/&/g, '&amp;')
+   .replace(/</g, '&lt;')
+   .replace(/>/g, '&gt;')
+).join('\n');
+
+const telegramMessage = `
+<b>🚨 Signal Alert </b>  
+━━━━━━━━━━━━━━━━━  
+<b>📊 Pair:</b> <code>${symbol}</code>  
+<b>📉 Position:</b> <b><code>${signalType}</code></b>  
+<b>🎯 Entry:</b> <code>${price.toFixed(5)}</code>  
+<b>⭐ Take Profit:</b> <code>${tp}</code>  
+<b>⛔ Stop Loss:</b> <code>${sl}</code>  
+<b>⚙️ Leverage:</b> <code>10x – 20x</code>  
+<b>🔒 Confidence:</b> <code>${confidence}</code>  
+━━━━━━━━━━━━━━━━━  
+<b>🧪 Matched Rules:</b>  
+<pre>${escapedReasons}</pre>
+
+<b>🧠 Strategy:</b>  
+<i>SL is mandatory. Always apply position sizing and risk management.</i>  
+
+<b>🔎 Source:</b> <i>High-confluence algo strategy</i>
+`;
+
+await sendToTelegram(telegramMessage);
+
+
+          return `
+<div class="signal-block">
+  <b>📊 Symbol:</b> ${symbol}<br>
+  <b>🚨 SIGNAL:</b> <span class="${signalType === "LONG" ? "long" : "short"}">${signalType}</span><br>
+  <b>💰 Entry:</b> ${price.toFixed(5)}<br>
+  <b>⭐ TP:</b> ${tp}<br>
+  <b>⛔ SL:</b> ${sl}<br>
+  <b>⚙️ Leverage:</b> ${confidence === "High" ? "20x (or max)" : "10–20x"}<br>
+  <b>✅ Confidence:</b> <code>${confidence} (score: ${signalType === "LONG" ? score : shortScore})</code>
+  <button class="trade-btn" onclick="placeTrade('${symbol}', '${signalType === "LONG" ? "BUY" : "SELL"}', '${price.toFixed(5)}', '${tp}', '${sl}')">Trade</button>
+  </div>`;
+        }
+      } catch (err) {
+        console.error("Error analyzing", symbol, err);
+        return null;
+      }
+  }
