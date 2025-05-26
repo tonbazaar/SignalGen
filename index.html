@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Countdown Timer</title>
+  <title>Under Maintenance</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -16,22 +16,34 @@
       margin-bottom: 10px;
     }
     #countdown {
-      font-size: 2em;
+      font-size: 1.8em;
       color: #22c55e;
       margin-top: 20px;
     }
   </style>
 </head>
 <body>
-  <h1>Countdown Timer</h1>
+  <h1>We're Under Maintenance</h1>
+  <p>We'll be back shortly!</p>
   <div id="countdown">Loading...</div>
 
   <script>
-    // Set countdown time (in milliseconds)
-    const countdownTime = 10 * 60 * 1000; // 10 minutes
-    const targetDate = new Date().getTime() + countdownTime;
+    // Set how many minutes of maintenance (e.g., 720 minutes = 12 hours)
+    const countdownMinutes = 10;
 
     const countdownEl = document.getElementById("countdown");
+
+    // Check if a target date is already stored
+    let targetDate = localStorage.getItem("maintenanceTarget");
+
+    if (!targetDate) {
+      // If not set, calculate and store the future timestamp
+      const now = new Date().getTime();
+      targetDate = now + countdownMinutes * 60 * 1000;
+      localStorage.setItem("maintenanceTarget", targetDate);
+    } else {
+      targetDate = parseInt(targetDate);
+    }
 
     const interval = setInterval(() => {
       const now = new Date().getTime();
@@ -39,15 +51,17 @@
 
       if (distance <= 0) {
         clearInterval(interval);
-        countdownEl.innerHTML = "Time's up!";
+        countdownEl.innerHTML = "We're back online!";
+        localStorage.removeItem("maintenanceTarget");
         return;
       }
 
-      const hours = String(Math.floor((distance / (1000 * 60 * 60)))).padStart(2, '0');
-      const minutes = String(Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
-      const seconds = String(Math.floor((distance % (1000 * 60)) / 1000)).padStart(2, '0');
+      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-      countdownEl.innerHTML = `${hours}:${minutes}:${seconds}`;
+      countdownEl.innerHTML = `${days}d ${hours}h ${minutes}m ${seconds}s remaining`;
     }, 1000);
   </script>
 </body>
