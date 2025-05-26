@@ -1020,26 +1020,26 @@ function showSignupForm() {
 }
 
   const btcEl = document.getElementById("btcPrice");
-  let lastPrice = null;
+  let displayLastPrice = null;
 
   const ws = new WebSocket("wss://stream.binance.com:9443/ws/btcusdt@trade");
 
   ws.onmessage = function (event) {
-    const data = JSON.parse(event.data);
-    const price = parseFloat(data.p);
+    const tradeData = JSON.parse(event.data);
+    const currentDisplayPrice = parseFloat(tradeData.p);
 
-    if (lastPrice !== null) {
-      if (price > lastPrice) {
+    if (displayLastPrice !== null) {
+      if (currentDisplayPrice > displayLastPrice) {
         btcEl.style.color = "#22c55e"; // green
-      } else if (price < lastPrice) {
+      } else if (currentDisplayPrice < displayLastPrice) {
         btcEl.style.color = "#ef4444"; // red
       } else {
-        btcEl.style.color = "#ccc"; // no change
+        btcEl.style.color = "#ccc";
       }
     }
 
-    btcEl.textContent = price.toLocaleString();
-    lastPrice = price;
+    btcEl.textContent = currentDisplayPrice.toLocaleString();
+    displayLastPrice = currentDisplayPrice;
   };
 
     let scanInterval = null;
