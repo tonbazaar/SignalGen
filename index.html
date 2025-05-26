@@ -1039,6 +1039,9 @@ async function getPrecisionInfo(symbol) {
   const usdtPairs = coins.filter(c => c.symbol.endsWith("USDT") && !c.symbol.includes("_"));
   const results = await Promise.all(usdtPairs.map(c => analyzeSymbol(c.symbol)));
   const filtered = results.filter(r => r);
+
+  if (filtered.length < 10) return null;
+      
   output.innerHTML = filtered.length > 0 ? filtered.join("") : "No strong signals found.";
   lastTime.innerText = "Last scanned: " + new Date().toLocaleTimeString();
 
