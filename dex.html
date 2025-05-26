@@ -61,9 +61,10 @@ const confirmTrend = async (symbol) => {
   const tf1h = await tfCheck('1h');
   const tf30 = await tfCheck('30m');
   const tf4h = await tfCheck('4h');
+        
 return { tf15, tf1h, tf30, tf4h };
-
-
+      };
+  
   async function analyzeSymbol(symbol) {
   try {
     const url = `https://fapi.binance.com/fapi/v1/klines?symbol=${symbol}&interval=5m&limit=100`;
