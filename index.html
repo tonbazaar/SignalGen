@@ -411,6 +411,7 @@ a:hover {
   </div>
 
   <div id="mainContent" style="display:none;">
+  <div id="btc-chart" style="margin: 20px auto; max-width: 100%; height: 500px;"></div>
   <i id="logoutIcon" class="fas fa-sign-out-alt" title="Logout"></i>
   <i id="settingsIcon" class="fas fa-cog" title="Settings"></i>
   <i id="premiumIcon" class="fas fa-crown" title="Unlock Premium"></i>
@@ -631,6 +632,29 @@ a:hover {
   <footer style="text-align:center; font-size:13px; color:#8b949e; margin-top:40px;">
   © 2025 SignalGenerator.store — Built for Binance Futures Trading
 </footer>
+
+<script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+<script type="text/javascript">
+  new TradingView.widget({
+    container_id: "btc-chart",
+    width: "100%",
+    height: 500,
+    symbol: "BINANCE:BTCUSDT",
+    interval: "1",
+    timezone: "Etc/UTC",
+    theme: "dark",
+    style: "1",
+    locale: "en",
+    toolbar_bg: "#f1f3f6",
+    enable_publishing: false,
+    allow_symbol_change: true,
+    hide_side_toolbar: false,
+    withdateranges: true,
+    details: true,
+    hotlist: true,
+    calendar: true
+  });
+</script>
 
   <script src="env.js"></script>
   <script src="env2.js"></script>
