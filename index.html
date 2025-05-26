@@ -148,7 +148,7 @@ input:focus {
 }
 
  #logoutIcon, #settingsIcon, #premiumIcon, 
-#statsIcon {
+#statsIcon, #Tgicon {
   position: absolute;
   top: 10px;
   font-size: 22px;
@@ -177,9 +177,14 @@ input:focus {
   right: 120px;
   color: #3b82f6; /* blue */
 }
+
+    #TgIcon {
+  right: 160px;
+  color: #1d9bf0; /* blue */
+}
     
 #logoutIcon:hover, #settingsIcon:hover, #premiumIcon:hover,
-#statsIcon:hover {
+#statsIcon:hover, #TgIcon:hover {
   transform: scale(1.2);
   background-color: rgba(255, 255, 255, 0.1); /* subtle glow on dark */
 }
@@ -410,6 +415,7 @@ a:hover {
   <i id="settingsIcon" class="fas fa-cog" title="Settings"></i>
   <i id="premiumIcon" class="fas fa-crown" title="Unlock Premium"></i>
   <i id="statsIcon" class="fas fa-chart-bar" title="View Stats"></i>
+  <a href="https://t.me/SUAIB235" <i id="TgIcon" class="fab fa-telegram-plane" title="TG Bot"></i> </a>
   <h1 id="rocketIcon"><span class="flying">🚀</span> Signal Generator</h1>
   <p class="tagline">Auto-execute Binance trades with premium crypto signals</p>
   <button id="scanButton" onclick="scan()">Scan Now</button>
