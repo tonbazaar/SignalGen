@@ -364,6 +364,21 @@ a:hover {
 </head>
 <body>
 
+  <div id="livePrice" style="
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: #1e293b;
+  color: #22c55e;
+  padding: 6px 12px;
+  font-size: 14px;
+  border-radius: 6px;
+  font-weight: bold;
+  z-index: 999;
+">
+  BTCUSDT: <span id="btcLive">Loading...</span>
+</div>
+
 <div id="tutorialBox" style="display: none;">
   <a href="https://youtu.be/bSB8cWIiIL8?si=hM5d8DQacG24P3pG" target="_blank"
      style="position: fixed; bottom: 70px; right: 20px; background-color: #FF0000; color: #fff; padding: 8px 12px; border-radius: 30px; font-weight: bold; text-decoration: none; box-shadow: 0 4px 10px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 6px; font-size: 13px;"
@@ -1008,6 +1023,16 @@ function showSignupForm() {
   document.getElementById("signupForm").style.display = "block";
 }
 
+  const btcPriceEl = document.getElementById("btcLive");
+
+  const ws = new WebSocket("wss://stream.binance.com:9443/ws/btcusdt@trade");
+
+  ws.onmessage = function (event) {
+    const trade = JSON.parse(event.data);
+    const price = parseFloat(trade.p).toLocaleString();
+    btcPriceEl.textContent = price;
+  };
+ 
     let scanInterval = null;
     let autoScanActive = false;
 
