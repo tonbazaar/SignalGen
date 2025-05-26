@@ -364,19 +364,15 @@ a:hover {
 </head>
 <body>
 
-  <div id="livePrice" style="
+  <div id="livePriceText" style="
   position: absolute;
   top: 12px;
   left: 12px;
-  background: #1e293b;
-  color: #22c55e;
-  padding: 6px 12px;
   font-size: 14px;
-  border-radius: 6px;
   font-weight: bold;
   z-index: 999;
 ">
-  BTCUSDT: <span id="btcLive">Loading...</span>
+  BTCUSDT: <span id="btcPrice" style="color: #ccc;">Loading...</span>
 </div>
 
 <div id="tutorialBox" style="display: none;">
@@ -1023,16 +1019,29 @@ function showSignupForm() {
   document.getElementById("signupForm").style.display = "block";
 }
 
-  const btcPriceEl = document.getElementById("btcLive");
+  const btcEl = document.getElementById("btcPrice");
+  let lastPrice = null;
 
   const ws = new WebSocket("wss://stream.binance.com:9443/ws/btcusdt@trade");
 
   ws.onmessage = function (event) {
-    const trade = JSON.parse(event.data);
-    const price = parseFloat(trade.p).toLocaleString();
-    btcPriceEl.textContent = price;
+    const data = JSON.parse(event.data);
+    const price = parseFloat(data.p);
+
+    if (lastPrice !== null) {
+      if (price > lastPrice) {
+        btcEl.style.color = "#22c55e"; // green
+      } else if (price < lastPrice) {
+        btcEl.style.color = "#ef4444"; // red
+      } else {
+        btcEl.style.color = "#ccc"; // no change
+      }
+    }
+
+    btcEl.textContent = price.toLocaleString();
+    lastPrice = price;
   };
- 
+
     let scanInterval = null;
     let autoScanActive = false;
 
