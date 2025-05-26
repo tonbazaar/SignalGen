@@ -148,7 +148,7 @@ input:focus {
 }
 
  #logoutIcon, #settingsIcon, #premiumIcon, 
-#statsIcon, #TgIcon {
+#statsIcon, #TgIcon, #ChartIcon{
   position: absolute;
   top: 10px;
   font-size: 22px;
@@ -178,13 +178,18 @@ input:focus {
   color: #3b82f6; /* blue */
 }
 
-    #TgIcon {
+#TgIcon {
   right: 160px;
   color: #1d9bf0; /* blue */
 }
+
+#ChartIcon {
+  right: 200px;
+  color: #3b82f6; 
+}
     
 #logoutIcon:hover, #settingsIcon:hover, #premiumIcon:hover,
-#statsIcon:hover, #TgIcon:hover {
+#statsIcon:hover, #TgIcon:hover, #ChartIcon:hover{
   transform: scale(1.2);
   background-color: rgba(255, 255, 255, 0.1); /* subtle glow on dark */
 }
@@ -411,30 +416,12 @@ a:hover {
   </div>
 
   <div id="mainContent" style="display:none;">
-  <!-- Compact BTC Chart -->
-<div class="tradingview-widget-container" style="margin: 0 auto; max-width: 100%; text-align: center;">
-  <div class="tradingview-widget-container__widget"></div>
-  <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-mini-symbol-overview.js" async>
-  {
-    "symbol": "BINANCE:BTCUSDT",
-    "width": "100%",
-    "height": "220",
-    "locale": "en",
-    "dateRange": "1D",
-    "colorTheme": "dark",
-    "trendLineColor": "#22c55e",
-    "underLineColor": "rgba(34, 197, 94, 0.3)",
-    "isTransparent": false,
-    "autosize": true,
-    "largeChartUrl": ""
-  }
-  </script>
-</div>
   <i id="logoutIcon" class="fas fa-sign-out-alt" title="Logout"></i>
   <i id="settingsIcon" class="fas fa-cog" title="Settings"></i>
   <i id="premiumIcon" class="fas fa-crown" title="Unlock Premium"></i>
   <i id="statsIcon" class="fas fa-chart-bar" title="View Stats"></i>
   <a href="https://t.me/InsightFutureCallsBot" <i id="TgIcon" class="fab fa-telegram-plane" title="TG Bot"></i> </a>
+   <i id="ChartIcon" class="fas fa-chart-line" title="View Chart"></i> 
   <h1 id="rocketIcon"><span class="flying">🚀</span> Signal Generator</h1>
   <p class="tagline">Auto-execute Binance trades with premium crypto signals</p>
   <button id="scanButton" onclick="scan()">Scan Now</button>
