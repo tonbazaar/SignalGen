@@ -1,0 +1,1889 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Crypto Futures Signal Generator | Auto Trade with Binance API</title>
+  <link rel="icon" type="image/png" href="/favicon_512x512.png">
+  <meta name="description" content="Generate high-confidence crypto futures signals and auto-execute trades on Binance using our premium Signal Generator.">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+/* === Base Layout === */
+body {
+  background-color: #0d1117;
+  color: #e6edf3;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  margin: 0;
+  padding: 20px;
+  line-height: 1.6;
+}
+
+/* === Headings === */
+h2 {
+  color: #e6edf3;
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 15px;
+}
+
+/* === Signal Card === */
+.signal-block {
+  background-color: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.05);
+  transition: box-shadow 0.2s ease;
+}
+
+.signal-block:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+/* === Status Colors === */
+.long {
+  color: #22c55e; /* Green */
+  font-weight: 600;
+}
+
+.short {
+  color: #ef4444; /* Red */
+  font-weight: 600;
+}
+
+.neutral {
+  color: #94a3b8;
+}
+
+.profit {
+  color: #22c55e;
+}
+
+.loss {
+  color: #EF4444;
+}
+
+/* === Buttons === */
+button,
+button[type="submit"],
+.trade-btn {
+  background-color: #facc15; /* Binance Yellow */
+  color: #0d1117;
+  border: none;
+  padding: 10px 20px;
+  font-size: 15px;
+  font-weight: 500;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button:hover,
+.trade-btn:hover {
+  background-color: #eab308;
+}
+  .tagline {
+  font-size: 15px;
+  color: #94a3b8;
+  margin-bottom: 20px;
+}
+    
+/* === Form Styling === */
+.form-container {
+  max-width: 420px;
+  margin: 30px auto;
+  padding: 24px;
+  background-color: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  text-align: center;
+}
+
+/* === Inputs === */
+input[type="text"],
+input[type="password"] {
+  width: 100%;
+  padding: 12px;
+  margin: 12px 0;
+  border: 1px solid #30363d;
+  border-radius: 8px;
+  box-sizing: border-box;
+  background-color: #0d1117;
+  color: #e6edf3;
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+input:focus {
+  border-color: #3b82f6;
+}
+
+.flying {
+  display: inline-block;
+  position: relative;
+  animation: flyUp 1.5s infinite ease-in-out;
+}
+
+@keyframes flyUp {
+  0% {
+    top: 0;
+    opacity: 1;
+  }
+  50% {
+    top: -10px;
+    opacity: 0.8;
+  }
+  100% {
+    top: 0;
+    opacity: 1;
+  }
+}
+
+/* === Error Text === */
+.error {
+  color: #dc2626;
+  font-size: 14px;
+}
+
+ #logoutIcon, #settingsIcon, #premiumIcon, 
+#statsIcon, #TgIcon {
+  position: absolute;
+  top: 10px;
+  font-size: 22px;
+  padding: 10px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.2s ease, background-color 0.3s ease;
+}
+    
+#logoutIcon {
+  right: 0px;
+  color: #ef4444; /* red */
+}
+    
+#settingsIcon {
+  right: 40px;
+  color: #10b981; /* Green */
+}
+    
+#premiumIcon {
+  right: 80px;
+  color: #fbbf24; /* gold/yellow */
+}
+
+#statsIcon {
+  right: 120px;
+  color: #3b82f6; /* blue */
+}
+
+    #TgIcon {
+  right: 160px;
+  color: #1d9bf0; /* blue */
+}
+    
+#logoutIcon:hover, #settingsIcon:hover, #premiumIcon:hover,
+#statsIcon:hover, #TgIcon:hover {
+  transform: scale(1.2);
+  background-color: rgba(255, 255, 255, 0.1); /* subtle glow on dark */
+}
+
+a {
+  color: #60a5fa; /* Tailwind blue-400 */
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+#scanButton {
+  display: none;
+      }
+
+@keyframes pulseBounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+.bounce {
+  animation: pulseBounce 1.5s infinite;
+}
+    
+.custom-modal {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.custom-modal-content {
+  background-color: #0d1117;
+  border: 1px solid #30363d;
+  color: #e6edf3;
+  padding: 24px 20px;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+  width: 90%;
+  max-width: 340px;
+  text-align: center;
+}
+
+.custom-modal-content h3 {
+  font-size: 18px;
+  margin-bottom: 10px;
+  color: #10b981;
+}
+
+.custom-modal-content p {
+  font-size: 15px;
+  color: #e6edf3;
+  margin-bottom: 20px;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.btn {
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  border: none;
+}
+
+.btn.cancel {
+  background-color: #161b22;
+  color: #e6edf3;
+  border: 1px solid #30363d;
+}
+
+.btn.cancel:hover {
+  background-color: #1f2937;
+}
+
+.btn.confirm {
+  background-color: #22c55e;
+  color: white;
+}
+
+.btn.confirm:hover {
+  background-color: #16a34a;
+}
+
+.landing-hero {
+  text-align: center;
+  padding: 60px 20px;
+  background-color: #0d1117;
+  color: #e6edf3;
+}
+
+.landing-header h1 {
+  font-size: 32px;
+  margin-bottom: 10px;
+  color: #facc15;
+}
+
+.landing-header p {
+  font-size: 16px;
+  color: #94a3b8;
+  margin-bottom: 30px;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.landing-buttons button {
+  margin: 0 10px;
+  background-color: #facc15;
+  color: #0d1117;
+  border: none;
+  padding: 10px 24px;
+  font-size: 10px;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.landing-buttons button:hover {
+  background-color: #eab308;
+}
+
+.landing-features {
+  margin-top: 40px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 20px;
+}
+
+.landing-features div {
+  background-color: #161b22;
+  border: 1px solid #30363d;
+  padding: 20px;
+  border-radius: 12px;
+  font-size: 14px;
+  color: #e6edf3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.landing-features i {
+  font-size: 20px;
+  color: #22c55e;
+  margin-bottom: 10px;
+}
+    
+#LLogin, #LSignUp {
+  position: absolute;
+  top: 10px;
+}
+    
+#LLogin {
+  right: 0px;
+}
+    
+#LSignUp {
+  right: 85px;
+}
+    
+  </style>
+</head>
+<body>
+
+<div id="tutorialBox" style="display: none;">
+  <a href="https://youtu.be/bSB8cWIiIL8?si=hM5d8DQacG24P3pG" target="_blank"
+     style="position: fixed; bottom: 70px; right: 20px; background-color: #FF0000; color: #fff; padding: 8px 12px; border-radius: 30px; font-weight: bold; text-decoration: none; box-shadow: 0 4px 10px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 6px; font-size: 13px;"
+     class="bounce">
+    <i class="fab fa-youtube"></i> Watch Tutorial
+  </a>
+</div>
+
+<div id="chatAdminBox" style="display: none;">
+  <a href="https://t.me/SUAIB235" target="_blank"
+     style="position: fixed; bottom: 70px; right: 20px; background-color: #1d9bf0; color: #e6edf3; padding: 8px 12px; border-radius: 30px; font-weight: bold; text-decoration: none; box-shadow: 0 4px 10px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 6px; font-size: 13px;"
+     class="bounce">
+    <i class="fab fa-telegram-plane"></i> Chat with Admin
+  </a>
+</div>
+
+  <div id="logoutModal" class="custom-modal">
+  <div class="custom-modal-content">
+    <h3>Logout</h3>
+    <p>Are you sure you want to logout?</p>
+    <div class="modal-buttons">
+      <button id="cancelLogout" class="btn cancel">Cancel</button>
+      <button id="confirmLogout" class="btn confirm">Logout</button>
+    </div>
+  </div>
+  </div>
+  
+  <div class="form-container" id="loginForm">
+    <h2>Login</h2>
+    <input type="password" id="password" placeholder="Enter your password">
+    <button onclick="login()">Login</button>
+    <div class="error" id="loginError"></div>
+    <p>Don't have an account? <a href="#" onclick="showSignupForm()">Sign up</a></p>
+  </div>
+
+  <div class="form-container" id="signupForm" style="display:none;">
+    <h2>Sign Up</h2>
+    <input type="password" id="newPassword" placeholder="Enter a password">
+    <input type="text" id="chatId" placeholder="Enter Telegram Chat ID">
+    <input type="text" id="binanceApi" placeholder="Enter Binance API Key">
+    <input type="text" id="binanceSecret" placeholder="Enter Binance Secret Key">
+    <button onclick="signup()">Sign Up</button>
+    <div class="error" id="signupError"></div>
+    <p>Already have an account? <a href="#" onclick="showLoginForm()">Login</a></p>
+  </div>
+
+  <div id="mainContent" style="display:none;">
+  <i id="logoutIcon" class="fas fa-sign-out-alt" title="Logout"></i>
+  <i id="settingsIcon" class="fas fa-cog" title="Settings"></i>
+  <i id="premiumIcon" class="fas fa-crown" title="Unlock Premium"></i>
+  <i id="statsIcon" class="fas fa-chart-bar" title="View Stats"></i>
+  <a href="https://t.me/InsightFutureCallsBot" <i id="TgIcon" class="fab fa-telegram-plane" title="TG Bot"></i> </a>
+  <h1 id="rocketIcon"><span class="flying">🚀</span> Signal Generator</h1>
+  <p class="tagline">Auto-execute Binance trades with premium crypto signals</p>
+  <button id="scanButton" onclick="scan()">Scan Now</button>
+  <p id="waitingMessage" style="display: none; color: #f59e0b;">Caution: Market unstable or nearing risky zone...</p>
+  <div id="error-message"></div>
+  <div id="statsContainer" style="
+  display: flex; 
+  flex-wrap: wrap;
+  justify-content: space-between; 
+  gap: 10px; 
+  margin-top: 15px; 
+  background-color: #161b22;
+  border: 1px solid #30363d; 
+  border-radius: 12px; 
+  padding: 12px;
+  font-size: 16px;
+">
+  <span id="futuresBalance" style="font-weight: bold; color: #22c55e; display: flex; align-items: center; gap: 6px;">
+    <i class="fas fa-wallet"></i> <span class="value">...</span>
+  </span>
+
+  <span id="positionsCount" style="font-weight: bold; color: #3b82f6; display: flex; align-items: center; gap: 6px;">
+    <i class="fas fa-chart-line"></i> <span class="value">...</span>
+  </span>
+
+  <span id="pnlValue" style="font-weight: bold; color: #facc15; display: flex; align-items: center; gap: 6px;">
+    <i class="fas fa-dollar-sign"></i> <span class="value">...</span>
+  </span>
+
+  <span id="marketStatus" style="font-weight: bold; color: #22c55e; display: flex; align-items: center; gap: 6px;">
+    <i class="fas fa-signal"></i> <span class="value">...</span>
+  </span>
+
+  <span id="pullbackStatus" style="font-weight: bold; color: #f97316; display: flex; align-items: center; gap: 6px;">
+  <i class="fas fa-exclamation-triangle"></i> <span class="value">...</span>
+</span>
+
+  </div>
+
+    <div id="lastTime" style="margin-bottom:10px; margin-top:10px;"></div>
+    <div id="output">Loading...</div>
+  </div>
+
+  <div id="premiumForm" style="
+  display: none;
+  background-color: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 12px;
+  padding: 20px;
+  color: #e6edf3;
+  max-width: 360px;
+  margin: 24px auto;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
+  text-align: center;
+">
+
+  <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 16px;">
+    <i class="fas fa-crown" style="color: #facc15; margin-right: 6px;"></i> Unlock Premium Access
+  </h3>
+
+  <div style="text-align: left; font-size: 15px; margin-bottom: 16px; line-height: 1.6;">
+    <p><i class="fas fa-check-circle" style="color: #22c55e; margin-right: 6px;"></i> High-confidence crypto signals</p>
+    <p><i class="fas fa-robot" style="color: #22c55e; margin-right: 6px;"></i> Auto-execute Binance trades</p>
+    <p><i class="fas fa-headset" style="color: #22c55e; margin-right: 6px;"></i> Priority support & updates</p>
+    <p><i class="fas fa-clock" style="color: #facc15; margin-right: 6px;"></i> <strong>Premium Validity:</strong> 30 days</p>
+    <p><i class="fas fa-hand-holding-usd" style="color: #facc15; margin-right: 6px;"></i> Send <strong>$5</strong> to Binance UID: <strong>280962465</strong></p>
+    <p><i class="fas fa-key" style="color: #facc15; margin-right: 6px;"></i> <strong>Your Premium Code:</strong></p>
+    <p id="deviceCode" style="
+      word-break: break-word;
+      font-family: monospace;
+      background-color: #1f2937;
+      border: 1px solid #30363d;
+      padding: 8px 12px;
+      border-radius: 6px;
+      color: #facc15;
+      font-size: 14px;
+    "></p>
+  </div>
+
+  <input type="text" id="senderUidInput" placeholder="Enter your Binance UID"
+    style="width: 100%; padding: 10px; margin-top: 4px; margin-bottom: 10px;
+           border-radius: 8px; border: 1px solid #30363d;
+           background-color: #0d1117; color: #e6edf3; font-size: 14px;" />
+
+  <button id="submitBtn"
+    style="margin-top: 8px; padding: 10px 20px; border: none;
+           background-color: #facc15; color: #0d1117;
+           border-radius: 8px; font-weight: 600; cursor: pointer;">
+    Submit
+  </button>
+
+  <p style="margin-top: 12px; font-size: 14px;">
+    <i class="fas fa-comment-dots" style="color: #60a5fa; margin-right: 6px;"></i>
+    <a href="https://t.me/SUAIB235" target="_blank"
+       style="color: #60a5fa; text-decoration: none;">
+      Premium lost? Contact admin
+    </a>
+  </p>
+
+  <div id="statusMsg" style="margin-top: 10px; font-size: 14px; color: #22c55e;"></div>
+</div>
+
+  <div id="premiumStatusBox" style="
+  display: none;
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  background-color: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 10px;
+  padding: 16px;
+  color: #e6edf3;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  max-width: 280px;
+  font-size: 14px;
+"></div>
+  
+<div id="todayStatsBox" style="
+  display: none;
+  margin-top: 16px;
+  padding: 16px 20px;
+  border-radius: 12px;
+  background-color: #161b22;
+  border: 1px solid #30363d;
+  color: #e6edf3;
+  font-size: 15px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+  max-width: 320px;
+  margin-left: auto;
+  margin-right: auto;
+">
+  <div style="font-weight: 600; font-size: 16px; margin-bottom: 10px;">
+    <i class="fas fa-chart-line" style="color: #60a5fa; margin-right: 6px;"></i>
+    Today’s Trade Stats
+  </div>
+  <div>Total Trades: <strong id="totalTrades">0</strong></div>
+  <div>TP Hits: <strong id="tpHit">0</strong></div>
+  <div>SL Hits: <strong id="slHit">0</strong></div>
+  <div>Win Rate: <strong id="winRate">0%</strong></div>
+</div>
+  
+<div id="settingsBox" style="
+  display: none;
+  margin: 24px auto 0;
+  padding: 20px;
+  border-radius: 16px;
+  background-color: #0d1117;
+  border: 1px solid #30363d;
+  color: #e6edf3;
+  font-size: 15px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  max-width: 360px;
+">
+
+  <div style="display: flex; align-items: center; margin-bottom: 16px;">
+    <i class="fas fa-cog" style="color: #10b981; margin-right: 10px; font-size: 18px;"></i>
+    <span style="font-weight: 600; font-size: 17px;">Trade Settings</span>
+  </div>
+
+  <label for="usdtInput" style="display: block; margin-bottom: 6px;">Trade Amount (USDT)</label>
+  <input type="number" id="usdtInput" placeholder="e.g. 20" style="
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 10px;
+    box-sizing: border-box;
+    border: 1px solid #30363d;
+    background-color: #161b22;
+    color: #e6edf3;
+    margin-bottom: 12px;
+    font-size: 15px;
+  ">
+
+  <div id="marginInfo" style="margin-bottom: 14px; color: #facc15; font-weight: 500;">
+    Estimated Margin: 1.00 USDT
+  </div>
+
+  <button id="saveSettings" style="
+    background-color: #22c55e;
+    border: none;
+    padding: 12px;
+    border-radius: 10px;
+    color: white;
+    width: 100%;
+    font-weight: 600;
+    font-size: 15px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  " onmouseover="this.style.backgroundColor='#16a34a'" onmouseout="this.style.backgroundColor='#22c55e'">
+    Save Settings
+  </button>
+</div>
+
+<div id="landingPage" style="display: none;">
+  <div class="landing-hero">
+    <div class="landing-header">
+      <h1><i class="fas fa-bolt"></i> Signal Generator for Binance Futures</h1>
+      <p>Get high-confidence crypto signals backed by multi-timeframe confluence and smart filtering.</p>
+      <div class="landing-buttons">
+        <button id="LSignUp" onclick="showSignupForm()">Signup</button>
+        <button id="LLogin" onclick="showLoginForm()">Login</button> 
+      </div>
+    </div>
+    <div class="landing-features">
+      <div><i class="fas fa-robot"></i><span>Auto Trade Execution</span></div>
+      <div><i class="fas fa-chart-line"></i><span>TP-Hit Optimized Strategy</span></div>
+      <div><i class="fas fa-clock"></i><span>5m – 4h Timeframe Validation</span></div>
+      <div><i class="fas fa-shield-alt"></i><span>Risk Management Applied</span></div>
+    </div>
+  </div>
+</div>
+
+  <footer style="text-align:center; font-size:13px; color:#8b949e; margin-top:40px;">
+  © 2025 SignalGenerator.store — Built for Binance Futures Trading
+</footer>
+
+  <script src="env.js"></script>
+  <script src="env2.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/crypto-js.js"></script>
+  <script>
+
+setInterval(() => {
+  const now = Date.now();
+  let changed = false;
+  Object.keys(cooldowns).forEach(symbol => {
+    if (now - cooldowns[symbol] > COOLDOWN_MINUTES * 60 * 1000) {
+      delete cooldowns[symbol];
+      changed = true;
+    }
+  });
+  if (changed) {
+    localStorage.setItem("cooldowns", JSON.stringify(cooldowns));
+  }
+}, 300000); // runs every 5 minutes
+
+document.addEventListener("DOMContentLoaded", () => {
+  const loginForm = document.getElementById("loginForm");
+  const mainContent = document.getElementById("mainContent");
+  const sessionValidUntil = localStorage.getItem("sessionValidUntil");
+  const now = Date.now();
+  const premiumForm = document.getElementById("premiumForm");
+  const premiumIcon = document.getElementById("premiumIcon");
+  const scanButton = document.getElementById("scanButton");
+  const submitBtn = document.getElementById("submitBtn");
+  const statusMsg = document.getElementById("statusMsg");
+
+  const tutorialBox = document.getElementById("tutorialBox");
+  const chatAdminBox = document.getElementById("chatAdminBox");
+  const landingPage = document.getElementById("landingPage");
+
+// Show tutorial only on login/signup page
+if (!sessionValidUntil || now >= parseInt(sessionValidUntil)) {
+  if (tutorialBox) tutorialBox.style.display = "block";
+  if (chatAdminBox) chatAdminBox.style.display = "none";
+} else {
+  if (tutorialBox) tutorialBox.style.display = "none";
+  if (chatAdminBox) chatAdminBox.style.display = "block";
+}
+
+  // Session Login Logic
+  if (sessionValidUntil && now < parseInt(sessionValidUntil)) {
+    landingPage.style.display = "none";
+    loginForm.style.display = "none";
+    mainContent.style.display = "block";
+  } else {
+    localStorage.removeItem("sessionValidUntil");
+    landingPage.style.display = "block";
+    loginForm.style.display = "none";
+    mainContent.style.display = "none";
+  }
+
+document.getElementById("logoutIcon").addEventListener("click", () => {
+  document.getElementById("logoutModal").style.display = "flex";
+});
+
+document.getElementById("cancelLogout").addEventListener("click", () => {
+  document.getElementById("logoutModal").style.display = "none";
+});
+
+document.getElementById("confirmLogout").addEventListener("click", () => {
+  localStorage.removeItem("sessionValidUntil");
+  localStorage.removeItem("binanceApi");
+  localStorage.removeItem("binanceSecret");
+  document.getElementById("loginForm").style.display = "none";
+  document.getElementById("mainContent").style.display = "none";
+  document.getElementById("logoutModal").style.display = "none";
+  document.getElementById("landingPage").style.display = "block";
+  console.log("Logged out successfully!");
+});
+
+  // UID Logic
+  let uid = localStorage.getItem("uid");
+  if (!uid) {
+    uid = crypto.randomUUID();
+    localStorage.setItem("uid", uid);
+  }
+  document.getElementById("deviceCode").innerText = uid;
+
+  premiumIcon.addEventListener("click", () => {
+  const premiumForm = document.getElementById("premiumForm");
+  const premiumBox = document.getElementById("premiumStatusBox");
+  const statsBox = document.getElementById("todayStatsBox");
+  const settingsBox = document.getElementById("settingsBox");
+
+  // Close stats box if open
+  if (statsBox && statsBox.style.display === "block") {
+    statsBox.style.display = "none";
+  }
+if (settingsBox && settingsBox.style.display === "block") {
+    settingsBox.style.display = "none"; 
+  }
+    
+  // Premium user
+  if (window.isPremium && window.premiumStatus) {
+    const { daysLeft, expiresOn } = window.premiumStatus;
+    premiumBox.innerHTML = `
+      <div style="margin-bottom: 8px;"><strong style="color: #22c55e;">✅ Premium Access</strong></div>
+      <div>🗓️ <strong>${daysLeft} days</strong> remaining</div>
+      <div>📅 Expires: ${expiresOn}</div>
+    `;
+    premiumBox.style.display = premiumBox.style.display === "block" ? "none" : "block";
+    premiumForm.style.display = "none";
+
+    // Optional: auto-hide
+    setTimeout(() => {
+      premiumBox.style.display = "none";
+    }, 5000);
+
+  } else {
+    // Not premium → toggle form
+    const isFormVisible = premiumForm.style.display === "block";
+    premiumForm.style.display = isFormVisible ? "none" : "block";
+    premiumBox.style.display = "none";
+  }
+});
+
+statsIcon.addEventListener("click", () => {
+  const statsBox = document.getElementById("todayStatsBox");
+  const premiumForm = document.getElementById("premiumForm");
+  const premiumBox = document.getElementById("premiumStatusBox");
+  const settingsBox = document.getElementById("settingsBox");
+
+  // Close other boxes
+  if (premiumForm && premiumForm.style.display === "block") {
+    premiumForm.style.display = "none";
+  }
+  if (premiumBox && premiumBox.style.display === "block") {
+    premiumBox.style.display = "none";
+  }
+  if (settingsBox && settingsBox.style.display === "block") {
+    settingsBox.style.display = "none";
+  }
+  // Toggle stats
+  statsBox.style.display = statsBox.style.display === "none" ? "block" : "none";
+});
+
+  document.getElementById("settingsIcon").addEventListener("click", () => {
+  const settingsBox = document.getElementById("settingsBox");
+  const premiumBox = document.getElementById("premiumStatusBox");
+  const premiumForm = document.getElementById("premiumForm");
+  const statsBox = document.getElementById("todayStatsBox");
+
+  // Hide other boxes
+  if (premiumBox) premiumBox.style.display = "none";
+  if (premiumForm) premiumForm.style.display = "none";
+  if (statsBox) statsBox.style.display = "none";
+
+  settingsBox.style.display = settingsBox.style.display === "block" ? "none" : "block";
+});
+
+document.getElementById("usdtInput").addEventListener("input", (e) => {
+  const value = parseFloat(e.target.value);
+  const margin = value ? (value / 20).toFixed(2) : "0.00";
+  document.getElementById("marginInfo").innerText = `Estimated Margin: ${margin} USDT`;
+});
+
+document.getElementById("saveSettings").addEventListener("click", () => {
+  const value = parseFloat(document.getElementById("usdtInput").value);
+  if (!isNaN(value) && value > 0) {
+    localStorage.setItem("tradeAmount", value);
+    showError("Settings saved: " + value + " USDT");
+    document.getElementById("settingsBox").style.display = "none";
+  } else {
+    showError("Enter a valid number.");
+  }
+});
+
+async function updateTradeStats() {
+  const startOfToday = new Date();
+  startOfToday.setUTCHours(0, 0, 0, 0);
+  const startTimestamp = startOfToday.getTime();
+
+  try {
+    const trades = await sendSignedRequest("/fapi/v1/userTrades", {
+      startTime: startTimestamp,
+      timestamp: Date.now() + timeOffset
+    });
+
+    const tradeGroups = {};
+
+    trades.forEach(t => {
+      const key = `${t.symbol}_${t.side}_${t.orderId}`;
+      const pnl = parseFloat(t.realizedPnl);
+
+      if (!tradeGroups[key]) {
+        tradeGroups[key] = 0;
+      }
+      tradeGroups[key] += pnl;
+    });
+
+    let tp = 0;
+    let sl = 0;
+
+    // Adjust thresholds to count more accurately
+    Object.values(tradeGroups).forEach(netPnl => {
+      if (netPnl > 0.1) tp++;
+      else if (netPnl < -0.1) sl++;
+    });
+
+    const total = tp + sl;
+    const winRate = total ? ((tp / total) * 100).toFixed(1) : 0;
+
+    document.getElementById("tpHit").innerText = tp;
+    document.getElementById("slHit").innerText = sl;
+    document.getElementById("winRate").innerText = `${winRate}%`;
+    document.getElementById("totalTrades").innerText = total;
+
+  } catch (err) {
+    console.error("Error updating trade stats:", err);
+  }
+}
+
+  // Update every minute
+  updateTradeStats();
+  setInterval(updateTradeStats, 60000);
+  
+  // Premium Submission to Telegram
+  if (submitBtn) {
+    submitBtn.addEventListener("click", async () => {
+      const senderUid = document.getElementById("senderUidInput").value.trim();
+      if (!senderUid) {
+        statusMsg.innerText = "❗ Please enter your Binance UID.";
+        statusMsg.style.color = "red";
+        return;
+      }
+
+      const message = `🌟 *Premium Request* 🌟\nDevice Code: \`${uid}\`\nSender UID: ${senderUid}`;
+      const telegramUrl = `https://api.telegram.org/bot${window.env2.BOT_TOKEN2}/sendMessage?chat_id=${window.env2.CHAT_ID2}&text=${encodeURIComponent(message)}&parse_mode=Markdown`;
+
+      try {
+        await fetch(telegramUrl);
+        statusMsg.innerText = "✅ Submitted! Please wait for admin confirmation.";
+        statusMsg.style.color = "green";
+      } catch {
+        statusMsg.innerText = "❌ Submission failed. Please try again.";
+        statusMsg.style.color = "red";
+      }
+    });
+  }
+
+  // Premium Check
+  fetch("premium-uids.json")
+    .then((res) => res.json())
+    .then((data) => {
+      const entry = data.premium.find((p) => p.uid === uid);
+      let isPremium = false;
+
+      if (entry) {
+        const expiry = new Date(entry.expires);
+        isPremium = now < expiry.getTime();
+
+          if (isPremium) {
+    const nowDate = new Date();
+    const daysLeft = Math.max(0, Math.ceil((expiry - nowDate) / (1000 * 60 * 60 * 24)));
+    window.premiumStatus = {
+      uid: entry.uid,
+      daysLeft,
+      expiresOn: expiry.toDateString()
+    };
+  }
+    } else {
+        console.log("Premium access not found.");
+      }
+
+      window.isPremium = isPremium;
+      toggleScanButton();
+    })
+    .catch(() => {
+      showError("Premium check failed.");
+    });
+
+  // Trade Count Watcher
+  const hideSignalBlocks = () => {
+    document.querySelectorAll(".signal-block").forEach((b) => {
+      b.style.display = "none";
+    });
+  };
+
+  const showSignalBlocks = () => {
+    document.querySelectorAll(".signal-block").forEach((b) => {
+      b.style.display = "block";
+    });
+  };
+
+  const checkAndSetTradeLimit = async () => {
+    try {
+      const count = await getOpenPositionsCount();
+
+      if (count >= 5) {
+        scanButton.disabled = true;
+        localStorage.setItem("scanBlocked", "true");
+        hideSignalBlocks();
+      } else {
+        scanButton.disabled = false;
+        localStorage.removeItem("scanBlocked");
+        showSignalBlocks();
+      }
+    } catch (err) {
+      console.error("Error checking positions:", err);
+    }
+  };
+
+  // Initial load: check localStorage
+  if (localStorage.getItem("scanBlocked") === "true") {
+    scanButton.disabled = true;
+    hideSignalBlocks();
+  } else {
+    checkAndSetTradeLimit(); // Also runs a live check
+  }
+
+  // Periodic recheck
+  setInterval(checkAndSetTradeLimit, 10000);
+});
+
+// Login
+function login() {
+  const password = document.getElementById("password").value;
+  const storedPassword = localStorage.getItem("password");
+  if (password === storedPassword) {
+    const expiresAt = Date.now() + 360 * 60 * 60 * 1000;
+    localStorage.setItem("sessionValidUntil", expiresAt);
+
+    const storedApi = localStorage.getItem("apiBackup");
+    const storedSecret = localStorage.getItem("secretBackup");
+
+    if (storedApi && storedSecret) {
+      localStorage.setItem("binanceApi", storedApi);
+      localStorage.setItem("binanceSecret", storedSecret);
+    }
+    
+    document.getElementById("loginForm").style.display = "none";
+    document.getElementById("mainContent").style.display = "block";
+    showError("Login successful!");
+  } else {
+    document.getElementById("loginError").textContent = "Incorrect password!";
+  }
+}
+
+// Signup
+function signup() {
+  const pw = document.getElementById("newPassword").value;
+  const chatId = document.getElementById("chatId").value;
+  const api = document.getElementById("binanceApi").value;
+  const secret = document.getElementById("binanceSecret").value;
+
+  if (!pw || !chatId || !api || !secret) {
+    document.getElementById("signupError").textContent = "All fields are required!";
+    return;
+  }
+
+  localStorage.setItem("password", pw);
+  localStorage.setItem("chatId", chatId);
+  localStorage.setItem("binanceApi", api);
+  localStorage.setItem("binanceSecret", secret);
+  localStorage.setItem("apiBackup", api);
+  localStorage.setItem("secretBackup", secret);
+  showLoginForm();
+  showError("Signup complete. Please login.");
+}
+
+// UI Toggling
+function showLoginForm() {
+  document.getElementById("landingPage").style.display = "none";
+  document.getElementById("signupForm").style.display = "none";
+  document.getElementById("loginForm").style.display = "block";
+}
+function showSignupForm() {
+  document.getElementById("landingPage").style.display = "none";
+  document.getElementById("loginForm").style.display = "none";
+  document.getElementById("signupForm").style.display = "block";
+}
+
+    let scanInterval = null;
+    let autoScanActive = false;
+
+    let cooldowns = JSON.parse(localStorage.getItem("cooldowns") || "{}");
+    const COOLDOWN_MINUTES = 60;
+
+    const output = document.getElementById("output");
+    const lastTime = document.getElementById("lastTime");
+
+async function getPrecisionInfo(symbol) {
+  const res = await fetch('https://fapi.binance.com/fapi/v1/exchangeInfo');
+  const data = await res.json();
+  const symbolInfo = data.symbols.find(s => s.symbol === symbol);
+  if (!symbolInfo) throw new Error('Symbol not found');
+
+  const priceFilter = symbolInfo.filters.find(f => f.filterType === "PRICE_FILTER");
+  const lotSize = symbolInfo.filters.find(f => f.filterType === "LOT_SIZE");
+
+  const pricePrecision = Math.round(-Math.log10(parseFloat(priceFilter.tickSize)));
+  const quantityPrecision = Math.round(-Math.log10(parseFloat(lotSize.stepSize)));
+
+  return { pricePrecision, quantityPrecision };
+}
+
+    async function scan(autoTriggered = false) {
+  if (!autoTriggered) {
+    clearInterval(scanInterval); // Reset interval when manually scanning
+    autoScanActive = true;
+    scanInterval = setInterval(() => scan(true), 30000); // Run every 30s
+  }
+
+  output.innerHTML = "Scanning...";
+  const res = await fetch("https://fapi.binance.com/fapi/v1/ticker/price");
+  const coins = await res.json();
+  const usdtPairs = coins.filter(c => c.symbol.endsWith("USDT") && !c.symbol.includes("_"));
+  const results = await Promise.all(usdtPairs.map(c => analyzeSymbol(c.symbol)));
+  const filtered = results.filter(r => r);   
+  output.innerHTML = filtered.length > 0 ? filtered.join("") : "No strong signals found.";
+  lastTime.innerText = "Last scanned: " + new Date().toLocaleTimeString();
+
+  if (filtered.length > 0 && autoScanActive) {
+    clearInterval(scanInterval);
+    autoScanActive = false;
+  }
+
+  return filtered.length > 0;
+    }
+
+const confirmTrend = async (symbol) => {
+  const tfCheck = async (interval) => {
+    const url = `https://fapi.binance.com/fapi/v1/klines?symbol=${symbol}&interval=${interval}&limit=50`;
+    const res = await fetch(url);
+    const data = await res.json();
+    const closes = data.map(c => parseFloat(c[4]));
+    const ema9 = calculateEMA(closes, 9).at(-1);
+    const ema21 = calculateEMA(closes, 21).at(-1);
+    return ema9 > ema21 ? 'LONG' : ema9 < ema21 ? 'SHORT' : 'NEUTRAL';
+  };
+
+  const tf15 = await tfCheck('15m');
+  const tf1h = await tfCheck('1h');
+  const tf30 = await tfCheck('30m');
+  const tf4h = await tfCheck('4h');
+        
+return { tf15, tf1h, tf30, tf4h };
+      };
+  
+  async function analyzeSymbol(symbol) {
+  try {
+    const url = `https://fapi.binance.com/fapi/v1/klines?symbol=${symbol}&interval=5m&limit=100`;
+    const res = await fetch(url);
+    const data = await res.json();
+
+    const closes = data.map(c => parseFloat(c[4]));
+    const opens = data.map(c => parseFloat(c[1]));
+    const highs = data.map(c => parseFloat(c[2]));
+    const lows = data.map(c => parseFloat(c[3]));
+    const volumes = data.map(c => parseFloat(c[5]));
+
+    const ema9 = calculateEMA(closes, 9);
+    const ema21 = calculateEMA(closes, 21);
+    const rsi = calculateRSI(closes, 14);
+    const { macd, signal } = calculateMACD(closes);
+    const atr = calculateATR(highs, lows, closes, 14);
+
+    if (!ema9.length || !ema21.length || !rsi.length || !macd.length || !signal.length || !atr.length) {
+      throw new Error("Insufficient indicator data.");
+    }
+
+    const lastClose = closes.at(-1);
+    const lastOpen = opens.at(-1);
+    const lastHigh = highs.at(-1);
+    const lastLow = lows.at(-1);
+    const lastVol = volumes.at(-1);
+    const avgVol = volumes.slice(-20).reduce((a, b) => a + b, 0) / 20;
+
+    const latestEma9 = ema9.at(-1);
+    const latestEma21 = ema21.at(-1);
+    const latestRsi = rsi.at(-1);
+    const latestMacd = macd.at(-1);
+    const latestSignal = signal.at(-1);
+    const latestAtr = atr.at(-1) || 0;
+    const macdHistogram = latestMacd - latestSignal;
+    const macdUp = macd.slice(-3).every((v, i, a) => i === 0 || v > a[i - 1]);
+    const macdDown = macd.slice(-3).every((v, i, a) => i === 0 || v < a[i - 1]);
+  
+    const candleStrength = (lastClose - lastOpen) / lastClose;
+    const wickRatio = (lastHigh - lastLow) / lastClose;
+
+    // Config
+    const THRESHOLDS = {
+      rsiLong: 55,
+      rsiShort: 45,
+      macdPositive: 0.0,
+      macdNegative: 0.0,
+      volMultiplier: 1.5,
+      candleStrengthMin: 0.002,
+      wickRatioMax: 0.02,
+      minConfirmCandles: 2
+    };
+
+    // Recent candles
+    const recentOpens = opens.slice(-3);
+    const recentCloses = closes.slice(-3);
+    const recentBullishCount = recentCloses.filter((c, i) => c > recentOpens[i]).length;
+    const recentBearishCount = recentCloses.filter((c, i) => c < recentOpens[i]).length;
+
+    const dynamicCandleStrength = Math.max(THRESHOLDS.candleStrengthMin, latestAtr * 0.0015);
+    const dynamicVolumeThreshold = avgVol * THRESHOLDS.volMultiplier;
+
+    let score = 0, shortScore = 0;
+    let scoreReasons = [], shortScoreReasons = [];
+
+if (latestEma9 > latestEma21) { score += 1; scoreReasons.push("EMA9 > EMA21"); }
+if (latestRsi > THRESHOLDS.rsiLong) { score += 1; scoreReasons.push("RSI > 55"); }
+if (macdHistogram > THRESHOLDS.macdPositive) { score += 1; scoreReasons.push("MACD > 0"); }
+if (lastVol > dynamicVolumeThreshold) { score += 1; scoreReasons.push("Volume > Avg * 1.5"); }
+if (candleStrength > dynamicCandleStrength) { score += 1; scoreReasons.push("Candle Strength > Threshold"); }
+if (wickRatio < THRESHOLDS.wickRatioMax) { score += 1; scoreReasons.push("Wick Ratio < 0.02"); }
+if (recentBullishCount >= THRESHOLDS.minConfirmCandles) { score += 1; scoreReasons.push("2+ Bullish Candles"); }
+
+if (latestEma9 < latestEma21) { shortScore += 1; shortScoreReasons.push("EMA9 < EMA21"); }
+if (latestRsi < THRESHOLDS.rsiShort) { shortScore += 1; shortScoreReasons.push("RSI < 45"); }
+if (macdHistogram < THRESHOLDS.macdNegative) { shortScore += 1; shortScoreReasons.push("MACD < 0"); }
+if (lastVol > dynamicVolumeThreshold) { shortScore += 1; shortScoreReasons.push("Volume > Avg * 1.5"); }
+if (candleStrength < -dynamicCandleStrength) { shortScore += 1; shortScoreReasons.push("Candle Strength Negative"); }
+if (wickRatio < THRESHOLDS.wickRatioMax) { shortScore += 1; shortScoreReasons.push("Wick Ratio < 0.02"); }
+if (recentBearishCount >= THRESHOLDS.minConfirmCandles) { shortScore += 1; shortScoreReasons.push("2+ Bearish Candles"); }
+
+let signalType = null;
+let confidence = "None";
+let reasons = [];
+
+if (score >= 7) {
+  signalType = "LONG";
+  confidence = "Very High";
+  reasons = scoreReasons;
+} else if (shortScore >= 7) {
+  signalType = "SHORT";
+  confidence = "Very High";
+  reasons = shortScoreReasons;
+} else if (score === 6) {
+  signalType = "LONG";
+  confidence = "High";
+  reasons = scoreReasons;
+} else if (shortScore === 6) {
+  signalType = "SHORT";
+  confidence = "High";
+  reasons = shortScoreReasons;
+}
+
+if (signalType && symbol) {
+  const now = Date.now();
+  const lastSignalTime = cooldowns[symbol] || 0;
+
+  if (now - lastSignalTime < COOLDOWN_MINUTES * 60 * 1000) {
+    console.log(`Cooldown active for ${symbol}`);
+    return null;
+  }
+
+  cooldowns[symbol] = now;
+  localStorage.setItem("cooldowns", JSON.stringify(cooldowns));
+
+if ((signalType === "LONG" && !macdUp) || (signalType === "SHORT" && !macdDown)) {
+  console.log("Signal skipped: MACD momentum not strong.");
+  return null;
+}
+ 
+  if (recentlySpiked) {
+  console.log("Signal skipped: BTC in risky zone (not safe to enter).");
+  return null;
+}
+
+if (nextMove === "sideways") {
+  console.log("Signal skipped: Market forecast is sideways.");
+  return null;
+}
+
+if ((nextMove === "bullish" && signalType === "SHORT") ||
+    (nextMove === "bearish" && signalType === "LONG")) {
+  console.log(`Signal skipped: Forecast is ${nextMove}, but signal is ${signalType}`);
+  return null;
+}
+
+const { tf15, tf1h, tf30, tf4h } = await confirmTrend(symbol);
+
+if ((signalType === "LONG" && (tf15 !== "LONG" || tf1h !== "LONG" || tf30 !== "LONG" || tf4h !== "LONG")) ||
+    (signalType === "SHORT" && (tf15 !== "SHORT" || tf1h !== "SHORT" || tf30 !== "SHORT" || tf4h !== "SHORT"))) {
+  console.log("Signal skipped: Higher TFs not confirming the trend.");
+  return null;
+}
+
+    // 1. Avoid weak breakout candles
+const lastCandleBody = Math.abs(lastClose - lastOpen);
+const bodyToRangeRatio = lastCandleBody / (lastHigh - lastLow);
+const wickSize = (lastHigh - lastLow) - lastCandleBody;
+const bodyToWickRatio = lastCandleBody / (wickSize || 1);
+    
+if (bodyToWickRatio < 1.2) {
+  console.log("Signal skipped: Weak body-to-wick ratio.");
+  return null;
+}
+   
+if (bodyToRangeRatio < 0.6) {
+  console.log("Signal skipped: Weak breakout candle body.");
+  return null;
+}
+
+// 2. Detect unusual volume spike
+const prevVolAvg = volumes.slice(-6, -1).reduce((a, b) => a + b, 0) / 5;
+const unusualSpike = lastVol > prevVolAvg * 2.5;
+if (unusualSpike) {
+  console.log("Signal skipped: Unusual sudden volume spike.");
+  return null;
+}
+
+// 3. Confirm local trend direction (last 3 candles)
+const last3Closes = closes.slice(-3);
+const trendUp = last3Closes.every((c, i, arr) => i === 0 || c > arr[i - 1]);
+const trendDown = last3Closes.every((c, i, arr) => i === 0 || c < arr[i - 1]);
+
+if ((signalType === "LONG" && !trendUp) || (signalType === "SHORT" && !trendDown)) {
+  console.log("Signal skipped: Last 3 candles not supporting the trend.");
+  return null;
+}
+
+  const volTrendMatch = (signalType === "LONG" && lastClose > closes[closes.length - 2]) ||
+                      (signalType === "SHORT" && lastClose < closes[closes.length - 2]);
+if (!volTrendMatch) {
+  console.log("Signal skipped: Volume not confirming direction.");
+  return null;
+}
+
+const price = lastClose;
+  
+// 4. ATR minimum threshold (avoid tight range)
+if (latestAtr < price * 0.003) {
+  console.log("Signal skipped: ATR too low (range too tight).");
+  return null;
+}
+
+  const recentHigh = Math.max(...highs.slice(-10, -5));
+const recentLow = Math.min(...lows.slice(-10, -5));
+if ((signalType === "LONG" && price < recentHigh * 0.995) ||
+    (signalType === "SHORT" && price > recentLow * 1.005)) {
+  console.log("Signal skipped: Not breaking key level.");
+  return null;
+}
+
+const atrMultiplier = 2.5; // You can tune this
+const rrRatio = latestAtr > price * 0.01 ? 1.3 : 1.5;
+const minSlPercent = 0.005; // 0.5%
+
+let sl, tp;
+
+const rawSl = signalType === "LONG"
+  ? price - latestAtr * atrMultiplier
+  : price + latestAtr * atrMultiplier;
+
+const minSl = price * minSlPercent;
+
+// Ensure SL is not too tight
+const bufferMultiplier = 1.05;
+sl = signalType === "LONG"
+  ? Math.min(price - minSl, rawSl) - (latestAtr * 0.2 * bufferMultiplier)
+  : Math.max(price + minSl, rawSl) + (latestAtr * 0.2 * bufferMultiplier);
+
+// Calculate TP based on SL distance (risk-reward logic)
+const risk = Math.abs(price - sl);
+tp = signalType === "LONG"
+  ? (price + risk * rrRatio)
+  : (price - risk * rrRatio);
+
+// Format SL & TP
+sl = sl.toFixed(5);
+tp = tp.toFixed(5);
+
+const escapedReasons = reasons.map(r =>
+  r.replace(/&/g, '&amp;')
+   .replace(/</g, '&lt;')
+   .replace(/>/g, '&gt;')
+).join('\n');
+
+const telegramMessage = `
+<b>🚨 Signal Alert </b>  
+━━━━━━━━━━━━━━━━━  
+<b>📊 Pair:</b> <code>${symbol}</code>  
+<b>📉 Position:</b> <b><code>${signalType}</code></b>  
+<b>🎯 Entry:</b> <code>${price.toFixed(5)}</code>  
+<b>⭐ Take Profit:</b> <code>${tp}</code>  
+<b>⛔ Stop Loss:</b> <code>${sl}</code>  
+<b>⚙️ Leverage:</b> <code>10x – 20x</code>  
+<b>🔒 Confidence:</b> <code>${confidence}</code>  
+━━━━━━━━━━━━━━━━━  
+<b>🧪 Matched Rules:</b>  
+<pre>${escapedReasons}</pre>
+
+<b>🧠 Strategy:</b>  
+<i>SL is mandatory. Always apply position sizing and risk management.</i>  
+
+<b>🔎 Source:</b> <i>High-confluence algo strategy</i>
+`;
+
+await sendToTelegram(telegramMessage);
+
+
+          return `
+<div class="signal-block">
+  <b>📊 Symbol:</b> ${symbol}<br>
+  <b>🚨 SIGNAL:</b> <span class="${signalType === "LONG" ? "long" : "short"}">${signalType}</span><br>
+  <b>💰 Entry:</b> ${price.toFixed(5)}<br>
+  <b>⭐ TP:</b> ${tp}<br>
+  <b>⛔ SL:</b> ${sl}<br>
+  <b>⚙️ Leverage:</b> ${confidence === "High" ? "20x (or max)" : "10–20x"}<br>
+  <b>✅ Confidence:</b> <code>${confidence} (score: ${signalType === "LONG" ? score : shortScore})</code>
+  <button class="trade-btn" onclick="placeTrade('${symbol}', '${signalType === "LONG" ? "BUY" : "SELL"}', '${price.toFixed(5)}', '${tp}', '${sl}')">Trade</button>
+  </div>`;
+        }
+      } catch (err) {
+        console.error("Error analyzing", symbol, err);
+        return null;
+      }
+  }
+        
+    function calculateEMA(closes, period) {
+      const k = 2 / (period + 1);
+      let ema = [closes[0]];
+      for (let i = 1; i < closes.length; i++) {
+        ema.push(closes[i] * k + ema[i - 1] * (1 - k));
+      }
+      return ema;
+    }
+
+    function calculateRSI(closes, period) {
+      let gains = 0, losses = 0;
+      for (let i = 1; i <= period; i++) {
+        let diff = closes[i] - closes[i - 1];
+        if (diff >= 0) gains += diff;
+        else losses -= diff;
+      }
+      let rs = gains / losses;
+      let rsi = [100 - 100 / (1 + rs)];
+
+      for (let i = period + 1; i < closes.length; i++) {
+        let diff = closes[i] - closes[i - 1];
+        if (diff >= 0) {
+          gains = (gains * (period - 1) + diff) / period;
+          losses = (losses * (period - 1)) / period;
+        } else {
+          gains = (gains * (period - 1)) / period;
+          losses = (losses * (period - 1) - diff) / period;
+        }
+        rs = gains / losses;
+        rsi.push(100 - 100 / (1 + rs));
+      }
+      return rsi;
+    }
+
+    function calculateATR(highs, lows, closes, period) {
+      let trs = [];
+      for (let i = 1; i < highs.length; i++) {
+        const tr = Math.max(
+          highs[i] - lows[i],
+          Math.abs(highs[i] - closes[i - 1]),
+          Math.abs(lows[i] - closes[i - 1])
+        );
+        trs.push(tr);
+      }
+      const atr = [trs.slice(0, period).reduce((a, b) => a + b, 0) / period];
+      for (let i = period; i < trs.length; i++) {
+        atr.push((atr[atr.length - 1] * (period - 1) + trs[i]) / period);
+      }
+      return atr;
+    }
+
+    function calculateMACD(closes) {
+  const ema12 = calculateEMA(closes, 12);
+  const ema26 = calculateEMA(closes, 26);
+
+  const macd = ema12.slice(ema26.length - ema12.length).map((v, i) => v - ema26[i]);
+  const signal = calculateEMA(macd, 9);
+
+  return { macd, signal };
+}
+
+  
+function getBinanceCredentials() {
+  return {
+    apiKey: localStorage.getItem('binanceApi'),
+    secretKey: localStorage.getItem('binanceSecret')
+  };
+}
+
+function getTelegramCredentials() {
+  return {
+    chatId: localStorage.getItem('chatId')
+  };
+}
+  
+    async function sendToTelegram(message) {
+      const { chatId } = getTelegramCredentials();
+      const botToken = window.env.BOT_TOKEN;
+      
+      await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ chat_id: chatId, text: message, parse_mode: "HTML" })
+      });
+    }
+
+const { apiKey: binanceKey, secretKey: binanceSecret } = getBinanceCredentials();
+ 
+async function placeTrade(symbol, side, entry, tp, sl) {
+  try {
+    const { pricePrecision, quantityPrecision } = await getPrecisionInfo(symbol);
+    const quantity = await getQuantity(symbol, entry, quantityPrecision);
+    const leverage = await getSafeLeverage(symbol);
+
+    await setLeverage(symbol, leverage);
+
+    const adjustedPrice = parseFloat(entry).toFixed(pricePrecision);
+    const response = await sendLimit(symbol, side, quantity, adjustedPrice, tp, sl, false, pricePrecision, quantityPrecision);
+
+    if (!response || response.code) {
+      console.error("Error placing order:", response ? response.msg : "Unknown error");
+      showError("Error placing order.");
+    }
+  } catch (error) {
+    console.error("Error in placeTrade function:", error);
+    showError("An error occurred while placing the trade.");
+  }
+}
+
+let isWindowActive = true;
+window.addEventListener("beforeunload", () => {
+  isWindowActive = false;
+});
+
+async function sendLimit(symbol, side, qty, price, tp, sl, reduceOnly, pricePrecision, quantityPrecision) {
+  if (!isWindowActive) {
+    console.warn("Window inactive. Order not sent.");
+    return;
+  }
+
+  try {
+    const orderParams = {
+      symbol: symbol,
+      side: side,
+      positionSide: side === 'BUY' ? 'LONG' : 'SHORT',
+      type: 'MARKET',
+      quantity: parseFloat(parseFloat(qty).toFixed(quantityPrecision)),
+      timestamp: Date.now()
+    };
+
+    if (reduceOnly) orderParams.reduceOnly = true;
+
+    const response = await sendSignedRequest('/fapi/v1/order', orderParams, "POST");
+    console.log("Order response:", response);
+
+    if (response && !response.code) {
+      const positionSide = side === 'BUY' ? 'LONG' : 'SHORT';
+      const oppositeSide = side === 'BUY' ? 'SELL' : 'BUY';
+
+      // TAKE PROFIT
+      try {
+        await sendSignedRequest('/fapi/v1/order', {
+          symbol,
+          side: oppositeSide,
+          type: 'TAKE_PROFIT_MARKET',
+          stopPrice: parseFloat(tp).toFixed(pricePrecision),
+          closePosition: true,
+          positionSide,
+          priceProtect: true,
+          timestamp: Date.now()
+        }, "POST");
+        console.log("✅ TP set for", symbol);
+      } catch (tpErr) {
+        console.error("❌ TP error for", symbol, tpErr);
+        showError(`Failed to set TP for ${symbol}`);
+      }
+
+      // STOP LOSS
+      try {
+        await sendSignedRequest('/fapi/v1/order', {
+          symbol,
+          side: oppositeSide,
+          type: 'STOP_MARKET',
+          stopPrice: parseFloat(sl).toFixed(pricePrecision),
+          closePosition: true,
+          positionSide,
+          priceProtect: true,
+          timestamp: Date.now()
+        }, "POST");
+        console.log("✅ SL set for", symbol);
+      } catch (slErr) {
+        console.error("❌ SL error for", symbol, slErr);
+        showError(`Failed to set SL for ${symbol}`);
+      }
+    }
+
+    return response;
+
+  } catch (mainErr) {
+    console.error("❌ Order error:", mainErr);
+    showError(`Order failed for ${symbol}`);
+    return null;
+  }
+}
+
+    async function setLeverage(symbol, lev) {
+      return sendSignedRequest('/fapi/v1/leverage', {
+        symbol,
+        leverage: lev,
+        timestamp: Date.now()
+      }, "POST");
+    }
+
+    async function getSafeLeverage(symbol) {
+  const res = await sendSignedRequest('/fapi/v1/leverageBracket', {}, 'GET');
+  
+  // res is an array of objects with symbol and brackets
+  const pair = res.find(p => p.symbol === symbol);
+
+  if (!pair || !pair.brackets || pair.brackets.length === 0) {
+    console.warn(`Leverage bracket not found for ${symbol}`);
+    return 10; // default fallback leverage
+  }
+
+  const maxLeverage = pair.brackets[0].initialLeverage;
+  return Math.min(maxLeverage, 20);
+}
+    
+  async function getQuantity(symbol, price, quantityPrecision) {
+  const usdt = parseFloat(localStorage.getItem("tradeAmount") || 0);
+  const qty = usdt / parseFloat(price);
+  return parseFloat(qty).toFixed(quantityPrecision);
+    }
+
+let marketCondition = "BAD";
+let safeToEnter = false;
+let recentlySpiked = false;
+let nextMove = "sideways";
+let pullbackStatus = "RISKY ZONE";
+
+async function getBTCIndicators() {
+  const res = await fetch("https://fapi.binance.com/fapi/v1/klines?symbol=BTCUSDT&interval=5m&limit=250");
+  const data = await res.json();
+
+  const closes = data.map(c => parseFloat(c[4]));
+  const highs = data.map(c => parseFloat(c[2]));
+  const lows = data.map(c => parseFloat(c[3]));
+  const volumes = data.map(c => parseFloat(c[5]));
+
+  const ema50 = getEMA(closes, 50);
+  const ema200 = getEMA(closes, 200);
+  const rsi = calculateRSI(closes, 14);
+  const atr = calculateATR(highs, lows, closes, 14);
+  const { macdLine, signalLine } = calculateMACD(closes);
+
+  const priceNow = closes[closes.length - 1];
+  const priceBefore = closes[closes.length - 18];
+  const currentVolume = volumes[volumes.length - 1];
+  const avgVolume = volumes.slice(-30).reduce((a, b) => a + b, 0) / 30;
+
+  const priceRising = priceNow > priceBefore;
+  const rsiNow = rsi[rsi.length - 1];
+  const atrNow = atr[atr.length - 1];
+
+  const ema50Now = ema50[ema50.length - 1];
+  const ema50Prev = ema50[ema50.length - 4];
+  const ema200Now = ema200[ema200.length - 1];
+
+  const slope = ema50Now - ema50Prev;
+  const dynamicSlopeThreshold = 0.2 * (atrNow / priceNow);
+
+  // Spike detection
+  const priceSpike = Math.abs(priceNow - priceBefore) / priceBefore > 0.015;
+  const volumeStd = Math.sqrt(volumes.slice(-30).reduce((a, v) => a + Math.pow(v - avgVolume, 2), 0) / 30);
+  const volumeZ = (currentVolume - avgVolume) / volumeStd;
+  const volumeSpike = volumeZ > 2;
+  const overextended = Math.abs(priceNow - ema50Now) > 2 * atrNow;
+  const overboughtOrOversold = rsiNow > 75 || rsiNow < 25;
+
+  const recentlySpiked = (priceSpike && volumeSpike) || overextended || overboughtOrOversold;
+
+  const macdNow = macdLine[macdLine.length - 1];
+  const signalNow = signalLine[signalLine.length - 1];
+  const macdUp = macdNow > signalNow;
+
+  const bullishCrossover = ema50Now > ema200Now && ema50Prev <= ema200Now;
+  const bearishCrossover = ema50Now < ema200Now && ema50Prev >= ema200Now;
+
+  const forecast = bullishCrossover || (slope > dynamicSlopeThreshold && rsiNow > 55) ? "bullish"
+                  : bearishCrossover || (slope < -dynamicSlopeThreshold && rsiNow < 45) ? "bearish"
+                  : "sideways";
+
+  const safeToTrade = slope > dynamicSlopeThreshold && !recentlySpiked && macdUp;
+
+  return {
+    forecast,
+    safeToTrade,
+    recentlySpiked
+  };
+}
+
+function getEMA(prices, period) {
+  const k = 2 / (period + 1);
+  const ema = [prices.slice(0, period).reduce((a, b) => a + b, 0) / period];
+  for (let i = period; i < prices.length; i++) {
+    ema.push(prices[i] * k + ema[ema.length - 1] * (1 - k));
+  }
+  return ema;
+}
+
+function calculateRSI(closes, period = 14) {
+  let gains = 0, losses = 0;
+  const rsi = [];
+
+  for (let i = 1; i <= period; i++) {
+    const change = closes[i] - closes[i - 1];
+    if (change >= 0) gains += change;
+    else losses -= change;
+  }
+
+  let avgGain = gains / period;
+  let avgLoss = losses / period;
+  rsi.push(100 - 100 / (1 + avgGain / avgLoss));
+
+  for (let i = period + 1; i < closes.length; i++) {
+    const change = closes[i] - closes[i - 1];
+    const gain = Math.max(change, 0);
+    const loss = Math.max(-change, 0);
+    avgGain = (avgGain * (period - 1) + gain) / period;
+    avgLoss = (avgLoss * (period - 1) + loss) / period;
+    rsi.push(100 - 100 / (1 + avgGain / avgLoss));
+  }
+
+  return rsi;
+}
+
+function calculateATR(highs, lows, closes, period = 14) {
+  const tr = [];
+  for (let i = 1; i < highs.length; i++) {
+    const high = highs[i];
+    const low = lows[i];
+    const prevClose = closes[i - 1];
+    tr.push(Math.max(high - low, Math.abs(high - prevClose), Math.abs(low - prevClose)));
+  }
+
+  const atr = [tr.slice(0, period).reduce((a, b) => a + b, 0) / period];
+  for (let i = period; i < tr.length; i++) {
+    atr.push((atr[atr.length - 1] * (period - 1) + tr[i]) / period);
+  }
+  return atr;
+}
+
+    function calculateMACD(prices, shortPeriod = 12, longPeriod = 26, signalPeriod = 9) {
+  const emaShort = getEMA(prices, shortPeriod);
+  const emaLong = getEMA(prices, longPeriod);
+  const macdLine = emaShort.slice(longPeriod - shortPeriod).map((v, i) => v - emaLong[i]);
+  const signalLine = getEMA(macdLine, signalPeriod);
+  return { macdLine, signalLine };
+}
+
+async function updateMarketCondition() {
+  try {
+    const { forecast, safeToTrade, recentlySpiked } = await getBTCIndicators();
+
+    marketCondition = safeToTrade ? "GOOD" : "BAD";
+    nextMove = forecast;
+    pullbackStatus = recentlySpiked ? "RISKY ZONE" : "SAFE ZONE";
+
+    const marketEl = document.querySelector("#marketStatus .value");
+    const pullbackEl = document.querySelector("#pullbackStatus .value");
+
+    if (marketEl) {
+      marketEl.innerHTML = `${marketCondition} / ${nextMove.toUpperCase()}`;
+      marketEl.style.color = marketCondition === "GOOD" ? "#22c55e" : "#EF4444";
+    }
+
+    if (pullbackEl) {
+      pullbackEl.innerHTML = pullbackStatus;
+      pullbackEl.style.color = pullbackStatus === "SAFE ZONE" ? "#22c55e" : "#f97316";
+    }
+
+    toggleScanButton?.(); // Optional: call only if defined
+  } catch (err) {
+    console.error("Market update error:", err);
+  }
+}
+
+// Start real-time updates
+updateMarketCondition();
+setInterval(updateMarketCondition, 20000);
+
+  function toggleScanButton() {
+  const scanButton = document.getElementById("scanButton");
+  const waitingMessage = document.getElementById("waitingMessage");
+
+  if (!scanButton || !waitingMessage) return;
+
+  const isSafeMarket = pullbackStatus === "SAFE ZONE";
+  const isDirectional = nextMove !== "sideways";
+
+  const canTrade = isPremium && isSafeMarket && isDirectional;
+
+  scanButton.style.display = canTrade ? "inline-block" : "none";
+  waitingMessage.style.display = isPremium && !canTrade ? "block" : "none";
+}
+
+ window.onload = async () => {
+  const balance = await getFuturesBalance();
+  document.getElementById("futuresBalance").innerHTML = `<i class="fas fa-wallet"></i> ${balance}`;
+
+  const positionCount = await getOpenPositionsCount();
+  document.getElementById("positionsCount").innerHTML = `<i class="fas fa-chart-line"></i> ${positionCount}/5`;
+
+  const pnl = await getTodayPnL();
+  document.getElementById("todayPnl").innerHTML = `<i class="fas fa-dollar-sign"></i> ${pnl >= 0 ? "+" : ""}$${pnl.toFixed(2)}`;
+};
+    
+async function getFuturesBalance() {
+  const data = await sendSignedRequest("/fapi/v2/account");
+  const usdtAsset = data.assets.find(a => a.asset === "USDT");
+  return usdtAsset ? parseFloat(usdtAsset.availableBalance).toFixed(2) : "0.00";
+}
+
+async function getOpenPositionsCount() {
+  const positions = await sendSignedRequest("/fapi/v2/positionRisk");
+  const openPositions = positions.filter(p => parseFloat(p.positionAmt) !== 0);
+  return openPositions.length;
+}
+
+async function getTodayPnL() {
+  try {
+    // Get UTC midnight timestamp
+    const startOfToday = new Date();
+    startOfToday.setUTCHours(0, 0, 0, 0);
+    const startTimestamp = startOfToday.getTime();
+
+    // Fetch realized PNL entries from Binance
+    const incomeData = await sendSignedRequest("/fapi/v1/income", {
+  startTime: startTimestamp,
+  limit: 1000
+});
+
+const today = new Date().toISOString().split("T")[0];
+
+// Include all income types: REALIZED_PNL, COMMISSION, FUNDING_FEE, etc.
+const todayPnl = incomeData
+  .filter(entry => {
+    const entryDate = new Date(entry.time).toISOString().split("T")[0];
+    return entryDate === today;
+  })
+  .reduce((sum, entry) => sum + parseFloat(entry.income), 0);
+
+    // Display
+const pnlElement = document.getElementById("pnlValue");
+const valueSpan = pnlElement.querySelector(".value");
+
+// Update value
+valueSpan.textContent = `${todayPnl >= 0 ? '+' : ''}${todayPnl.toFixed(2)}`;
+
+// Remove old class and apply new one
+valueSpan.classList.remove("profit", "loss", "neutral");
+valueSpan.classList.add(
+  todayPnl > 0 ? "profit" :
+  todayPnl < 0 ? "loss" :
+  "neutral"
+);
+    return todayPnl;
+  } catch (error) {
+    console.error("Error fetching today's PnL:", error);
+    showError("Failed to fetch PNL");
+  }
+} 
+    
+let timeOffset = 0;
+
+// Sync local time with Binance server
+async function syncServerTime() {
+  try {
+    const res = await fetch("https://fapi.binance.com/fapi/v1/time");
+    const data = await res.json();
+    const localTime = Date.now();
+    timeOffset = data.serverTime - localTime;
+    console.log("Time offset (ms):", timeOffset);
+  } catch (err) {
+    console.warn("Failed to sync Binance time.");
+  }
+}
+
+syncServerTime(); // Call once at load
+setInterval(syncServerTime, 10 * 60 * 1000); // Re-sync every 10 mins
+  
+    async function sendSignedRequest(path, params = {}, method = "GET") {
+  // Add recvWindow and timestamp
+  params.recvWindow = 10000; // 5 seconds tolerance
+  params.timestamp = Date.now() + timeOffset;
+
+  const query = new URLSearchParams(params).toString();
+  const signature = CryptoJS.HmacSHA256(query, binanceSecret).toString(CryptoJS.enc.Hex);
+
+  const fullUrl = `https://fapi.binance.com${path}?${query}&signature=${signature}`;
+  const options = {
+    method,
+    headers: { 'X-MBX-APIKEY': binanceKey }
+  };
+
+  // Handle both GET and POST requests
+  return fetch(fullUrl, options).then(async r => {
+    const data = await r.json();
+    if (!r.ok) {
+      console.error("Binance API error:", data);
+      showError(`Binance Error: ${data.msg || "Unknown error"}`);
+    }
+    return data;
+  });
+}  
+
+function showError(msg) {
+  const box = document.createElement('div');
+  box.textContent = msg;
+  box.style.cssText = `
+      position:fixed; top:20px; left:50%; transform:translateX(-50%);
+      max-width:90%; padding:14px 18px;
+      background:#b91c1c; color:#fef2f2; font-family:monospace;
+      border-radius:8px; z-index:9999;
+      border: 1px solid #CC0000;
+  `;
+  document.body.appendChild(box);
+  setTimeout(()=> box.remove(), 5000);  // disappear after 5 s
+}
+
+    async function refreshStatsAndMarket() {
+  try {
+    const balance = await getFuturesBalance();
+    document.getElementById("futuresBalance").innerHTML = `<i class="fas fa-wallet"></i> ${balance}`;
+
+    const positionCount = await getOpenPositionsCount();
+    document.getElementById("positionsCount").innerHTML = `<i class="fas fa-chart-line"></i> ${positionCount}/5`;
+
+    const pnl = await getTodayPnL();
+    document.getElementById("todayPnl").innerHTML = `<i class="fas fa-dollar-sign"></i> ${pnl >= 0 ? "+" : ""}$${pnl.toFixed(2)}`;
+
+    console.log("Refreshed at:", new Date().toLocaleTimeString());
+  } catch (err) {
+    console.error("Error during refresh:", err);
+  }
+}
+
+window.onload = () => {
+  refreshStatsAndMarket(); // initial call
+  setInterval(refreshStatsAndMarket, 60000); // auto-refresh every 1 min
+};
+    
+  </script>
+</body>
+</html>
