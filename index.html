@@ -421,8 +421,8 @@ a:hover {
   font-weight: bold;
   z-index: 999;
 ">
-  <i class="fab fa-btc" style="margin-right: 1px;"></i>
-  <span id="btcPrice" style="color: #ccc;">...</span>
+  <i style="margin-right: 1px;"></i>
+  <span id="btcPrice" style="color: #ccc;"></span>
 </div>
     
   <i id="logoutIcon" class="fas fa-sign-out-alt" title="Logout"></i>
@@ -1041,7 +1041,7 @@ function showSignupForm() {
       }
     }
 
-    btcEl.textContent = currentDisplayPrice.toLocaleString();
+    btcEl.innerHTML = `<i class="fab fa-btc" style="margin-right: 1px;"></i> ${currentDisplayPrice.toLocaleString()}`;
     displayLastPrice = currentDisplayPrice;
   };
 
