@@ -414,16 +414,16 @@ a:hover {
 
   <div id="livePriceText" style="
   position: absolute;
-  top: 14px;
+  top: 13px;
   left: 20px;
-  font-size: 18px;
+  font-size: 20px;
   color: #fbbf24;
   font-weight: bold;
   z-index: 999;
 ">
-  <i class="fab fa-btc"></i>
-  <span id="btcPrice" style="color: #ccc;"></span>
-    </div>
+  <i style="margin-right: 1px;"></i>
+  <span id="btcPrice" style="color: #fbbf24;"></span>
+  </div>
     
   <i id="logoutIcon" class="fas fa-sign-out-alt" title="Logout"></i>
   <i id="settingsIcon" class="fas fa-cog" title="Settings"></i>
@@ -1041,7 +1041,7 @@ function showSignupForm() {
       }
     }
 
-    btcEl.innerHTML = `<i></i> ${currentDisplayPrice.toLocaleString()}`;
+    btcEl.innerHTML = `<i class="fab fa-btc" style="margin-right: 1px;"></i> ${currentDisplayPrice.toLocaleString()}`;
     displayLastPrice = currentDisplayPrice;
   };
 
