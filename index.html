@@ -1610,64 +1610,50 @@ let nextMove = "sideways";
 let pullbackStatus = "RISKY ZONE";
 
 async function getBTCIndicators() {
-  const res = await fetch("https://fapi.binance.com/fapi/v1/klines?symbol=BTCUSDT&interval=5m&limit=250");
-  const data = await res.json();
+  const res = await fetch("https://fapi.binance.com/fapi/v1/klines?symbol=BTCUSDT&interval=5m&limit=250");
+  const data = await res.json();
 
-  const closes = data.map(c => parseFloat(c[4]));
-  const highs = data.map(c => parseFloat(c[2]));
-  const lows = data.map(c => parseFloat(c[3]));
-  const volumes = data.map(c => parseFloat(c[5]));
+  const closes = data.map(c => parseFloat(c[4]));
+  const highs = data.map(c => parseFloat(c[2]));
+  const lows = data.map(c => parseFloat(c[3]));
+  const volumes = data.map(c => parseFloat(c[5]));
 
-  const ema50 = getEMA(closes, 50);
-  const ema200 = getEMA(closes, 200);
-  const rsi = calculateRSI(closes, 14);
-  const atr = calculateATR(highs, lows, closes, 14);
-  const { macdLine, signalLine } = calculateMACD(closes);
+  const ema50 = getEMA(closes, 50);
+  const ema200 = getEMA(closes, 200);
+  const rsi = calculateRSI(closes, 14);
+  const atr = calculateATR(highs, lows, closes, 14);
 
-  const priceNow = closes[closes.length - 1];
-  const priceBefore = closes[closes.length - 18];
-  const currentVolume = volumes[volumes.length - 1];
-  const avgVolume = volumes.slice(-30).reduce((a, b) => a + b, 0) / 30;
+  const priceNow = closes[closes.length - 1];
+  const priceBefore = closes[closes.length - 18]; // 90min ago
+  const currentVolume = volumes[volumes.length - 1];
+  const avgVolume = volumes.slice(-30).reduce((a, b) => a + b, 0) / 30;
 
-  const priceRising = priceNow > priceBefore;
-  const rsiNow = rsi[rsi.length - 1];
-  const atrNow = atr[atr.length - 1];
+  const priceRising = priceNow > priceBefore;
+  const rsiNow = rsi[rsi.length - 1];
+  const atrNow = atr[atr.length - 1];
 
-  const ema50Now = ema50[ema50.length - 1];
-  const ema50Prev = ema50[ema50.length - 4];
-  const ema200Now = ema200[ema200.length - 1];
+  const ema50Now = ema50[ema50.length - 1];
+  const ema50Prev = ema50[ema50.length - 4];
+  const ema200Now = ema200[ema200.length - 1];
 
-  const slope = ema50Now - ema50Prev;
-  const dynamicSlopeThreshold = 0.2 * (atrNow / priceNow);
+  const slope = ema50Now - ema50Prev;
+  const priceSpike = Math.abs(priceNow - priceBefore) / priceBefore > 0.015;
+  const volumeSpike = currentVolume > avgVolume * 1.8;
+  const overextended = Math.abs(priceNow - ema50Now) > 2 * atrNow;
+  const overboughtOrOversold = rsiNow > 75 || rsiNow < 25;
 
-  // Spike detection
-  const priceSpike = Math.abs(priceNow - priceBefore) / priceBefore > 0.015;
-  const volumeStd = Math.sqrt(volumes.slice(-30).reduce((a, v) => a + Math.pow(v - avgVolume, 2), 0) / 30);
-  const volumeZ = (currentVolume - avgVolume) / volumeStd;
-  const volumeSpike = volumeZ > 2;
-  const overextended = Math.abs(priceNow - ema50Now) > 2 * atrNow;
-  const overboughtOrOversold = rsiNow > 75 || rsiNow < 25;
+  const recentlySpiked = (priceSpike && volumeSpike) || overextended || overboughtOrOversold;
+  const safeToTrade = slope > 0.1 && !recentlySpiked;
 
-  const recentlySpiked = (priceSpike && volumeSpike) || overextended || overboughtOrOversold;
+  let forecast = "sideways";
+  if (slope > 0.2 && rsiNow > 55) forecast = "bullish";
+  else if (slope < -0.2 && rsiNow < 45) forecast = "bearish";
 
-  const macdNow = macdLine[macdLine.length - 1];
-  const signalNow = signalLine[signalLine.length - 1];
-  const macdUp = macdNow > signalNow;
-
-  const bullishCrossover = ema50Now > ema200Now && ema50Prev <= ema200Now;
-  const bearishCrossover = ema50Now < ema200Now && ema50Prev >= ema200Now;
-
-  const forecast = bullishCrossover || (slope > dynamicSlopeThreshold && rsiNow > 55) ? "bullish"
-                  : bearishCrossover || (slope < -dynamicSlopeThreshold && rsiNow < 45) ? "bearish"
-                  : "sideways";
-
-  const safeToTrade = slope > dynamicSlopeThreshold && !recentlySpiked && macdUp;
-
-  return {
-    forecast,
-    safeToTrade,
-    recentlySpiked
-  };
+  return {
+    forecast,
+    safeToTrade,
+    recentlySpiked
+  };
 }
 
 function getEMA(prices, period) {
@@ -1719,14 +1705,6 @@ function calculateATR(highs, lows, closes, period = 14) {
     atr.push((atr[atr.length - 1] * (period - 1) + tr[i]) / period);
   }
   return atr;
-}
-
-    function calculateMACD(prices, shortPeriod = 12, longPeriod = 26, signalPeriod = 9) {
-  const emaShort = getEMA(prices, shortPeriod);
-  const emaLong = getEMA(prices, longPeriod);
-  const macdLine = emaShort.slice(longPeriod - shortPeriod).map((v, i) => v - emaLong[i]);
-  const signalLine = getEMA(macdLine, signalPeriod);
-  return { macdLine, signalLine };
 }
 
 async function updateMarketCondition() {
