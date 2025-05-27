@@ -1045,7 +1045,7 @@ function showSignupForm() {
     displayLastPrice = currentDisplayPrice;
   };
 
-    let scanInterval = null;
+ let scanInterval = null;
     let autoScanActive = false;
 
     let cooldowns = JSON.parse(localStorage.getItem("cooldowns") || "{}");
@@ -1106,12 +1106,10 @@ const confirmTrend = async (symbol) => {
 
   const tf15 = await tfCheck('15m');
   const tf1h = await tfCheck('1h');
-  const tf30 = await tfCheck('30m');
-  const tf4h = await tfCheck('4h');
-        
-return { tf15, tf1h, tf30, tf4h };
-      };
   
+  return { tf15, tf1h };
+};
+
   async function analyzeSymbol(symbol) {
   try {
     const url = `https://fapi.binance.com/fapi/v1/klines?symbol=${symbol}&interval=5m&limit=100`;
@@ -1148,9 +1146,7 @@ return { tf15, tf1h, tf30, tf4h };
     const latestSignal = signal.at(-1);
     const latestAtr = atr.at(-1) || 0;
     const macdHistogram = latestMacd - latestSignal;
-    const macdUp = macd.slice(-3).every((v, i, a) => i === 0 || v > a[i - 1]);
-    const macdDown = macd.slice(-3).every((v, i, a) => i === 0 || v < a[i - 1]);
-  
+
     const candleStrength = (lastClose - lastOpen) / lastClose;
     const wickRatio = (lastHigh - lastLow) / lastClose;
 
@@ -1228,11 +1224,7 @@ if (signalType && symbol) {
   cooldowns[symbol] = now;
   localStorage.setItem("cooldowns", JSON.stringify(cooldowns));
 
-if ((signalType === "LONG" && !macdUp) || (signalType === "SHORT" && !macdDown)) {
-  console.log("Signal skipped: MACD momentum not strong.");
-  return null;
-}
- 
+
   if (recentlySpiked) {
   console.log("Signal skipped: BTC in risky zone (not safe to enter).");
   return null;
@@ -1249,10 +1241,9 @@ if ((nextMove === "bullish" && signalType === "SHORT") ||
   return null;
 }
 
-const { tf15, tf1h, tf30, tf4h } = await confirmTrend(symbol);
-
-if ((signalType === "LONG" && (tf15 !== "LONG" || tf1h !== "LONG" || tf30 !== "LONG" || tf4h !== "LONG")) ||
-    (signalType === "SHORT" && (tf15 !== "SHORT" || tf1h !== "SHORT" || tf30 !== "SHORT" || tf4h !== "SHORT"))) {
+const { tf15, tf1h } = await confirmTrend(symbol);
+if ((signalType === "LONG" && (tf15 !== "LONG" || tf1h !== "LONG")) ||
+    (signalType === "SHORT" && (tf15 !== "SHORT" || tf1h !== "SHORT"))) {
   console.log("Signal skipped: Higher TFs not confirming the trend.");
   return null;
 }
@@ -1260,14 +1251,6 @@ if ((signalType === "LONG" && (tf15 !== "LONG" || tf1h !== "LONG" || tf30 !== "L
     // 1. Avoid weak breakout candles
 const lastCandleBody = Math.abs(lastClose - lastOpen);
 const bodyToRangeRatio = lastCandleBody / (lastHigh - lastLow);
-const wickSize = (lastHigh - lastLow) - lastCandleBody;
-const bodyToWickRatio = lastCandleBody / (wickSize || 1);
-    
-if (bodyToWickRatio < 1.2) {
-  console.log("Signal skipped: Weak body-to-wick ratio.");
-  return null;
-}
-   
 if (bodyToRangeRatio < 0.6) {
   console.log("Signal skipped: Weak breakout candle body.");
   return null;
@@ -1291,31 +1274,16 @@ if ((signalType === "LONG" && !trendUp) || (signalType === "SHORT" && !trendDown
   return null;
 }
 
-  const volTrendMatch = (signalType === "LONG" && lastClose > closes[closes.length - 2]) ||
-                      (signalType === "SHORT" && lastClose < closes[closes.length - 2]);
-if (!volTrendMatch) {
-  console.log("Signal skipped: Volume not confirming direction.");
-  return null;
-}
-
 const price = lastClose;
   
 // 4. ATR minimum threshold (avoid tight range)
-if (latestAtr < price * 0.003) {
+if (latestAtr < price * 0.0025) {
   console.log("Signal skipped: ATR too low (range too tight).");
   return null;
-}
-
-  const recentHigh = Math.max(...highs.slice(-10, -5));
-const recentLow = Math.min(...lows.slice(-10, -5));
-if ((signalType === "LONG" && price < recentHigh * 0.995) ||
-    (signalType === "SHORT" && price > recentLow * 1.005)) {
-  console.log("Signal skipped: Not breaking key level.");
-  return null;
-}
-
+    }
+  
 const atrMultiplier = 2.5; // You can tune this
-const rrRatio = latestAtr > price * 0.01 ? 1.3 : 1.5;
+const rrRatio = 1.2; // Risk\:Reward
 const minSlPercent = 0.005; // 0.5%
 
 let sl, tp;
@@ -1327,10 +1295,9 @@ const rawSl = signalType === "LONG"
 const minSl = price * minSlPercent;
 
 // Ensure SL is not too tight
-const bufferMultiplier = 1.05;
 sl = signalType === "LONG"
-  ? Math.min(price - minSl, rawSl) - (latestAtr * 0.2 * bufferMultiplier)
-  : Math.max(price + minSl, rawSl) + (latestAtr * 0.2 * bufferMultiplier);
+  ? Math.min(price - minSl, rawSl)
+  : Math.max(price + minSl, rawSl);
 
 // Calculate TP based on SL distance (risk-reward logic)
 const risk = Math.abs(price - sl);
@@ -1387,7 +1354,7 @@ await sendToTelegram(telegramMessage);
         console.error("Error analyzing", symbol, err);
         return null;
       }
-  }
+  }               
         
     function calculateEMA(closes, period) {
       const k = 2 / (period + 1);
