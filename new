@@ -19,16 +19,16 @@ async function getBTCIndicators() {
   const atr = calculateATR(highs, lows, closes, 14);
   const { macdLine, signalLine } = calculateMACD(closes);
 
-  const priceNow = closes[closes.length - 1];
-  const priceBefore = closes[closes.length - 18];
-  const currentVolume = volumes[volumes.length - 1];
+  const priceNow = closes.at(-1);
+  const priceBefore = closes.at(-18);
+  const currentVolume = volumes.at(-1);
   const avgVolume = volumes.slice(-30).reduce((a, b) => a + b, 0) / 30;
 
-  const rsiNow = rsi[rsi.length - 1];
-  const atrNow = atr[atr.length - 1];
-  const ema50Now = ema50[ema50.length - 1];
+  const rsiNow = rsi.at(-1);
+  const atrNow = atr.at(-1);
+  const ema50Now = ema50.at(-1);
   const ema50Prev = ema50[ema50.length - 4];
-  const ema200Now = ema200[ema200.length - 1];
+  const ema200Now = ema200.at(-1);
 
   const slope = ema50Now - ema50Prev;
   const dynamicSlopeThreshold = 0.2 * (atrNow / priceNow);
@@ -41,35 +41,32 @@ async function getBTCIndicators() {
   const overextended = Math.abs(priceNow - ema50Now) > 2 * atrNow;
   const overboughtOrOversold = rsiNow > 75 || rsiNow < 25;
 
-  // UPDATE GLOBAL
   recentlySpiked = (priceSpike && volumeSpike) || overextended || overboughtOrOversold;
 
-  const macdNow = macdLine[macdLine.length - 1];
-  const signalNow = signalLine[signalLine.length - 1];
+  const macdNow = macdLine.at(-1);
+  const signalNow = signalLine.at(-1);
   const macdUp = macdNow > signalNow;
 
   const bullishCrossover = ema50Now > ema200Now && ema50Prev <= ema200Now;
   const bearishCrossover = ema50Now < ema200Now && ema50Prev >= ema200Now;
 
-  // UPDATE GLOBAL
-  nextMove = bullishCrossover || (slope > dynamicSlopeThreshold && rsiNow > 55) ? "bullish"
-           : bearishCrossover || (slope < -dynamicSlopeThreshold && rsiNow < 45) ? "bearish"
-           : "sideways";
+  nextMove = bullishCrossover || (slope > dynamicSlopeThreshold && rsiNow > 55)
+    ? "bullish"
+    : bearishCrossover || (slope < -dynamicSlopeThreshold && rsiNow < 45)
+      ? "bearish"
+      : "sideways";
 
   safeToEnter = slope > dynamicSlopeThreshold && !recentlySpiked && macdUp;
-
-  // UPDATE GLOBAL
   marketCondition = safeToEnter ? "GOOD" : "BAD";
   pullbackStatus = recentlySpiked ? "RISKY ZONE" : "SAFE ZONE";
-}
 
   return {
-    forecast,
-    safeToTrade,
+    forecast: nextMove,
+    safeToTrade: safeToEnter,
     recentlySpiked
   };
 }
-
+  
 function getEMA(prices, period) {
   const k = 2 / (period + 1);
   const ema = [prices.slice(0, period).reduce((a, b) => a + b, 0) / period];
