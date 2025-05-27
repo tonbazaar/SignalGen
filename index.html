@@ -1577,52 +1577,68 @@ let nextMove = "sideways";
 let pullbackStatus = "RISKY ZONE";
 
 async function getBTCIndicators() {
-  const res = await fetch("https://fapi.binance.com/fapi/v1/klines?symbol=BTCUSDT&interval=5m&limit=250");
-  const data = await res.json();
+  const res = await fetch("https://fapi.binance.com/fapi/v1/klines?symbol=BTCUSDT&interval=5m&limit=250");
+  const data = await res.json();
 
-  const closes = data.map(c => parseFloat(c[4]));
-  const highs = data.map(c => parseFloat(c[2]));
-  const lows = data.map(c => parseFloat(c[3]));
-  const volumes = data.map(c => parseFloat(c[5]));
+  const closes = data.map(c => parseFloat(c[4]));
+  const highs = data.map(c => parseFloat(c[2]));
+  const lows = data.map(c => parseFloat(c[3]));
+  const volumes = data.map(c => parseFloat(c[5]));
 
-  const ema50 = getEMA(closes, 50);
-  const ema200 = getEMA(closes, 200);
-  const rsi = calculateRSI(closes, 14);
-  const atr = calculateATR(highs, lows, closes, 14);
+  const ema50 = getEMA(closes, 50);
+  const ema200 = getEMA(closes, 200);
+  const rsi = calculateRSI(closes, 14);
+  const atr = calculateATR(highs, lows, closes, 14);
+  const { macdLine, signalLine } = calculateMACD(closes);
 
-  const priceNow = closes[closes.length - 1];
-  const priceBefore = closes[closes.length - 18]; // 90min ago
-  const currentVolume = volumes[volumes.length - 1];
-  const avgVolume = volumes.slice(-30).reduce((a, b) => a + b, 0) / 30;
+  const priceNow = closes.at(-1);
+  const priceBefore = closes.at(-18);
+  const currentVolume = volumes.at(-1);
+  const avgVolume = volumes.slice(-30).reduce((a, b) => a + b, 0) / 30;
 
-  const priceRising = priceNow > priceBefore;
-  const rsiNow = rsi[rsi.length - 1];
-  const atrNow = atr[atr.length - 1];
+  const rsiNow = rsi.at(-1);
+  const atrNow = atr.at(-1);
+  const ema50Now = ema50.at(-1);
+  const ema50Prev = ema50[ema50.length - 4];
+  const ema200Now = ema200.at(-1);
 
-  const ema50Now = ema50[ema50.length - 1];
-  const ema50Prev = ema50[ema50.length - 4];
-  const ema200Now = ema200[ema200.length - 1];
+  const slope = ema50Now - ema50Prev;
+  const dynamicSlopeThreshold = 0.2 * (atrNow / priceNow);
 
-  const slope = ema50Now - ema50Prev;
-  const priceSpike = Math.abs(priceNow - priceBefore) / priceBefore > 0.015;
-  const volumeSpike = currentVolume > avgVolume * 1.8;
-  const overextended = Math.abs(priceNow - ema50Now) > 2 * atrNow;
-  const overboughtOrOversold = rsiNow > 75 || rsiNow < 25;
+  // Spike detection
+  const priceSpike = Math.abs(priceNow - priceBefore) / priceBefore > 0.015;
+  const volumeStd = Math.sqrt(volumes.slice(-30).reduce((a, v) => a + Math.pow(v - avgVolume, 2), 0) / 30);
+  const volumeZ = (currentVolume - avgVolume) / volumeStd;
+  const volumeSpike = volumeZ > 2;
+  const overextended = Math.abs(priceNow - ema50Now) > 2 * atrNow;
+  const overboughtOrOversold = rsiNow > 75 || rsiNow < 25;
 
-  const recentlySpiked = (priceSpike && volumeSpike) || overextended || overboughtOrOversold;
-  const safeToTrade = slope > 0.1 && !recentlySpiked;
+  recentlySpiked = (priceSpike && volumeSpike) || overextended || overboughtOrOversold;
 
-  let forecast = "sideways";
-  if (slope > 0.2 && rsiNow > 55) forecast = "bullish";
-  else if (slope < -0.2 && rsiNow < 45) forecast = "bearish";
+  const macdNow = macdLine.at(-1);
+  const signalNow = signalLine.at(-1);
+  const macdUp = macdNow > signalNow;
 
-  return {
-    forecast,
-    safeToTrade,
-    recentlySpiked
-  };
+  const bullishCrossover = ema50Now > ema200Now && ema50Prev <= ema200Now;
+  const bearishCrossover = ema50Now < ema200Now && ema50Prev >= ema200Now;
+
+  nextMove = bullishCrossover || (slope > dynamicSlopeThreshold && rsiNow > 55)
+    ? "bullish"
+    : bearishCrossover || (slope < -dynamicSlopeThreshold && rsiNow < 45)
+      ? "bearish"
+      : "sideways";
+
+  safeToEnter = slope > dynamicSlopeThreshold && !recentlySpiked && macdUp;
+  marketCondition = safeToEnter ? "GOOD" : "BAD";
+  pullbackStatus = recentlySpiked ? "RISKY ZONE" : "SAFE ZONE";
+
+  return {
+    forecast: nextMove,
+    safeToTrade: safeToEnter,
+    recentlySpiked
+  };
 }
-
+  
 function getEMA(prices, period) {
   const k = 2 / (period + 1);
   const ema = [prices.slice(0, period).reduce((a, b) => a + b, 0) / period];
@@ -1674,31 +1690,35 @@ function calculateATR(highs, lows, closes, period = 14) {
   return atr;
 }
 
+    function calculateMACD(prices, shortPeriod = 12, longPeriod = 26, signalPeriod = 9) {
+  const emaShort = getEMA(prices, shortPeriod);
+  const emaLong = getEMA(prices, longPeriod);
+  const macdLine = emaShort.slice(longPeriod - shortPeriod).map((v, i) => v - emaLong[i]);
+  const signalLine = getEMA(macdLine, signalPeriod);
+  return { macdLine, signalLine };
+}
+
 async function updateMarketCondition() {
-  try {
-    const { forecast, safeToTrade, recentlySpiked } = await getBTCIndicators();
+  try {
+    await getBTCIndicators();
 
-    marketCondition = safeToTrade ? "GOOD" : "BAD";
-    nextMove = forecast;
-    pullbackStatus = recentlySpiked ? "RISKY ZONE" : "SAFE ZONE";
+    const marketEl = document.querySelector("#marketStatus .value");
+    const pullbackEl = document.querySelector("#pullbackStatus .value");
 
-    const marketEl = document.querySelector("#marketStatus .value");
-    const pullbackEl = document.querySelector("#pullbackStatus .value");
-
-    if (marketEl) {
-      marketEl.innerHTML = `${marketCondition} / ${nextMove.toUpperCase()}`;
-      marketEl.style.color = marketCondition === "GOOD" ? "#22c55e" : "#EF4444";
+    if (marketEl) {
+      marketEl.innerHTML = `${marketCondition} / ${nextMove.toUpperCase()}`;
+      marketEl.style.color = marketCondition === "GOOD" ? "#22c55e" : "#EF4444";
     }
 
-    if (pullbackEl) {
-      pullbackEl.innerHTML = pullbackStatus;
-      pullbackEl.style.color = pullbackStatus === "SAFE ZONE" ? "#22c55e" : "#f97316";
-    }
+    if (pullbackEl) {
+      pullbackEl.innerHTML = pullbackStatus;
+      pullbackEl.style.color = pullbackStatus === "SAFE ZONE" ? "#22c55e" : "#f97316";
+    }
 
-    toggleScanButton?.(); // Optional: call only if defined
-  } catch (err) {
-    console.error("Market update error:", err);
-  }
+    toggleScanButton?.(); // Optional callback if defined
+  } catch (err) {
+    console.error("Market update error:", err);
+  }
 }
 
 // Start real-time updates
