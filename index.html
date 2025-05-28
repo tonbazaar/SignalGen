@@ -1765,6 +1765,8 @@ async function updateMarketCondition() {
       pullbackEl.innerHTML = pullbackStatus;
       pullbackEl.style.color = pullbackStatus === "SAFE ZONE" ? "#22c55e" : "#f97316";
     }
+    
+  toggleScanButton?.();
   } catch (err) {
     console.error("Market update error:", err);
   }
