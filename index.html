@@ -1607,57 +1607,90 @@ let marketCondition = "BAD";
 let nextMove = "sideways";
 let pullbackStatus = "RISKY ZONE";
 
-async function getBTCIndicators() {
-  const res = await fetch("https://fapi.binance.com/fapi/v1/klines?symbol=BTCUSDT&interval=15m&limit=250");
-  const data = await res.json();
+  async function getBTCIndicators() {
+  const res = await fetch("https://fapi.binance.com/fapi/v1/klines?symbol=BTCUSDT&interval=15m&limit=250");
+  const data = await res.json();
 
-  const closes = data.map(c => parseFloat(c[4]));
-  const highs = data.map(c => parseFloat(c[2]));
-  const lows = data.map(c => parseFloat(c[3]));
-  const volumes = data.map(c => parseFloat(c[5]));
+  const closes = data.map(c => parseFloat(c[4]));
+  const highs = data.map(c => parseFloat(c[2]));
+  const lows = data.map(c => parseFloat(c[3]));
+  const volumes = data.map(c => parseFloat(c[5]));
+  const opens = data.map(c => parseFloat(c[1]));
 
-  const ema50 = getEMA(closes, 50);
-  const ema200 = getEMA(closes, 200);
-  const rsi = calculateRSI(closes, 14);
-  const atr = calculateATR(highs, lows, closes, 14);
+  const ema50 = getEMA(closes, 50);
+  const ema200 = getEMA(closes, 200);
+  const rsi = calculateRSI(closes, 14);
+  const atr = calculateATR(highs, lows, closes, 14);
 
-  const priceNow = closes.at(-1);
-  const priceBefore = closes.at(-6); // 90 minutes ago
-  const currentVolume = volumes.at(-1);
-  const avgVolume = volumes.slice(-20).reduce((a, b) => a + b, 0) / 20;
+  const priceNow = closes.at(-1);
+  const priceBefore = closes.at(-6); // 90 minutes ago
+  const currentVolume = volumes.at(-1);
+  const avgVolume = volumes.slice(-20).reduce((a, b) => a + b, 0) / 20;
 
-  const ema50Now = ema50.at(-1);
-  const ema50Prev = ema50.at(-4);
-  const ema200Now = ema200.at(-1);
-  const rsiNow = rsi.at(-1);
-  const atrNow = atr.at(-1);
+  const ema50Now = ema50.at(-1);
+  const ema50Prev = ema50.at(-4);
+  const ema200Now = ema200.at(-1);
+  const rsiNow = rsi.at(-1);
+  const atrNow = atr.at(-1);
 
-  const slope = ema50Now - ema50Prev;
-  const priceSpike = Math.abs(priceNow - priceBefore) / priceBefore > 0.015;
-  const volumeSpike = currentVolume > avgVolume * 1.8;
-  const overextended = Math.abs(priceNow - ema50Now) > 2 * atrNow;
-  const overboughtOrOversold = rsiNow > 75 || rsiNow < 25;
+  const slope = ema50Now - ema50Prev;
+  const priceSpike = Math.abs(priceNow - priceBefore) / priceBefore > 0.015;
+  const volumeSpike = currentVolume > avgVolume * 1.8;
+  const overextended = Math.abs(priceNow - ema50Now) > 2 * atrNow;
+  const overboughtOrOversold = rsiNow > 75 || rsiNow < 25;
 
-  const recentlySpiked = (priceSpike && volumeSpike) || overextended || overboughtOrOversold;
-  const nearEma = Math.abs(priceNow - ema50Now) < 1.2 * atrNow;
+  const recentlySpiked = (priceSpike && volumeSpike) || overextended || overboughtOrOversold;
+  const nearEma = Math.abs(priceNow - ema50Now) < 1.2 * atrNow;
 
-  let forecast = "sideways";
-  let safeToTrade = false;
+  // Candle structure
+  const lastOpen = opens.at(-1);
+  const lastHigh = highs.at(-1);
+  const lastLow = lows.at(-1);
+  const body = Math.abs(priceNow - lastOpen);
+  const range = lastHigh - lastLow;
+  const wick = range - body;
+  const bodyToWick = body / (wick || 1);
+  const bodyToRange = body / range;
 
-  // Only show bullish/bearish if move is just starting
-  if (!recentlySpiked && nearEma && slope > 0.1 && rsiNow > 52 && ema50Now > ema200Now) {
-    forecast = "bullish";
-    safeToTrade = true;
-  } else if (!recentlySpiked && nearEma && slope < -0.1 && rsiNow < 48 && ema50Now < ema200Now) {
-    forecast = "bearish";
-    safeToTrade = true;
-  }
+  // Local trend from last 3 candles
+  const last3Closes = closes.slice(-3);
+  const trendUp = last3Closes[2] > last3Closes[1] && last3Closes[1] > last3Closes[0];
+  const trendDown = last3Closes[2] < last3Closes[1] && last3Closes[1] < last3Closes[0];
 
-  return {
-    forecast,
-    safeToTrade,
-    recentlySpiked
-  };
+  let forecast = "sideways";
+  let safeToTrade = false;
+
+  if (
+    !recentlySpiked &&
+    nearEma &&
+    slope > 0.1 &&
+    rsiNow > 52 &&
+    ema50Now > ema200Now &&
+    trendUp &&
+    bodyToWick > 1.2 &&
+    bodyToRange > 0.6
+  ) {
+    forecast = "bullish";
+    safeToTrade = true;
+  } else if (
+    !recentlySpiked &&
+    nearEma &&
+    slope < -0.1 &&
+    rsiNow < 48 &&
+    ema50Now < ema200Now &&
+    trendDown &&
+    bodyToWick > 1.2 &&
+    bodyToRange > 0.6
+  ) {
+    forecast = "bearish";
+    safeToTrade = true;
+  }
+
+  return {
+    forecast,
+    safeToTrade,
+    recentlySpiked
+  };
 }
 
 function getEMA(prices, period) {
