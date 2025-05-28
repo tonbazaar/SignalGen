@@ -1767,6 +1767,21 @@ async function updateMarketCondition() {
     }
     
   toggleScanButton?.();
+// Auto-enable scanning when BTC is in clean trend
+if (pullbackStatus === "SAFE ZONE" && nextMove !== "sideways") {
+  if (!autoScanActive) {
+    autoScanActive = true;
+    console.log("Auto-scan started due to clean market condition.");
+    scanInterval = setInterval(() => scan(true), 30000); // auto-scan every 30s
+  }
+} else {
+  if (autoScanActive) {
+    autoScanActive = false;
+    clearInterval(scanInterval);
+    console.log("Auto-scan paused due to market not clean.");
+  }
+}
+  
   } catch (err) {
     console.error("Market update error:", err);
   }
