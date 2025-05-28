@@ -1604,160 +1604,141 @@ async function sendLimit(symbol, side, qty, price, tp, sl, reduceOnly, pricePrec
     }
 
 let marketCondition = "BAD";
-let safeToEnter = false;
-let recentlySpiked = false;
 let nextMove = "sideways";
 let pullbackStatus = "RISKY ZONE";
 
 async function getBTCIndicators() {
-  const [data15m, data1h] = await Promise.all([
-    fetch("https://fapi.binance.com/fapi/v1/klines?symbol=BTCUSDT&interval=15m&limit=250").then(res => res.json()),
-    fetch("https://fapi.binance.com/fapi/v1/klines?symbol=BTCUSDT&interval=1h&limit=250").then(res => res.json())
-  ]);
+  const res = await fetch("https://fapi.binance.com/fapi/v1/klines?symbol=BTCUSDT&interval=15m&limit=250");
+  const data = await res.json();
 
-  // Extract OHLCV
-  const parse = (data) => ({
-    closes: data.map(c => parseFloat(c[4])),
-    highs: data.map(c => parseFloat(c[2])),
-    lows: data.map(c => parseFloat(c[3])),
-    volumes: data.map(c => parseFloat(c[5])),
-  });
+  const closes = data.map(c => parseFloat(c[4]));
+  const highs = data.map(c => parseFloat(c[2]));
+  const lows = data.map(c => parseFloat(c[3]));
+  const volumes = data.map(c => parseFloat(c[5]));
 
-  const tf15 = parse(data15m);
-  const tf1h = parse(data1h);
+  const ema50 = getEMA(closes, 50);
+  const ema200 = getEMA(closes, 200);
+  const rsi = calculateRSI(closes, 14);
+  const atr = calculateATR(highs, lows, closes, 14);
 
-  const ema50_15 = getEMA(tf15.closes, 50);
-  const ema200_15 = getEMA(tf15.closes, 200);
-  const rsi15 = calculateRSI(tf15.closes, 14);
-  const atr15 = calculateATR(tf15.highs, tf15.lows, tf15.closes, 14);
+  const priceNow = closes.at(-1);
+  const priceBefore = closes.at(-6); // 90 minutes ago
+  const currentVolume = volumes.at(-1);
+  const avgVolume = volumes.slice(-20).reduce((a, b) => a + b, 0) / 20;
 
-  const ema50_1h = getEMA(tf1h.closes, 50);
-  const ema200_1h = getEMA(tf1h.closes, 200);
-  const rsi1h = calculateRSI(tf1h.closes, 14);
-  const atr1h = calculateATR(tf1h.highs, tf1h.lows, tf1h.closes, 14);
+  const ema50Now = ema50.at(-1);
+  const ema50Prev = ema50.at(-4);
+  const ema200Now = ema200.at(-1);
+  const rsiNow = rsi.at(-1);
+  const atrNow = atr.at(-1);
 
-  // Latest values
-  const priceNow = tf15.closes[tf15.closes.length - 1];
-  const priceBefore = tf15.closes[tf15.closes.length - 6]; // 90 min ago
-  const currentVolume = tf15.volumes[tf15.volumes.length - 1];
-  const avgVolume = tf15.volumes.slice(-30).reduce((a, b) => a + b, 0) / 30;
-  const volumeSpike = currentVolume > avgVolume * 1.8;
+  const slope = ema50Now - ema50Prev;
+  const priceSpike = Math.abs(priceNow - priceBefore) / priceBefore > 0.015;
+  const volumeSpike = currentVolume > avgVolume * 1.8;
+  const overextended = Math.abs(priceNow - ema50Now) > 2 * atrNow;
+  const overboughtOrOversold = rsiNow > 75 || rsiNow < 25;
 
-  const priceRising = priceNow > priceBefore;
-  const rsiNow15 = rsi15[rsi15.length - 1];
-  const rsiNow1h = rsi1h[rsi1h.length - 1];
-  const atrNow15 = atr15[atr15.length - 1];
+  const recentlySpiked = (priceSpike && volumeSpike) || overextended || overboughtOrOversold;
+  const nearEma = Math.abs(priceNow - ema50Now) < 1.2 * atrNow;
 
-  const ema50Now = ema50_15[ema50_15.length - 1];
-  const ema50Prev = ema50_15[ema50_15.length - 4];
-  const ema200Now = ema200_15[ema200_15.length - 1];
-  const slope15 = ema50Now - ema50Prev;
+  let forecast = "sideways";
+  let safeToTrade = false;
 
-  const overextended = Math.abs(priceNow - ema50Now) > 1.8 * atrNow15;
-  const overboughtOrOversold = rsiNow15 > 75 || rsiNow15 < 25;
-  const priceSpike = Math.abs(priceNow - priceBefore) / priceBefore > 0.015;
+  // Only show bullish/bearish if move is just starting
+  if (!recentlySpiked && nearEma && slope > 0.1 && rsiNow > 52 && ema50Now > ema200Now) {
+    forecast = "bullish";
+    safeToTrade = true;
+  } else if (!recentlySpiked && nearEma && slope < -0.1 && rsiNow < 48 && ema50Now < ema200Now) {
+    forecast = "bearish";
+    safeToTrade = true;
+  }
 
-  const recentlySpiked = (priceSpike && volumeSpike) || overextended || overboughtOrOversold;
-
-  // Confirm trend with higher timeframe
-  const trendConfirmed = ema50_1h[ema50_1h.length - 1] > ema200_1h[ema200_1h.length - 1] && rsiNow1h > 55;
-
-  let forecast = "sideways";
-  if (slope15 > 0.2 && rsiNow15 > 55 && trendConfirmed) forecast = "bullish";
-  else if (slope15 < -0.2 && rsiNow15 < 45 && ema50_1h[ema50_1h.length - 1] < ema200_1h[ema200_1h.length - 1]) forecast = "bearish";
-
-  const safeToTrade = slope15 > 0.1 && !recentlySpiked && trendConfirmed;
-
-  return {
-    forecast,
-    safeToTrade,
-    recentlySpiked
-  };
+  return {
+    forecast,
+    safeToTrade,
+    recentlySpiked
+  };
 }
 
-// Utility Functions (unchanged)
 function getEMA(prices, period) {
-  const k = 2 / (period + 1);
-  const ema = [prices.slice(0, period).reduce((a, b) => a + b, 0) / period];
-  for (let i = period; i < prices.length; i++) {
-    ema.push(prices[i] * k + ema[ema.length - 1] * (1 - k));
-  }
-  return ema;
+  const k = 2 / (period + 1);
+  const ema = [prices.slice(0, period).reduce((a, b) => a + b, 0) / period];
+  for (let i = period; i < prices.length; i++) {
+    ema.push(prices[i] * k + ema[ema.length - 1] * (1 - k));
+  }
+  return ema;
 }
 
 function calculateRSI(closes, period = 14) {
-  let gains = 0, losses = 0;
-  const rsi = [];
+  let gains = 0, losses = 0;
+  const rsi = [];
 
-  for (let i = 1; i <= period; i++) {
-    const change = closes[i] - closes[i - 1];
-    if (change >= 0) gains += change;
-    else losses -= change;
-  }
+  for (let i = 1; i <= period; i++) {
+    const change = closes[i] - closes[i - 1];
+    if (change >= 0) gains += change;
+    else losses -= change;
+  }
 
-  let avgGain = gains / period;
-  let avgLoss = losses / period;
-  rsi.push(100 - 100 / (1 + avgGain / avgLoss));
+  let avgGain = gains / period;
+  let avgLoss = losses / period;
+  rsi.push(100 - 100 / (1 + avgGain / avgLoss));
 
-  for (let i = period + 1; i < closes.length; i++) {
-    const change = closes[i] - closes[i - 1];
-    const gain = Math.max(change, 0);
-    const loss = Math.max(-change, 0);
-    avgGain = (avgGain * (period - 1) + gain) / period;
-    avgLoss = (avgLoss * (period - 1) + loss) / period;
-    rsi.push(100 - 100 / (1 + avgGain / avgLoss));
-  }
+  for (let i = period + 1; i < closes.length; i++) {
+    const change = closes[i] - closes[i - 1];
+    const gain = Math.max(change, 0);
+    const loss = Math.max(-change, 0);
+    avgGain = (avgGain * (period - 1) + gain) / period;
+    avgLoss = (avgLoss * (period - 1) + loss) / period;
+    rsi.push(100 - 100 / (1 + avgGain / avgLoss));
+  }
 
-  return rsi;
+  return rsi;
 }
 
 function calculateATR(highs, lows, closes, period = 14) {
-  const tr = [];
-  for (let i = 1; i < highs.length; i++) {
-    const high = highs[i];
-    const low = lows[i];
-    const prevClose = closes[i - 1];
-    tr.push(Math.max(high - low, Math.abs(high - prevClose), Math.abs(low - prevClose)));
-  }
+  const tr = [];
+  for (let i = 1; i < highs.length; i++) {
+    const high = highs[i];
+    const low = lows[i];
+    const prevClose = closes[i - 1];
+    tr.push(Math.max(high - low, Math.abs(high - prevClose), Math.abs(low - prevClose)));
+  }
 
-  const atr = [tr.slice(0, period).reduce((a, b) => a + b, 0) / period];
-  for (let i = period; i < tr.length; i++) {
-    atr.push((atr[atr.length - 1] * (period - 1) + tr[i]) / period);
-  }
-  return atr;
+  const atr = [tr.slice(0, period).reduce((a, b) => a + b, 0) / period];
+  for (let i = period; i < tr.length; i++) {
+    atr.push((atr[atr.length - 1] * (period - 1) + tr[i]) / period);
+  }
+  return atr;
 }
 
 async function updateMarketCondition() {
-  try {
-    const { forecast, safeToTrade, recentlySpiked } = await getBTCIndicators();
+  try {
+    const { forecast, safeToTrade, recentlySpiked } = await getBTCIndicators();
 
-    marketCondition = safeToTrade ? "GOOD" : "BAD";
-    nextMove = forecast;
-    pullbackStatus = recentlySpiked ? "RISKY ZONE" : "SAFE ZONE";
+    marketCondition = safeToTrade ? "GOOD" : "BAD";
+    nextMove = forecast;
+    pullbackStatus = recentlySpiked ? "RISKY ZONE" : "SAFE ZONE";
 
-    const marketEl = document.querySelector("#marketStatus .value");
-    const pullbackEl = document.querySelector("#pullbackStatus .value");
+    const marketEl = document.querySelector("#marketStatus .value");
+    const pullbackEl = document.querySelector("#pullbackStatus .value");
 
-    if (marketEl) {
-      marketEl.innerHTML = `${marketCondition} / ${nextMove.toUpperCase()}`;
-      marketEl.style.color = marketCondition === "GOOD" ? "#22c55e" : "#EF4444";
-    }
+    if (marketEl) {
+      marketEl.innerHTML = `${marketCondition} / ${nextMove.toUpperCase()}`;
+      marketEl.style.color = marketCondition === "GOOD" ? "#22c55e" : "#EF4444";
+    }
 
-    if (pullbackEl) {
-      pullbackEl.innerHTML = pullbackStatus;
-      pullbackEl.style.color = pullbackStatus === "SAFE ZONE" ? "#22c55e" : "#f97316";
-    }
-
-    toggleScanButton?.();
-  } catch (err) {
-    console.error("Market update error:", err);
-  }
+    if (pullbackEl) {
+      pullbackEl.innerHTML = pullbackStatus;
+      pullbackEl.style.color = pullbackStatus === "SAFE ZONE" ? "#22c55e" : "#f97316";
+    }
+  } catch (err) {
+    console.error("Market update error:", err);
+  }
 }
 
-// Start real-time updates
 updateMarketCondition();
 setInterval(updateMarketCondition, 20000);
- 
+
   function toggleScanButton() {
   const scanButton = document.getElementById("scanButton");
   const waitingMessage = document.getElementById("waitingMessage");
