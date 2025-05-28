@@ -1637,17 +1637,31 @@ async function getBTCIndicators() {
   const ema200Now = ema200[ema200.length - 1];
 
   const slope = ema50Now - ema50Prev;
+
   const priceSpike = Math.abs(priceNow - priceBefore) / priceBefore > 0.015;
   const volumeSpike = currentVolume > avgVolume * 1.8;
   const overextended = Math.abs(priceNow - ema50Now) > 2 * atrNow;
   const overboughtOrOversold = rsiNow > 75 || rsiNow < 25;
 
-  const recentlySpiked = (priceSpike && volumeSpike) || overextended || overboughtOrOversold;
-  const safeToTrade = slope > 0.1 && !recentlySpiked;
+  recentlySpiked = (priceSpike && volumeSpike) || overextended || overboughtOrOversold;
+
+  const nearEMA50 = Math.abs(priceNow - ema50Now) < atrNow;
+  const earlyVolumeSpike = currentVolume > avgVolume * 1.5 && !volumeSpike;
+
+  const setupForming = nearEMA50 && Math.abs(slope) > 0.05 && !recentlySpiked && earlyVolumeSpike && rsiNow > 45 && rsiNow < 70;
 
   let forecast = "sideways";
-  if (slope > 0.2 && rsiNow > 55) forecast = "bullish";
-  else if (slope < -0.2 && rsiNow < 45) forecast = "bearish";
+  let safeToTrade = false;
+
+  if (setupForming) {
+    if (slope > 0.05 && rsiNow > 50 && ema50Now > ema200Now) {
+      forecast = "bullish";
+      safeToTrade = true;
+    } else if (slope < -0.05 && rsiNow < 50 && ema50Now < ema200Now) {
+      forecast = "bearish";
+      safeToTrade = true;
+    }
+  }
 
   return {
     forecast,
@@ -1721,14 +1735,14 @@ async function updateMarketCondition() {
     if (marketEl) {
       marketEl.innerHTML = `${marketCondition} / ${nextMove.toUpperCase()}`;
       marketEl.style.color = marketCondition === "GOOD" ? "#22c55e" : "#EF4444";
-    }
+    }
 
     if (pullbackEl) {
       pullbackEl.innerHTML = pullbackStatus;
       pullbackEl.style.color = pullbackStatus === "SAFE ZONE" ? "#22c55e" : "#f97316";
     }
 
-    toggleScanButton?.(); // Optional: call only if defined
+    toggleScanButton?.();
   } catch (err) {
     console.error("Market update error:", err);
   }
@@ -1736,8 +1750,8 @@ async function updateMarketCondition() {
 
 // Start real-time updates
 updateMarketCondition();
-setInterval(updateMarketCondition, 20000); 
-
+setInterval(updateMarketCondition, 20000);
+  
   function toggleScanButton() {
   const scanButton = document.getElementById("scanButton");
   const waitingMessage = document.getElementById("waitingMessage");
