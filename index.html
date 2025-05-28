@@ -1749,22 +1749,30 @@ async function updateMarketCondition() {
   try {
     const { forecast, safeToTrade, recentlySpiked } = await getBTCIndicators();
 
-    marketCondition = safeToTrade ? "GOOD" : "BAD";
-    nextMove = forecast;
-    pullbackStatus = recentlySpiked ? "RISKY ZONE" : "SAFE ZONE";
+    const marketCondition = safeToTrade ? "GOOD" : "BAD";
+    const nextMove = forecast;
+    const pullbackStatus = recentlySpiked ? "RISKY ZONE" : "SAFE ZONE";
 
     const marketEl = document.querySelector("#marketStatus .value");
     const pullbackEl = document.querySelector("#pullbackStatus .value");
 
     if (marketEl) {
-      let color;
+      // Color based on market condition (GOOD or BAD)
+      const marketColor = marketCondition === "GOOD" ? "#22c55e" : "#EF4444";
 
-      if (nextMove === "bullish") color = "#22c55e";       // green
-      else if (nextMove === "bearish") color = "#EF4444";  // red
-      else color = "#f97316";                              // orange for sideways
+      // Color based on forecast (bullish, bearish, sideways)
+      let forecastColor;
+      if (nextMove === "bullish") forecastColor = "#22c55e";
+      else if (nextMove === "bearish") forecastColor = "#EF4444";
+      else forecastColor = "#9CA3AF"; // gray for sideways
 
-      marketEl.innerHTML = `${marketCondition} / ${nextMove.toUpperCase()}`;
-      marketEl.style.color = color;
+      // Final HTML with colorized forecast
+      marketEl.innerHTML = `
+        ${marketCondition} 
+        <span style="color: ${forecastColor};">/ ${nextMove.toUpperCase()}</span>
+      `;
+
+      marketEl.style.color = marketColor;
     }
 
     if (pullbackEl) {
