@@ -1757,16 +1757,22 @@ async function updateMarketCondition() {
     const pullbackEl = document.querySelector("#pullbackStatus .value");
 
     if (marketEl) {
+      let color;
+
+      if (nextMove === "bullish") color = "#22c55e";       // green
+      else if (nextMove === "bearish") color = "#EF4444";  // red
+      else color = "#f97316";                              // orange for sideways
+
       marketEl.innerHTML = `${marketCondition} / ${nextMove.toUpperCase()}`;
-      marketEl.style.color = marketCondition === "GOOD" ? "#22c55e" : "#EF4444";
+      marketEl.style.color = color;
     }
 
     if (pullbackEl) {
       pullbackEl.innerHTML = pullbackStatus;
       pullbackEl.style.color = pullbackStatus === "SAFE ZONE" ? "#22c55e" : "#f97316";
     }
-    
-  toggleScanButton?.(); 
+
+    toggleScanButton?.(); 
   } catch (err) {
     console.error("Market update error:", err);
   }
