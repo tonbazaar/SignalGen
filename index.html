@@ -1315,7 +1315,7 @@ if ((signalType === "LONG" && price < recentHigh * 0.995) ||
 }
 
 const atrMultiplier = 2.0; // You can tune this
-const rrRatio = latestAtr > price * 0.01 ? 1.0 : 1.3;
+const rrRatio = latestAtr > price * 0.01 ? 1.2 : 1.4;
 const minSlPercent = 0.005; // 0.5%
 
 let sl, tp;
