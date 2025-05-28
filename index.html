@@ -433,7 +433,7 @@ a:hover {
   <h1 id="rocketIcon"><span class="flying">🚀</span> Signal Generator</h1>
   <p class="tagline">Auto-execute Binance trades with premium crypto signals</p>
   <button id="scanButton" onclick="scan()">Scan Now</button>
-  <p id="waitingMessage" style="display: none; color: #f59e0b;">Caution: Market unstable or nearing risky zone...</p>
+  <p id="waitingMessage" style="display: none; color: #f97316;">Caution: Market unstable or nearing risky zone...</p>
   <div id="error-message"></div>
   <div id="statsContainer" style="
   display: flex; 
@@ -1764,7 +1764,7 @@ async function updateMarketCondition() {
       let forecastColor;
       if (nextMove === "bullish") forecastColor = "#22c55e";
       else if (nextMove === "bearish") forecastColor = "#EF4444";
-      else forecastColor = "#9CA3AF"; // gray for sideways
+      else forecastColor = "#f97316"; 
 
       // Final HTML with colorized forecast
       marketEl.innerHTML = `
