@@ -1238,17 +1238,6 @@ if ((signalType === "LONG" && !macdUp) || (signalType === "SHORT" && !macdDown))
   return null;
 }
 
-if (nextMove === "sideways") {
-  console.log("Signal skipped: Market forecast is sideways.");
-  return null;
-}
-
-if ((nextMove === "bullish" && signalType === "SHORT") ||
-    (nextMove === "bearish" && signalType === "LONG")) {
-  console.log(`Signal skipped: Forecast is ${nextMove}, but signal is ${signalType}`);
-  return null;
-}
-
 const { tf15, tf1h, tf30, tf4h } = await confirmTrend(symbol);
 
 if ((signalType === "LONG" && (tf15 !== "LONG" || tf1h !== "LONG" || tf30 !== "LONG" || tf4h !== "LONG")) ||
@@ -1257,7 +1246,7 @@ if ((signalType === "LONG" && (tf15 !== "LONG" || tf1h !== "LONG" || tf30 !== "L
   return null;
 }
 
-    // 1. Avoid weak breakout candles
+// 1. Avoid weak breakout candles
 const lastCandleBody = Math.abs(lastClose - lastOpen);
 const bodyToRangeRatio = lastCandleBody / (lastHigh - lastLow);
 const wickSize = (lastHigh - lastLow) - lastCandleBody;
@@ -1306,7 +1295,7 @@ if (latestAtr < price * 0.003) {
   return null;
 }
 
-  const recentHigh = Math.max(...highs.slice(-10, -5));
+const recentHigh = Math.max(...highs.slice(-10, -5));
 const recentLow = Math.min(...lows.slice(-10, -5));
 if ((signalType === "LONG" && price < recentHigh * 0.995) ||
     (signalType === "SHORT" && price > recentLow * 1.005)) {
@@ -1797,9 +1786,8 @@ setInterval(updateMarketCondition, 20000);
   if (!scanButton || !waitingMessage) return;
 
   const isSafeMarket = pullbackStatus === "SAFE ZONE";
-  const isDirectional = nextMove !== "sideways";
 
-  const canTrade = isPremium && isSafeMarket && isDirectional;
+  const canTrade = isPremium && isSafeMarket;
 
   scanButton.style.display = canTrade ? "inline-block" : "none";
   waitingMessage.style.display = isPremium && !canTrade ? "block" : "none";
