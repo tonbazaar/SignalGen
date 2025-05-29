@@ -1738,38 +1738,24 @@ async function updateMarketCondition() {
   try {
     const { forecast, safeToTrade, recentlySpiked } = await getBTCIndicators();
 
-    const marketCondition = safeToTrade ? "GOOD" : "BAD";
-    const nextMove = forecast;
-    const pullbackStatus = recentlySpiked ? "RISKY ZONE" : "SAFE ZONE";
+    marketCondition = safeToTrade ? "GOOD" : "BAD";
+    nextMove = forecast;
+    pullbackStatus = recentlySpiked ? "RISKY ZONE" : "SAFE ZONE";
 
     const marketEl = document.querySelector("#marketStatus .value");
     const pullbackEl = document.querySelector("#pullbackStatus .value");
 
     if (marketEl) {
-      // Color based on market condition (GOOD or BAD)
-      const marketColor = marketCondition === "GOOD" ? "#22c55e" : "#EF4444";
-
-      // Color based on forecast (bullish, bearish, sideways)
-      let forecastColor;
-      if (nextMove === "bullish") forecastColor = "#22c55e";
-      else if (nextMove === "bearish") forecastColor = "#EF4444";
-      else forecastColor = "#EF4444"; 
-
-      // Final HTML with colorized forecast
-      marketEl.innerHTML = `
-        ${marketCondition} 
-        <span style="color: ${forecastColor};">/ ${nextMove.toUpperCase()}</span>
-      `;
-
-      marketEl.style.color = marketColor;
+      marketEl.innerHTML = `${marketCondition} / ${nextMove.toUpperCase()}`;
+      marketEl.style.color = marketCondition === "GOOD" ? "#22c55e" : "#EF4444";
     }
 
     if (pullbackEl) {
       pullbackEl.innerHTML = pullbackStatus;
       pullbackEl.style.color = pullbackStatus === "SAFE ZONE" ? "#22c55e" : "#f97316";
     }
-
-    toggleScanButton?.(); 
+    
+  toggleScanButton?.(); 
   } catch (err) {
     console.error("Market update error:", err);
   }
