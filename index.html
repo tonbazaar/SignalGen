@@ -1232,11 +1232,6 @@ if ((signalType === "LONG" && !macdUp) || (signalType === "SHORT" && !macdDown))
   console.log("Signal skipped: MACD momentum not strong.");
   return null;
 }
- 
-  if (recentlySpiked) {
-  console.log("Signal skipped: BTC in risky zone (not safe to enter).");
-  return null;
-}
 
 const { tf15, tf1h, tf30, tf4h } = await confirmTrend(symbol);
 
