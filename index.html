@@ -1073,7 +1073,7 @@ async function getPrecisionInfo(symbol) {
   if (!autoTriggered) {
     clearInterval(scanInterval); // Reset interval when manually scanning
     autoScanActive = true;
-    scanInterval = setInterval(() => scan(true), 20000); // Run every 20s
+    scanInterval = setInterval(() => scan(true), 30000); // Run every 30s
   }
 
   output.innerHTML = "Scanning...";
