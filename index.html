@@ -653,20 +653,6 @@ a:hover {
   <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/crypto-js.js"></script>
   <script>
 
-setInterval(() => {
-  const now = Date.now();
-  let changed = false;
-  Object.keys(cooldowns).forEach(symbol => {
-    if (now - cooldowns[symbol] > COOLDOWN_MINUTES * 60 * 1000) {
-      delete cooldowns[symbol];
-      changed = true;
-    }
-  });
-  if (changed) {
-    localStorage.setItem("cooldowns", JSON.stringify(cooldowns));
-  }
-}, 300000); // runs every 5 minutes
-
 document.addEventListener("DOMContentLoaded", () => {
   const loginForm = document.getElementById("loginForm");
   const mainContent = document.getElementById("mainContent");
@@ -788,37 +774,6 @@ statsIcon.addEventListener("click", () => {
   statsBox.style.display = statsBox.style.display === "none" ? "block" : "none";
 });
 
-  document.getElementById("settingsIcon").addEventListener("click", () => {
-  const settingsBox = document.getElementById("settingsBox");
-  const premiumBox = document.getElementById("premiumStatusBox");
-  const premiumForm = document.getElementById("premiumForm");
-  const statsBox = document.getElementById("todayStatsBox");
-
-  // Hide other boxes
-  if (premiumBox) premiumBox.style.display = "none";
-  if (premiumForm) premiumForm.style.display = "none";
-  if (statsBox) statsBox.style.display = "none";
-
-  settingsBox.style.display = settingsBox.style.display === "block" ? "none" : "block";
-});
-
-document.getElementById("usdtInput").addEventListener("input", (e) => {
-  const value = parseFloat(e.target.value);
-  const margin = value ? (value / 20).toFixed(2) : "0.00";
-  document.getElementById("marginInfo").innerText = `Estimated Margin: ${margin} USDT`;
-});
-
-document.getElementById("saveSettings").addEventListener("click", () => {
-  const value = parseFloat(document.getElementById("usdtInput").value);
-  if (!isNaN(value) && value > 0) {
-    localStorage.setItem("tradeAmount", value);
-    showError("Settings saved: " + value + " USDT");
-    document.getElementById("settingsBox").style.display = "none";
-  } else {
-    showError("Enter a valid number.");
-  }
-});
-
 async function updateTradeStats() {
   const startOfToday = new Date();
   startOfToday.setUTCHours(0, 0, 0, 0);
@@ -867,6 +822,37 @@ async function updateTradeStats() {
   // Update every minute
   updateTradeStats();
   setInterval(updateTradeStats, 60000);
+
+  document.getElementById("settingsIcon").addEventListener("click", () => {
+  const settingsBox = document.getElementById("settingsBox");
+  const premiumBox = document.getElementById("premiumStatusBox");
+  const premiumForm = document.getElementById("premiumForm");
+  const statsBox = document.getElementById("todayStatsBox");
+
+  // Hide other boxes
+  if (premiumBox) premiumBox.style.display = "none";
+  if (premiumForm) premiumForm.style.display = "none";
+  if (statsBox) statsBox.style.display = "none";
+
+  settingsBox.style.display = settingsBox.style.display === "block" ? "none" : "block";
+});
+
+document.getElementById("usdtInput").addEventListener("input", (e) => {
+  const value = parseFloat(e.target.value);
+  const margin = value ? (value / 20).toFixed(2) : "0.00";
+  document.getElementById("marginInfo").innerText = `Estimated Margin: ${margin} USDT`;
+});
+
+document.getElementById("saveSettings").addEventListener("click", () => {
+  const value = parseFloat(document.getElementById("usdtInput").value);
+  if (!isNaN(value) && value > 0) {
+    localStorage.setItem("tradeAmount", value);
+    showError("Settings saved: " + value + " USDT");
+    document.getElementById("settingsBox").style.display = "none";
+  } else {
+    showError("Enter a valid number.");
+  }
+});
   
   // Premium Submission to Telegram
   if (submitBtn) {
@@ -1023,29 +1009,6 @@ function showSignupForm() {
   document.getElementById("loginForm").style.display = "none";
   document.getElementById("signupForm").style.display = "block";
 }
-
-  const btcEl = document.getElementById("btcPrice");
-  let displayLastPrice = null;
-
-  const ws = new WebSocket("wss://stream.binance.com:9443/ws/btcusdt@trade");
-
-  ws.onmessage = function (event) {
-    const tradeData = JSON.parse(event.data);
-    const currentDisplayPrice = parseFloat(tradeData.p);
-
-    if (displayLastPrice !== null) {
-      if (currentDisplayPrice > displayLastPrice) {
-        btcEl.style.color = "#22c55e"; // green
-      } else if (currentDisplayPrice < displayLastPrice) {
-        btcEl.style.color = "#ef4444"; // red
-      } else {
-        btcEl.style.color = "#ccc";
-      }
-    }
-
-    btcEl.innerHTML = `<i class="fab fa-btc" style="margin-right: 1px;"></i> ${currentDisplayPrice.toLocaleString()}`;
-    displayLastPrice = currentDisplayPrice;
-  };
 
     let scanInterval = null;
     let autoScanActive = false;
