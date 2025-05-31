@@ -653,6 +653,43 @@ a:hover {
   <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/crypto-js.js"></script>
   <script>
 
+setInterval(() => {
+  const now = Date.now();
+  let changed = false;
+  Object.keys(cooldowns).forEach(symbol => {
+    if (now - cooldowns[symbol] > COOLDOWN_MINUTES * 60 * 1000) {
+      delete cooldowns[symbol];
+      changed = true;
+    }
+  });
+  if (changed) {
+    localStorage.setItem("cooldowns", JSON.stringify(cooldowns));
+  }
+}, 300000); // runs every 5 minutes
+
+  const btcEl = document.getElementById("btcPrice");
+  let displayLastPrice = null;
+
+  const ws = new WebSocket("wss://stream.binance.com:9443/ws/btcusdt@trade");
+
+  ws.onmessage = function (event) {
+    const tradeData = JSON.parse(event.data);
+    const currentDisplayPrice = parseFloat(tradeData.p);
+
+    if (displayLastPrice !== null) {
+      if (currentDisplayPrice > displayLastPrice) {
+        btcEl.style.color = "#22c55e"; // green
+      } else if (currentDisplayPrice < displayLastPrice) {
+        btcEl.style.color = "#ef4444"; // red
+      } else {
+        btcEl.style.color = "#ccc";
+      }
+    }
+
+    btcEl.innerHTML = `<i class="fab fa-btc" style="margin-right: 1px;"></i> ${currentDisplayPrice.toLocaleString()}`;
+    displayLastPrice = currentDisplayPrice;
+  };
+    
 document.addEventListener("DOMContentLoaded", () => {
   const loginForm = document.getElementById("loginForm");
   const mainContent = document.getElementById("mainContent");
