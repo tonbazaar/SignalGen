@@ -433,7 +433,9 @@ a:hover {
   <h1 id="rocketIcon"><span class="flying">🚀</span> Signal Generator</h1>
   <p class="tagline">Auto-execute Binance trades with premium crypto signals</p>
   <button id="scanButton" onclick="scan()">Scan Now</button>
-  <p id="waitingMessage" style="display: none; color: #f59e0b;">Market in Risk Zone – scanning paused for safety ⚠️</p>
+  <p id="waitingMessage" style="display: none; color: #f59e0b;">
+  ⚠️ Scanning is paused due to market risk or outside of allowed time window (only between HH:02–HH:08). Please wait for safe and valid trading conditions.
+</p>
   <div id="error-message"></div>
   <div id="statsContainer" style="
   display: flex; 
@@ -1742,21 +1744,31 @@ async function updateMarketCondition() {
 
     if (marketEl) {
       marketEl.innerHTML = `${marketCondition} / ${nextMove.toUpperCase()}`;
-      marketEl.style.color = marketCondition === "GOOD" ? "#22c55e" : "#EF4444";
+
+      // Separate color handling for marketCondition + nextMove
+      if (marketCondition === "GOOD" && nextMove === "bullish") {
+        marketEl.style.color = "#22c55e"; // ✅ Green (good + bullish)
+      } else if (marketCondition === "GOOD" && nextMove === "bearish") {
+        marketEl.style.color = "#EF4444"; // 🔴 Red (good but bearish)
+      } else if (nextMove === "sideways") {
+        marketEl.style.color = "#f97316"; // 🟠 Orange (neutral trend)
+      } else {
+        marketEl.style.color = "#EF4444"; // Default to red for BAD
+      }
     }
 
     if (pullbackEl) {
       pullbackEl.innerHTML = pullbackStatus;
       pullbackEl.style.color = pullbackStatus === "SAFE ZONE" ? "#22c55e" : "#f97316";
     }
-    
-  toggleScanButton?.(); 
+
+    toggleScanButton?.();
   } catch (err) {
     console.error("Market update error:", err);
   }
 }
 
-// Run it on startup and every 20s
+// Call every 20s
 updateMarketCondition();
 setInterval(updateMarketCondition, 20000);
 
@@ -1768,7 +1780,12 @@ setInterval(updateMarketCondition, 20000);
 
   const isSafeMarket = pullbackStatus === "SAFE ZONE";
 
-  const canTrade = isPremium && isSafeMarket;
+  // Time logic: enable scan only between minute 2 and 8 of each hour
+  const now = new Date();
+  const minutes = now.getMinutes();
+  const withinTimeWindow = minutes >= 2 && minutes <= 8;
+
+  const canTrade = isPremium && isSafeMarket && withinTimeWindow;
 
   scanButton.style.display = canTrade ? "inline-block" : "none";
   waitingMessage.style.display = isPremium && !canTrade ? "block" : "none";
