@@ -652,7 +652,6 @@ a:hover {
   <script src="env2.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/crypto-js.js"></script>
   <script>
-let timeOffset = 0;
     
 setInterval(() => {
   const now = Date.now();
@@ -820,7 +819,7 @@ async function updateTradeStats() {
   try {
     const trades = await sendSignedRequest("/fapi/v1/userTrades", {
       startTime: startTimestamp,
-      timestamp: Date.now() + timeOffset
+      timestamp: Date.now()
     });
 
     const tradeGroups = {};
@@ -1859,6 +1858,8 @@ valueSpan.classList.add(
   }
 } 
 
+let timeOffset = 0;
+    
 // Sync local time with Binance server
 async function syncServerTime() {
   try {
