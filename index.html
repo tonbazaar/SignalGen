@@ -819,7 +819,7 @@ async function updateTradeStats() {
   try {
     const trades = await sendSignedRequest("/fapi/v1/userTrades", {
       startTime: startTimestamp,
-      timestamp: Date.now()
+      timestamp: Date.now() + timeOffset
     });
 
     const tradeGroups = {};
@@ -839,8 +839,8 @@ async function updateTradeStats() {
 
     // Adjust thresholds to count more accurately
     Object.values(tradeGroups).forEach(netPnl => {
-      if (netPnl > 0.1) tp++;
-      else if (netPnl < -0.1) sl++;
+      if (netPnl > 0.05) tp++;
+      else if (netPnl < -0.05) sl++;
     });
 
     const total = tp + sl;
