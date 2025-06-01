@@ -433,7 +433,9 @@ a:hover {
   <h1 id="rocketIcon"><span class="flying">🚀</span> Signal Generator</h1>
   <p class="tagline">Auto-execute Binance trades with premium crypto signals</p>
   <button id="scanButton" onclick="scan()">Scan Now</button>
-  <p id="waitingMessage" style="display: none; color: #f59e0b;">Caution: Market unstable or nearing risky zone...</p>
+  <p id="waitingMessage" style="display: none; color: #f59e0b; font-size: 13px; padding: 6px 10px; background: rgba(255, 165, 0, 0.1); border-radius: 6px;">
+  ⚠️ <strong>Paused:</strong> Risk zone or time blocked (HH:01–10). Wait for a safe signal window.
+  </p>
   <div id="error-message"></div>
   <div id="statsContainer" style="
   display: flex; 
@@ -845,8 +847,8 @@ async function updateTradeStats() {
 
     // Adjust thresholds to count more accurately
     Object.values(tradeGroups).forEach(netPnl => {
-      if (netPnl > 0.1) tp++;
-      else if (netPnl < -0.1) sl++;
+      if (netPnl > 0.05) tp++;
+      else if (netPnl < -0.05) sl++;
     });
 
     const total = tp + sl;
@@ -1747,7 +1749,12 @@ setInterval(updateMarketCondition, 20000);
   const isSafeMarket = pullbackStatus === "SAFE ZONE";
   const isDirectional = nextMove !== "sideways";
 
-  const canTrade = isPremium && isSafeMarket && isDirectional;
+  // ⏰ Time logic: allow only between HH:01 - HH:10
+  const now = new Date();
+  const minutes = now.getMinutes();
+  const withinTimeWindow = minutes >= 1 && minutes <= 10;
+
+  const canTrade = isPremium && isSafeMarket && isDirectional && withinTimeWindow;
 
   scanButton.style.display = canTrade ? "inline-block" : "none";
   waitingMessage.style.display = isPremium && !canTrade ? "block" : "none";
