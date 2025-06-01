@@ -410,9 +410,9 @@ a:hover {
     <p>Already have an account? <a href="#" onclick="showLoginForm()">Login</a></p>
   </div>
 
-  <div id="mainContent" style="display:none;">   
-
-  <div id="livePriceText" style="
+  <div id="mainContent" style="display:none;"> 
+    
+ <div id="livePriceText" style="
   position: absolute;
   top: 13px;
   left: 20px;
@@ -423,7 +423,7 @@ a:hover {
 ">
   <i style="margin-right: 1px;"></i>
   <span id="btcPrice" style="color: #ccc;"></span>
-  </div>
+</div>
     
   <i id="logoutIcon" class="fas fa-sign-out-alt" title="Logout"></i>
   <i id="settingsIcon" class="fas fa-cog" title="Settings"></i>
@@ -433,9 +433,7 @@ a:hover {
   <h1 id="rocketIcon"><span class="flying">🚀</span> Signal Generator</h1>
   <p class="tagline">Auto-execute Binance trades with premium crypto signals</p>
   <button id="scanButton" onclick="scan()">Scan Now</button>
-  <p id="waitingMessage" style="display: none; color: #f59e0b; font-size: 13px; padding: 6px 10px; background: rgba(255, 165, 0, 0.1); border-radius: 6px;">
-  ⚠️ <strong>Paused:</strong> Risk zone or time blocked (HH:02–08). Wait for a safe signal window.
-</p>
+  <p id="waitingMessage" style="display: none; color: #f59e0b;">Caution: Market unstable or nearing risky zone...</p>
   <div id="error-message"></div>
   <div id="statsContainer" style="
   display: flex; 
@@ -468,7 +466,7 @@ a:hover {
   <span id="pullbackStatus" style="font-weight: bold; color: #f97316; display: flex; align-items: center; gap: 6px;">
   <i class="fas fa-exclamation-triangle"></i> <span class="value">...</span>
 </span>
-
+    
   </div>
 
     <div id="lastTime" style="margin-bottom:10px; margin-top:10px;"></div>
@@ -652,7 +650,7 @@ a:hover {
   <script src="env2.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/crypto-js.js"></script>
   <script>
-    
+
 setInterval(() => {
   const now = Date.now();
   let changed = false;
@@ -667,29 +665,6 @@ setInterval(() => {
   }
 }, 300000); // runs every 5 minutes
 
-  const btcEl = document.getElementById("btcPrice");
-  let displayLastPrice = null;
-
-  const ws = new WebSocket("wss://stream.binance.com:9443/ws/btcusdt@trade");
-
-  ws.onmessage = function (event) {
-    const tradeData = JSON.parse(event.data);
-    const currentDisplayPrice = parseFloat(tradeData.p);
-
-    if (displayLastPrice !== null) {
-      if (currentDisplayPrice > displayLastPrice) {
-        btcEl.style.color = "#22c55e"; // green
-      } else if (currentDisplayPrice < displayLastPrice) {
-        btcEl.style.color = "#ef4444"; // red
-      } else {
-        btcEl.style.color = "#ccc";
-      }
-    }
-
-    btcEl.innerHTML = `<i class="fab fa-btc" style="margin-right: 1px;"></i> ${currentDisplayPrice.toLocaleString()}`;
-    displayLastPrice = currentDisplayPrice;
-  };
-    
 document.addEventListener("DOMContentLoaded", () => {
   const loginForm = document.getElementById("loginForm");
   const mainContent = document.getElementById("mainContent");
@@ -811,55 +786,6 @@ statsIcon.addEventListener("click", () => {
   statsBox.style.display = statsBox.style.display === "none" ? "block" : "none";
 });
 
-async function updateTradeStats() {
-  const startOfToday = new Date();
-  startOfToday.setUTCHours(0, 0, 0, 0);
-  const startTimestamp = startOfToday.getTime();
-
-  try {
-    const trades = await sendSignedRequest("/fapi/v1/userTrades", {
-      startTime: startTimestamp,
-      timestamp: Date.now() + timeOffset
-    });
-
-    const tradeGroups = {};
-
-    trades.forEach(t => {
-      const key = `${t.symbol}_${t.side}_${t.orderId}`;
-      const pnl = parseFloat(t.realizedPnl);
-
-      if (!tradeGroups[key]) {
-        tradeGroups[key] = 0;
-      }
-      tradeGroups[key] += pnl;
-    });
-
-    let tp = 0;
-    let sl = 0;
-
-    // Adjust thresholds to count more accurately
-    Object.values(tradeGroups).forEach(netPnl => {
-      if (netPnl > 0.05) tp++;
-      else if (netPnl < -0.05) sl++;
-    });
-
-    const total = tp + sl;
-    const winRate = total ? ((tp / total) * 100).toFixed(1) : 0;
-
-    document.getElementById("tpHit").innerText = tp;
-    document.getElementById("slHit").innerText = sl;
-    document.getElementById("winRate").innerText = `${winRate}%`;
-    document.getElementById("totalTrades").innerText = total;
-
-  } catch (err) {
-    console.error("Error updating trade stats:", err);
-  }
-}
-
-  // Update every minute
-  updateTradeStats();
-  setInterval(updateTradeStats, 60000);
-
   document.getElementById("settingsIcon").addEventListener("click", () => {
   const settingsBox = document.getElementById("settingsBox");
   const premiumBox = document.getElementById("premiumStatusBox");
@@ -890,6 +816,55 @@ document.getElementById("saveSettings").addEventListener("click", () => {
     showError("Enter a valid number.");
   }
 });
+
+async function updateTradeStats() {
+  const startOfToday = new Date();
+  startOfToday.setUTCHours(0, 0, 0, 0);
+  const startTimestamp = startOfToday.getTime();
+
+  try {
+    const trades = await sendSignedRequest("/fapi/v1/userTrades", {
+      startTime: startTimestamp,
+      timestamp: Date.now() + timeOffset
+    });
+
+    const tradeGroups = {};
+
+    trades.forEach(t => {
+      const key = `${t.symbol}_${t.side}_${t.orderId}`;
+      const pnl = parseFloat(t.realizedPnl);
+
+      if (!tradeGroups[key]) {
+        tradeGroups[key] = 0;
+      }
+      tradeGroups[key] += pnl;
+    });
+
+    let tp = 0;
+    let sl = 0;
+
+    // Adjust thresholds to count more accurately
+    Object.values(tradeGroups).forEach(netPnl => {
+      if (netPnl > 0.1) tp++;
+      else if (netPnl < -0.1) sl++;
+    });
+
+    const total = tp + sl;
+    const winRate = total ? ((tp / total) * 100).toFixed(1) : 0;
+
+    document.getElementById("tpHit").innerText = tp;
+    document.getElementById("slHit").innerText = sl;
+    document.getElementById("winRate").innerText = `${winRate}%`;
+    document.getElementById("totalTrades").innerText = total;
+
+  } catch (err) {
+    console.error("Error updating trade stats:", err);
+  }
+}
+
+  // Update every minute
+  updateTradeStats();
+  setInterval(updateTradeStats, 60000);
   
   // Premium Submission to Telegram
   if (submitBtn) {
@@ -963,7 +938,7 @@ document.getElementById("saveSettings").addEventListener("click", () => {
     try {
       const count = await getOpenPositionsCount();
 
-      if (count >= 10) {
+      if (count >= 5) {
         scanButton.disabled = true;
         localStorage.setItem("scanBlocked", "true");
         hideSignalBlocks();
@@ -1046,6 +1021,29 @@ function showSignupForm() {
   document.getElementById("loginForm").style.display = "none";
   document.getElementById("signupForm").style.display = "block";
 }
+
+  const btcEl = document.getElementById("btcPrice");
+  let displayLastPrice = null;
+
+  const ws = new WebSocket("wss://stream.binance.com:9443/ws/btcusdt@trade");
+
+  ws.onmessage = function (event) {
+    const tradeData = JSON.parse(event.data);
+    const currentDisplayPrice = parseFloat(tradeData.p);
+
+    if (displayLastPrice !== null) {
+      if (currentDisplayPrice > displayLastPrice) {
+        btcEl.style.color = "#22c55e"; // green
+      } else if (currentDisplayPrice < displayLastPrice) {
+        btcEl.style.color = "#ef4444"; // red
+      } else {
+        btcEl.style.color = "#ccc";
+      }
+    }
+
+    btcEl.innerHTML = `<i class="fab fa-btc" style="margin-right: 1px;"></i> ${currentDisplayPrice.toLocaleString()}`;
+    displayLastPrice = currentDisplayPrice;
+  };
 
     let scanInterval = null;
     let autoScanActive = false;
@@ -1234,6 +1232,22 @@ if ((signalType === "LONG" && !macdUp) || (signalType === "SHORT" && !macdDown))
   console.log("Signal skipped: MACD momentum not strong.");
   return null;
 }
+ 
+  if (recentlySpiked) {
+  console.log("Signal skipped: BTC in risky zone (not safe to enter).");
+  return null;
+}
+
+if (nextMove === "sideways") {
+  console.log("Signal skipped: Market forecast is sideways.");
+  return null;
+}
+
+if ((nextMove === "bullish" && signalType === "SHORT") ||
+    (nextMove === "bearish" && signalType === "LONG")) {
+  console.log(`Signal skipped: Forecast is ${nextMove}, but signal is ${signalType}`);
+  return null;
+}
 
 const { tf15, tf1h, tf30, tf4h } = await confirmTrend(symbol);
 
@@ -1243,7 +1257,7 @@ if ((signalType === "LONG" && (tf15 !== "LONG" || tf1h !== "LONG" || tf30 !== "L
   return null;
 }
 
-// 1. Avoid weak breakout candles
+    // 1. Avoid weak breakout candles
 const lastCandleBody = Math.abs(lastClose - lastOpen);
 const bodyToRangeRatio = lastCandleBody / (lastHigh - lastLow);
 const wickSize = (lastHigh - lastLow) - lastCandleBody;
@@ -1292,7 +1306,7 @@ if (latestAtr < price * 0.003) {
   return null;
 }
 
-const recentHigh = Math.max(...highs.slice(-10, -5));
+  const recentHigh = Math.max(...highs.slice(-10, -5));
 const recentLow = Math.min(...lows.slice(-10, -5));
 if ((signalType === "LONG" && price < recentHigh * 0.995) ||
     (signalType === "SHORT" && price > recentLow * 1.005)) {
@@ -1590,187 +1604,139 @@ async function sendLimit(symbol, side, qty, price, tp, sl, reduceOnly, pricePrec
     }
 
 let marketCondition = "BAD";
+let safeToEnter = false;
+let recentlySpiked = false;
 let nextMove = "sideways";
 let pullbackStatus = "RISKY ZONE";
 
 async function getBTCIndicators() {
-  const res = await fetch("https://fapi.binance.com/fapi/v1/klines?symbol=BTCUSDT&interval=5m&limit=250");
-  const data = await res.json();
+  const res = await fetch("https://fapi.binance.com/fapi/v1/klines?symbol=BTCUSDT&interval=5m&limit=250");
+  const data = await res.json();
 
-  const closes = data.map(c => parseFloat(c[4]));
-  const highs = data.map(c => parseFloat(c[2]));
-  const lows = data.map(c => parseFloat(c[3]));
-  const volumes = data.map(c => parseFloat(c[5]));
-  const opens = data.map(c => parseFloat(c[1]));
+  const closes = data.map(c => parseFloat(c[4]));
+  const highs = data.map(c => parseFloat(c[2]));
+  const lows = data.map(c => parseFloat(c[3]));
+  const volumes = data.map(c => parseFloat(c[5]));
 
-  // Adjusted EMAs for 5m timeframe
-  const ema20 = getEMA(closes, 20);
-  const ema50 = getEMA(closes, 50);
-  const rsi = calculateRSI(closes, 14);
-  const atr = calculateATR(highs, lows, closes, 14);
+  const ema50 = getEMA(closes, 50);
+  const ema200 = getEMA(closes, 200);
+  const rsi = calculateRSI(closes, 14);
+  const atr = calculateATR(highs, lows, closes, 14);
 
-  const priceNow = closes.at(-1);
-  const priceBefore = closes.at(-6); // ~30 minutes ago
-  const currentVolume = volumes.at(-1);
-  const avgVolume = volumes.slice(-20).reduce((a, b) => a + b, 0) / 20;
+  const priceNow = closes[closes.length - 1];
+  const priceBefore = closes[closes.length - 18]; // 90min ago
+  const currentVolume = volumes[volumes.length - 1];
+  const avgVolume = volumes.slice(-30).reduce((a, b) => a + b, 0) / 30;
 
-  const ema20Now = ema20.at(-1);
-  const ema20Prev = ema20.at(-4); // recent slope
-  const ema50Now = ema50.at(-1);
-  const rsiNow = rsi.at(-1);
-  const atrNow = atr.at(-1);
+  const priceRising = priceNow > priceBefore;
+  const rsiNow = rsi[rsi.length - 1];
+  const atrNow = atr[atr.length - 1];
 
-  const slope = ema20Now - ema20Prev;
-  const priceSpike = Math.abs(priceNow - priceBefore) / priceBefore > 0.015;
-  const volumeSpike = currentVolume > avgVolume * 1.8;
-  const overextended = Math.abs(priceNow - ema20Now) > 2 * atrNow;
-  const overboughtOrOversold = rsiNow > 75 || rsiNow < 25;
+  const ema50Now = ema50[ema50.length - 1];
+  const ema50Prev = ema50[ema50.length - 4];
+  const ema200Now = ema200[ema200.length - 1];
 
-  const recentlySpiked = (priceSpike && volumeSpike) || overextended || overboughtOrOversold;
-  const nearEma = Math.abs(priceNow - ema20Now) < 1.2 * atrNow;
+  const slope = ema50Now - ema50Prev;
+  const priceSpike = Math.abs(priceNow - priceBefore) / priceBefore > 0.015;
+  const volumeSpike = currentVolume > avgVolume * 1.8;
+  const overextended = Math.abs(priceNow - ema50Now) > 2 * atrNow;
+  const overboughtOrOversold = rsiNow > 75 || rsiNow < 25;
 
-  // Candle structure analysis
-  const lastOpen = opens.at(-1);
-  const lastHigh = highs.at(-1);
-  const lastLow = lows.at(-1);
-  const body = Math.abs(priceNow - lastOpen);
-  const range = lastHigh - lastLow;
-  const wick = range - body;
-  const bodyToWick = body / (wick || 1);
-  const bodyToRange = body / range;
+  const recentlySpiked = (priceSpike && volumeSpike) || overextended || overboughtOrOversold;
+  const safeToTrade = slope > 0.1 && !recentlySpiked;
 
-  // Local trend from last 3 closes
-  const last3Closes = closes.slice(-3);
-  const trendUp = last3Closes[2] > last3Closes[1] && last3Closes[1] > last3Closes[0];
-  const trendDown = last3Closes[2] < last3Closes[1] && last3Closes[1] < last3Closes[0];
+  let forecast = "sideways";
+  if (slope > 0.2 && rsiNow > 55) forecast = "bullish";
+  else if (slope < -0.2 && rsiNow < 45) forecast = "bearish";
 
-  let forecast = "sideways";
-  let safeToTrade = false;
-
-  if (
-    !recentlySpiked &&
-    nearEma &&
-    slope > 0.05 &&
-    rsiNow > 52 &&
-    ema20Now > ema50Now &&
-    trendUp &&
-    bodyToWick > 1.2 &&
-    bodyToRange > 0.6
-  ) {
-    forecast = "bullish";
-    safeToTrade = true;
-  } else if (
-    !recentlySpiked &&
-    nearEma &&
-    slope < -0.05 &&
-    rsiNow < 48 &&
-    ema20Now < ema50Now &&
-    trendDown &&
-    bodyToWick > 1.2 &&
-    bodyToRange > 0.6
-  ) {
-    forecast = "bearish";
-    safeToTrade = true;
-  }
-
-  return {
-    forecast,
-    safeToTrade,
-    recentlySpiked
-  };
+  return {
+    forecast,
+    safeToTrade,
+    recentlySpiked
+  };
 }
 
 function getEMA(prices, period) {
-  const k = 2 / (period + 1);
-  const ema = [prices.slice(0, period).reduce((a, b) => a + b, 0) / period];
-  for (let i = period; i < prices.length; i++) {
-    ema.push(prices[i] * k + ema[ema.length - 1] * (1 - k));
-  }
-  return ema;
+  const k = 2 / (period + 1);
+  const ema = [prices.slice(0, period).reduce((a, b) => a + b, 0) / period];
+  for (let i = period; i < prices.length; i++) {
+    ema.push(prices[i] * k + ema[ema.length - 1] * (1 - k));
+  }
+  return ema;
 }
 
 function calculateRSI(closes, period = 14) {
-  let gains = 0, losses = 0;
-  const rsi = [];
+  let gains = 0, losses = 0;
+  const rsi = [];
 
-  for (let i = 1; i <= period; i++) {
-    const change = closes[i] - closes[i - 1];
-    if (change >= 0) gains += change;
-    else losses -= change;
-  }
+  for (let i = 1; i <= period; i++) {
+    const change = closes[i] - closes[i - 1];
+    if (change >= 0) gains += change;
+    else losses -= change;
+  }
 
-  let avgGain = gains / period;
-  let avgLoss = losses / period;
-  rsi.push(100 - 100 / (1 + avgGain / avgLoss));
+  let avgGain = gains / period;
+  let avgLoss = losses / period;
+  rsi.push(100 - 100 / (1 + avgGain / avgLoss));
 
-  for (let i = period + 1; i < closes.length; i++) {
-    const change = closes[i] - closes[i - 1];
-    const gain = Math.max(change, 0);
-    const loss = Math.max(-change, 0);
-    avgGain = (avgGain * (period - 1) + gain) / period;
-    avgLoss = (avgLoss * (period - 1) + loss) / period;
-    rsi.push(100 - 100 / (1 + avgGain / avgLoss));
-  }
+  for (let i = period + 1; i < closes.length; i++) {
+    const change = closes[i] - closes[i - 1];
+    const gain = Math.max(change, 0);
+    const loss = Math.max(-change, 0);
+    avgGain = (avgGain * (period - 1) + gain) / period;
+    avgLoss = (avgLoss * (period - 1) + loss) / period;
+    rsi.push(100 - 100 / (1 + avgGain / avgLoss));
+  }
 
-  return rsi;
+  return rsi;
 }
 
 function calculateATR(highs, lows, closes, period = 14) {
-  const tr = [];
-  for (let i = 1; i < highs.length; i++) {
-    const high = highs[i];
-    const low = lows[i];
-    const prevClose = closes[i - 1];
-    tr.push(Math.max(high - low, Math.abs(high - prevClose), Math.abs(low - prevClose)));
-  }
+  const tr = [];
+  for (let i = 1; i < highs.length; i++) {
+    const high = highs[i];
+    const low = lows[i];
+    const prevClose = closes[i - 1];
+    tr.push(Math.max(high - low, Math.abs(high - prevClose), Math.abs(low - prevClose)));
+  }
 
-  const atr = [tr.slice(0, period).reduce((a, b) => a + b, 0) / period];
-  for (let i = period; i < tr.length; i++) {
-    atr.push((atr[atr.length - 1] * (period - 1) + tr[i]) / period);
-  }
-  return atr;
+  const atr = [tr.slice(0, period).reduce((a, b) => a + b, 0) / period];
+  for (let i = period; i < tr.length; i++) {
+    atr.push((atr[atr.length - 1] * (period - 1) + tr[i]) / period);
+  }
+  return atr;
 }
 
 async function updateMarketCondition() {
-  try {
-    const { forecast, safeToTrade, recentlySpiked } = await getBTCIndicators();
+  try {
+    const { forecast, safeToTrade, recentlySpiked } = await getBTCIndicators();
 
-    marketCondition = safeToTrade ? "GOOD" : "BAD";
-    nextMove = forecast;
-    pullbackStatus = recentlySpiked ? "RISKY ZONE" : "SAFE ZONE";
+    marketCondition = safeToTrade ? "GOOD" : "BAD";
+    nextMove = forecast;
+    pullbackStatus = recentlySpiked ? "RISKY ZONE" : "SAFE ZONE";
 
-    const marketEl = document.querySelector("#marketStatus .value");
-    const pullbackEl = document.querySelector("#pullbackStatus .value");
+    const marketEl = document.querySelector("#marketStatus .value");
+    const pullbackEl = document.querySelector("#pullbackStatus .value");
 
-    if (marketEl) {
-      marketEl.innerHTML = `${marketCondition} / ${nextMove.toUpperCase()}`;
-
-      // Separate color handling for marketCondition + nextMove
-      if (marketCondition === "GOOD" && nextMove === "bullish") {
-        marketEl.style.color = "#22c55e"; // ✅ Green (good + bullish)
-      } else if (marketCondition === "GOOD" && nextMove === "bearish") {
-        marketEl.style.color = "#EF4444"; // 🔴 Red (good but bearish)
-      } else if (nextMove === "sideways") {
-        marketEl.style.color = "#f97316"; // 🟠 Orange (neutral trend)
-      } else {
-        marketEl.style.color = "#EF4444"; // Default to red for BAD
-      }
+    if (marketEl) {
+      marketEl.innerHTML = `${marketCondition} / ${nextMove.toUpperCase()}`;
+      marketEl.style.color = marketCondition === "GOOD" ? "#22c55e" : "#EF4444";
     }
 
-    if (pullbackEl) {
-      pullbackEl.innerHTML = pullbackStatus;
-      pullbackEl.style.color = pullbackStatus === "SAFE ZONE" ? "#22c55e" : "#f97316";
-    }
+    if (pullbackEl) {
+      pullbackEl.innerHTML = pullbackStatus;
+      pullbackEl.style.color = pullbackStatus === "SAFE ZONE" ? "#22c55e" : "#f97316";
+    }
 
-    toggleScanButton?.();
-  } catch (err) {
-    console.error("Market update error:", err);
-  }
+    toggleScanButton?.(); // Optional: call only if defined
+  } catch (err) {
+    console.error("Market update error:", err);
+  }
 }
 
-// Call every 20s
+// Start real-time updates
 updateMarketCondition();
-setInterval(updateMarketCondition, 20000);
+setInterval(updateMarketCondition, 20000); 
 
   function toggleScanButton() {
   const scanButton = document.getElementById("scanButton");
@@ -1779,13 +1745,9 @@ setInterval(updateMarketCondition, 20000);
   if (!scanButton || !waitingMessage) return;
 
   const isSafeMarket = pullbackStatus === "SAFE ZONE";
+  const isDirectional = nextMove !== "sideways";
 
-  // Time logic: enable scan only between minute 2 and 8 of each hour
-  const now = new Date();
-  const minutes = now.getMinutes();
-  const withinTimeWindow = minutes >= 2 && minutes <= 8;
-
-  const canTrade = isPremium && isSafeMarket && withinTimeWindow;
+  const canTrade = isPremium && isSafeMarket && isDirectional;
 
   scanButton.style.display = canTrade ? "inline-block" : "none";
   waitingMessage.style.display = isPremium && !canTrade ? "block" : "none";
@@ -1796,7 +1758,7 @@ setInterval(updateMarketCondition, 20000);
   document.getElementById("futuresBalance").innerHTML = `<i class="fas fa-wallet"></i> ${balance}`;
 
   const positionCount = await getOpenPositionsCount();
-  document.getElementById("positionsCount").innerHTML = `<i class="fas fa-chart-line"></i> ${positionCount}/10`;
+  document.getElementById("positionsCount").innerHTML = `<i class="fas fa-chart-line"></i> ${positionCount}/5`;
 
   const pnl = await getTodayPnL();
   document.getElementById("todayPnl").innerHTML = `<i class="fas fa-dollar-sign"></i> ${pnl >= 0 ? "+" : ""}$${pnl.toFixed(2)}`;
@@ -1857,9 +1819,9 @@ valueSpan.classList.add(
     showError("Failed to fetch PNL");
   }
 } 
-
-let timeOffset = 0;
     
+let timeOffset = 0;
+
 // Sync local time with Binance server
 async function syncServerTime() {
   try {
@@ -1921,7 +1883,7 @@ function showError(msg) {
     document.getElementById("futuresBalance").innerHTML = `<i class="fas fa-wallet"></i> ${balance}`;
 
     const positionCount = await getOpenPositionsCount();
-    document.getElementById("positionsCount").innerHTML = `<i class="fas fa-chart-line"></i> ${positionCount}/10`;
+    document.getElementById("positionsCount").innerHTML = `<i class="fas fa-chart-line"></i> ${positionCount}/5`;
 
     const pnl = await getTodayPnL();
     document.getElementById("todayPnl").innerHTML = `<i class="fas fa-dollar-sign"></i> ${pnl >= 0 ? "+" : ""}$${pnl.toFixed(2)}`;
