@@ -1768,7 +1768,7 @@ setInterval(updateMarketCondition, 20000);
     (minutes >= 57 && minutes <= 59)
   );
 
-  const canTrade = isPremium && isSafeMarket && isDirectional && withinTimeWindow;
+  const canTrade = isPremium && isSafeMarket && withinTimeWindow;
 
   scanButton.style.display = canTrade ? "inline-block" : "none";
   waitingMessage.style.display = isPremium && !canTrade ? "block" : "none";
