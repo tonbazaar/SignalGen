@@ -1150,8 +1150,8 @@ return { tf15, tf1h, tf30, tf4h };
     const latestSignal = signal.at(-1);
     const latestAtr = atr.at(-1) || 0;
     const macdHistogram = latestMacd - latestSignal;
-    const macdUp = macd.slice(-3).every((v, i, a) => i === 0 || v > a[i - 1]);
-    const macdDown = macd.slice(-3).every((v, i, a) => i === 0 || v < a[i - 1]);
+    const macdUp = macd.slice(-2).every((v, i, a) => i === 0 || v > a[i - 1]);
+    const macdDown = macd.slice(-2).every((v, i, a) => i === 0 || v < a[i - 1]);
   
     const candleStrength = (lastClose - lastOpen) / lastClose;
     const wickRatio = (lastHigh - lastLow) / lastClose;
