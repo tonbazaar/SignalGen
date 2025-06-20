@@ -1164,8 +1164,8 @@ return { tf15, tf1h, tf30, tf4h };
       macdNegative: 0.0,
       volMultiplier: 1.5,
       candleStrengthMin: 0.002,
-      wickRatioMax: 0.02,
-      minConfirmCandles: 2
+      wickRatioMax: 0.035,
+      minConfirmCandles: 1
     };
 
     // Recent candles
@@ -1265,7 +1265,7 @@ if (bodyToWickRatio < 1.2) {
   return null;
 }
    
-if (bodyToRangeRatio < 0.6) {
+if (bodyToRangeRatio < 0.45) {
   console.log("Signal skipped: Weak breakout candle body.");
   return null;
 }
