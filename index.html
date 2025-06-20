@@ -1749,10 +1749,24 @@ setInterval(updateMarketCondition, 20000);
   const isSafeMarket = pullbackStatus === "SAFE ZONE";
   const isDirectional = nextMove !== "sideways";
 
-  // ⏰ Time logic: allow only between HH:01 - HH:10
   const now = new Date();
   const minutes = now.getMinutes();
-  const withinTimeWindow = minutes >= 1 && minutes <= 10;
+
+  // Minute windows: 2–4, 7–9, 11–14, 16–19, 22–24, 27–29, 31–34, 37–39, 42–44, 47–49, 51–54, 57–59
+  const withinTimeWindow = (
+    (minutes >= 2 && minutes <= 4) ||
+    (minutes >= 7 && minutes <= 9) ||
+    (minutes >= 11 && minutes <= 14) ||
+    (minutes >= 16 && minutes <= 19) ||
+    (minutes >= 22 && minutes <= 24) ||
+    (minutes >= 27 && minutes <= 29) ||
+    (minutes >= 31 && minutes <= 34) ||
+    (minutes >= 37 && minutes <= 39) ||
+    (minutes >= 42 && minutes <= 44) ||
+    (minutes >= 47 && minutes <= 49) ||
+    (minutes >= 51 && minutes <= 54) ||
+    (minutes >= 57 && minutes <= 59)
+  );
 
   const canTrade = isPremium && isSafeMarket && isDirectional && withinTimeWindow;
 
